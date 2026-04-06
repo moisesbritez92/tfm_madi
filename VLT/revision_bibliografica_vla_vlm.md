@@ -182,7 +182,7 @@ La importancia de PaLM-E fue conceptual: demostró la viabilidad de integrar dat
 
 #### 3.2.3 Multimodal LLMs (MLLMs): GPT-4V, Gemini, Claude Vision
 
-La generación más reciente de MLLMs — GPT-4V (OpenAI, 2023), Gemini (Google, 2024) y Claude Vision (Anthropic, 2024) — integra nativamenet capacidades visuales en LLMs de escala masiva. Estos modelos son relevantes para el ecosistema VLA de dos maneras:
+La generación más reciente de MLLMs — GPT-4V (OpenAI, 2023), Gemini (Google, 2024) y Claude Vision (Anthropic, 2024) — integra nativamente capacidades visuales en LLMs de escala masiva. Estos modelos son relevantes para el ecosistema VLA de dos maneras:
 
 1. **Como planificadores de alto nivel:** Los MLLMs pueden descomponer tareas complejas en subtareas, generando instrucciones que un VLA de menor escala ejecuta.
 2. **Como backbone directo:** Gemini Robotics (Google DeepMind, 2025) demuestra que un MLLM puede ser fine-tuneado directamente para control robótico end-to-end.
@@ -600,7 +600,7 @@ ALOHA no es un VLA per se, sino una **plataforma hardware open-source** de bajo 
 | QUAR-VLA | 2024 | 4 | ~7B | 2 Hz | Real + Sintético | Parcial | Cuadrúpedos |
 | Gemini Rob. | 2025 | Emergente | >>10B | 20 Hz | Web + Robot | No | Multi-plataforma |
 
-*Nota: Octo usa diffusion head pero no tiene VLM como Sistema 2 explícito; es un design anterior al paradigma dual-system.
+*Nota: Octo usa diffusion head pero no tiene VLM como Sistema 2 explícito; es un diseño anterior al paradigma dual-system.
 
 ---
 
@@ -846,7 +846,7 @@ Problemas específicos:
 
 #### 10.2.1 Eficiencia de Datos
 
-Los VLAs actuales requieren **cientos de miles a millones** de episodios de demostración para alcanzar rendimiento competitivo. En contraste, un humano puede aprender una nueva tarea de manipulación con 1–5 demostraciones. Esta brecha de eficiencia de datos es el obstáculo más significant para el despliegue escalable.
+Los VLAs actuales requieren **cientos de miles a millones** de episodios de demostración para alcanzar rendimiento competitivo. En contraste, un humano puede aprender una nueva tarea de manipulación con 1–5 demostraciones. Esta brecha de eficiencia de datos es el obstáculo más significativo para el despliegue escalable.
 
 | Modelo | Datos de entrenamiento robótico | Tareas aprendidas |
 |---|---|---|
@@ -890,7 +890,7 @@ La precisión del **grounding** entre las tres modalidades (visión, lenguaje, a
 
 ### 10.3 Preguntas Abiertas de Investigación
 
-1. **Tokenización óptima:** ¿Discretización (OpenVLA), difusión (Octo), flow matching (π₀), o FAST (π₀-FAST)? No existe evidencia empírica controlada que establezca cuándo usar cada approach. Los benchmarks actuales favorecen modelos distintos en tareas distintas.
+1. **Tokenización óptima:** ¿Discretización (OpenVLA), difusión (Octo), flow matching (π₀), o FAST (π₀-FAST)? No existe evidencia empírica controlada que establezca cuándo usar cada enfoque. Los benchmarks actuales favorecen modelos distintos en tareas distintas.
 
 2. **Mínimo de datos para fine-tuning:** ¿Cuántas demostraciones se necesitan para adaptar un VLA preentrenado a una nueva tarea con rendimiento confiable? OpenVLA muestra que LoRA funciona con datos limitados, pero no hay cuantificación sistemática.
 
