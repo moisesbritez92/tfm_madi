@@ -587,7 +587,24 @@ ALOHA no es un VLA per se, sino una **plataforma hardware open-source** de bajo 
 - VLM distilado alojado en **nube** para razonamiento de alto nivel
 - **Action decoder** local en computador onboard del robot para generar acciones compensando la latencia de red
 
-### 6.10 Tabla Comparativa de Modelos SOTA
+### 6.10 LingBot-VLA (2026)
+
+> Wu, W. et al. (2026). *A Pragmatic VLA Foundation Model*. arXiv:2601.18692.
+
+**Significado:** Modelo VLA pragmático y open-source que ataca el desafío de la generalización bimanual a través de un escalado masivo de datos del mundo real y conciencia espacial profunda (Depth).
+
+**Arquitectura (~4B parámetros):**
+Diseñado priorizando la eficiencia computacional. Los autores reportan que su infraestructura (*codebase* basado en VeOmni) logra acelerar el entrenamiento entre un **1.5× y 2.8×** comparado con arquitecturas VLA contemporáneas.
+
+**Datos de entrenamiento:** Representa uno de los saltos cuantitativos más agresivos en datos de entorno real, pre-entrenado en **20,000 horas** de captura provenientes de 9 configuraciones distintas de robots de brazo dual.
+
+**Variantes publicadas:**
+- **LingBot-VLA-4B:** Modelo multimodelo estándar (RGB-Language-Action).
+- **LingBot-VLA-4B-Depth:** Variante poco común que integra profundidad explícita en su entrada, reduciendo los errores críticos de coordinación espacial 3D y dependencia angular de cámara.
+
+**Relevancia:** Confirma las leyes empíricas emergentes en VLAs: el volumen y calidad real de los datos superan a los enfoques puramente sintéticos o de LLMs inflados.
+
+### 6.11 Tabla Comparativa de Modelos SOTA
 
 | Modelo | Año | Tipo | Parámetros | Frecuencia | Datos | Open Source | Robot Platform |
 |---|---|---|---|---|---|---|---|
@@ -599,6 +616,7 @@ ALOHA no es un VLA per se, sino una **plataforma hardware open-source** de bajo 
 | GR00T N1 | 2025 | 5 | ~2B | 120 Hz | Real + Sintético | Sí | Fourier GR-1 |
 | QUAR-VLA | 2024 | 4 | ~7B | 2 Hz | Real + Sintético | Parcial | Cuadrúpedos |
 | Gemini Rob. | 2025 | Emergente | >>10B | 20 Hz | Web + Robot | No | Multi-plataforma |
+| LingBot-VLA | 2026 | Eficiente | ~4B | No rep. | 20,000h (dual-arm)| Sí | 9 dual-arm |
 
 *Nota: Octo usa diffusion head pero no tiene VLM como Sistema 2 explícito; es un diseño anterior al paradigma dual-system.
 
@@ -828,6 +846,25 @@ Problemas específicos:
 - **Reproducibilidad limitada:** Configuraciones físicas no replicables entre laboratorios
 - **Sesgo de evaluación:** Tendencia a reportar solo tareas donde el modelo funciona bien
 
+### 9.6 ROBOGATE: Evaluación Adaptativa de Fronteras de Fallo (2026)
+
+> Kim, A. (2026). *ROBOGATE: Adaptive Failure Discovery for Safe Robot Policy Deployment via Two-Stage Boundary-Focused Sampling*. AgentAI Co., Ltd.
+
+**ROBOGATE** propone un framework open-source de gestión de riesgo pre-despliegue que aborda directamente las limitaciones de las evaluaciones estáticas. Combina simulación física (NVIDIA Isaac Sim) con una **estrategia de muestreo adaptativo en dos etapas** para descubrir eficientemente las fronteras de fallo de una política robótica en un espacio de 8 parámetros (fricción, masa, offset de centro de masa, tamaño, ruido IK, obstáculos, geometría y modo de colocación):
+
+1. **Etapa 1 — Exploración uniforme (20,000 experimentos):** Latin Hypercube Sampling (LHS) cubre el espacio de parámetros de manera uniforme y produce un mapa grueso de zonas seguras, fronterizas y peligrosas.
+2. **Etapa 2 — Muestreo enfocado en la frontera (10,000 experimentos):** Se identifican los bins donde la tasa de éxito cae entre el 30% y el 70%, concentrando los experimentos en la zona de transición crítica. Esto mejora la cobertura de la frontera en un 31.1% y eleva el AUC del modelo de riesgo de 0.754 a 0.780.
+
+**Validación cross-embodiment:** La evaluación paralela sobre Franka Panda (7-DOF, pinza paralela) y UR5e (6-DOF, pinza de succión) en 30,000 experimentos totales revela **cuatro zonas de peligro universales** independientes del embodiment, todas asociadas a masas de objeto superiores a 0.935 kg.
+
+**Modelo de riesgo interpretable:** En lugar de modelos de caja negra, ROBOGATE ajusta una regresión logística que produce una ecuación de frontera en formato cerrado:
+
+$$\mu^*(m) = \frac{1.469 + 0.419m}{3.691 - 1.400m}$$
+
+Esta ecuación se traduce directamente en restricciones operativas (ej. "no desplegar si la fricción del objeto < 0.49").
+
+**Evaluación de Octo-Small:** Sometido al suite de 68 escenarios adversarios de ROBOGATE (iluminación baja, objetos transparentes, oclusiones, posiciones atípicas), el VLA generalista **Octo-Small logra un 0.0% de tasa de éxito** frente al 100% del controlador scripted de referencia, incluso bajo condiciones nominales — lo que apunta a una discordancia perceptivo-motora fundamental y no a la dificultad del entorno.
+
 ---
 
 ## 10. Análisis Crítico: Limitaciones, Preguntas Abiertas y Direcciones Futuras
@@ -863,6 +900,8 @@ Aunque los VLAs muestran mejoras significativas en generalización respecto a po
 - **Domain shift:** Cambios de iluminación, fondos o tipos de superficie pueden degradar el rendimiento.
 - **Catastrophic forgetting:** El fine-tuning en nuevas tareas puede degradar las capacidades preentrenadas.
 - **Open-world generalization:** Los VLAs actuales no logran la adaptación fluida a entornos completamente no estructurados que los humanos manejan sin esfuerzo.
+
+**Evidencia empírica cuantitativa — ROBOGATE (Kim, 2026):** El framework de evaluación adversaria ROBOGATE reveló que **Octo-Small obtiene un 0.0% de tasa de éxito** en 68 escenarios adversarios frente al 100% de un controlador scripted, incluso bajo condiciones nominales. Esta brecha de 100 puntos porcentuales confirma que los modelos VLA generalistas actuales no superan un umbral de validación industrial básico. La causa principal es la **discordancia perceptivo-motora** entre la distribución de entrenamiento (datos reales del Open X-Embodiment) y la distribución de evaluación (simulación con dominio visual distinto), agravada por una escala de acción de 2 cm por paso que impide la precisión sub-centimétrica requerida para tareas industriales.
 
 > **Pregunta abierta:** ¿Cuántos datos robóticos de calidad se necesitan verdaderamente para que un VLA generalice a nivel humano? ¿Existe un umbral de datos a partir del cual emergen capacidades de adaptación comparable a las humanas, análogo a los scaling laws de los LLMs?
 
@@ -978,6 +1017,9 @@ La trayectoria desde RT-2 (Google, cerrado) → OpenVLA (Stanford, open-source) 
 - Open X-Embodiment Collaboration et al. (2024). Open X-Embodiment: Robotic Learning Datasets and RT-X Models. *ICRA 2024*.
 - Zhao, T. Z. et al. (2023). Learning Fine-Grained Bimanual Manipulation with Low-Cost Hardware (ALOHA). *RSS 2023*.
 - Chi, C. et al. (2023). Diffusion Policy: Visuomotor Policy Learning via Action Diffusion. *RSS 2023*.
+
+### Evaluación y Seguridad en Despliegue
+- Kim, A. (2026). ROBOGATE: Adaptive Failure Discovery for Safe Robot Policy Deployment via Two-Stage Boundary-Focused Sampling. AgentAI Co., Ltd. Repositorio: github.com/liveplex-cpu/robogate. Dataset: huggingface.co/datasets/liveplex/robogate-failure-dictionary.
 
 ### Paradigmas de Aprendizaje y Representación
 - Ho, J., Jain, A. & Abbeel, P. (2020). Denoising Diffusion Probabilistic Models. *NeurIPS 2020*.
