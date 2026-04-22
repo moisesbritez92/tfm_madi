@@ -1,0 +1,129 @@
+{
+  "part1_predictive": {
+    "Logistic Regression": {
+      "AUC": 0.7463346466360989,
+      "Accuracy": 0.7484,
+      "Precision": 0.6978661493695442,
+      "Recall": 0.43187274909963985,
+      "F1": 0.5335558027437894
+    },
+    "Random Forest": {
+      "AUC": 0.7526084068900505,
+      "Accuracy": 0.7539,
+      "Precision": 0.7368134855899946,
+      "Recall": 0.4066626650660264,
+      "F1": 0.5240765809321214
+    },
+    "Gradient Boosting": {
+      "AUC": 0.7365945178311277,
+      "Accuracy": 0.7397,
+      "Precision": 0.6678949792722247,
+      "Recall": 0.43517406962785116,
+      "F1": 0.5269852807559513
+    },
+    "XGBoost": {
+      "AUC": 0.7323914868886967,
+      "Accuracy": 0.7409,
+      "Precision": 0.6674197921373701,
+      "Recall": 0.4432773109243697,
+      "F1": 0.5327321911632101
+    }
+  },
+  "part1_best_model": "Random Forest",
+  "part1_best_auc": 0.7526084068900505,
+  "part1_improvement_pct": -3.5117427064037874,
+  "part1_feature_importance": [
+    {
+      "feature": "friction",
+      "importance_mean": 0.20680999999999994,
+      "importance_std": 0.0022474207438750804
+    },
+    {
+      "feature": "mass",
+      "importance_mean": 0.12158,
+      "importance_std": 0.002672377218882093
+    },
+    {
+      "feature": "ik_noise",
+      "importance_mean": 0.09580999999999998,
+      "importance_std": 0.001776766726388137
+    },
+    {
+      "feature": "com_offset",
+      "importance_mean": 0.07912999999999996,
+      "importance_std": 0.0016358789686281882
+    },
+    {
+      "feature": "size",
+      "importance_mean": 0.07901999999999998,
+      "importance_std": 0.0012335315156087416
+    },
+    {
+      "feature": "placement_enc",
+      "importance_mean": 0.06552,
+      "importance_std": 0.0019640773915505596
+    },
+    {
+      "feature": "obstacles",
+      "importance_mean": 0.023919999999999962,
+      "importance_std": 0.0009537295214053137
+    },
+    {
+      "feature": "shape_enc",
+      "importance_mean": 0.02309999999999999,
+      "importance_std": 0.0009154233993076682
+    }
+  ],
+  "part2_transfer_matrix": {
+    "robots": [
+      "Franka (uniform)",
+      "Franka (boundary)",
+      "UR5e",
+      "UR3e",
+      "UR10e"
+    ],
+    "matrix": [
+      [
+        0.8489525684298915,
+        0.6551432894567251,
+        0.8761577712694788,
+        0.5225891296116643,
+        NaN
+      ],
+      [
+        0.6425443752786058,
+        0.8616147588302893,
+        0.806666423548585,
+        0.5518894364448472,
+        NaN
+      ],
+      [
+        0.6004347824912808,
+        0.5627824549888385,
+        0.9860931741664403,
+        0.4470132835179824,
+        NaN
+      ],
+      [
+        0.5301700764288919,
+        0.5395831559747896,
+        0.511722404630645,
+        0.9964333074425208,
+        NaN
+      ],
+      [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ]
+    ]
+  },
+  "part2_avg_self_auc": 0.9232734522172855,
+  "part2_avg_transfer_auc": 0.6038913819701945,
+  "part3_linear_auc": 0.8261579151756683,
+  "part3_learned_auc": 0.7323914868886967,
+  "part3_linear_brier": 0.32882842750284774,
+  "part3_learned_brier": 0.18580634891986847
+}
