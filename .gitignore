@@ -3,5 +3,7 @@ cv_ltx_n
 cv_ltx
 temp
 .venv
+.venv_diffuser_infer
 diff_policy.pdf
 diffuser/repo
+diffuser/models
