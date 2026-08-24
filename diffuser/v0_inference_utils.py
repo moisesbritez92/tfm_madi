@@ -9,6 +9,7 @@ import hydra
 import imageio.v2 as imageio
 import matplotlib.pyplot as plt
 import numpy as np
+from omegaconf import open_dict
 import torch
 
 THIS_DIR = Path(__file__).resolve().parent
@@ -48,11 +49,25 @@ def list_checkpoints(model_dir: Path = MODEL_DIR) -> list[Path]:
     return checkpoints
 
 
-def default_checkpoint(model_dir: Path = MODEL_DIR) -> Path:
+def default_checkpoint(
+    model_dir: Path = MODEL_DIR,
+    preferred_checkpoint: Optional[str] = PREFERRED_CHECKPOINT,
+) -> Path:
+    return _default_checkpoint(
+        model_dir=model_dir,
+        preferred_checkpoint=preferred_checkpoint,
+    )
+
+
+def _default_checkpoint(
+    model_dir: Path = MODEL_DIR,
+    preferred_checkpoint: Optional[str] = PREFERRED_CHECKPOINT,
+) -> Path:
     model_dir = Path(model_dir)
-    preferred = model_dir / PREFERRED_CHECKPOINT
-    if preferred.exists():
-        return preferred
+    if preferred_checkpoint:
+        preferred = model_dir / preferred_checkpoint
+        if preferred.exists():
+            return preferred
 
     latest = model_dir / "latest.ckpt"
     if latest.exists():
@@ -61,7 +76,11 @@ def default_checkpoint(model_dir: Path = MODEL_DIR) -> Path:
     return list_checkpoints(model_dir)[0]
 
 
-def load_policy_bundle(checkpoint_path: Path, device: Optional[Any] = None) -> dict[str, Any]:
+def load_policy_bundle(
+    checkpoint_path: Path,
+    device: Optional[Any] = None,
+    artifact_dir: Path = ARTIFACT_DIR,
+) -> dict[str, Any]:
     checkpoint_path = Path(checkpoint_path)
     device = resolve_device(device)
 
@@ -71,13 +90,30 @@ def load_policy_bundle(checkpoint_path: Path, device: Optional[Any] = None) -> d
         pickle_module=dill,
     )
     cfg = payload["cfg"]
+
+    rgb_model_cfg = getattr(cfg.policy.obs_encoder, "rgb_model", None)
+    if rgb_model_cfg is not None:
+        target = str(getattr(rgb_model_cfg, "_target_", ""))
+        if "pretrained_encoders" in target:
+            with open_dict(rgb_model_cfg):
+                rgb_model_cfg.pretrained = False
+        elif target == "diffusion_policy.model.vision.model_getter.get_resnet":
+            with open_dict(rgb_model_cfg):
+                rgb_model_cfg.weights = None
+
+    optimizer_cfg = getattr(cfg, "optimizer", None)
+    if optimizer_cfg is not None:
+        with open_dict(optimizer_cfg):
+            optimizer_cfg.pop("low_lr", None)
+            optimizer_cfg.pop("low_lr_scope", None)
+
     workspace_cls = hydra.utils.get_class(cfg._target_)
 
-    output_dir = ARTIFACT_DIR / checkpoint_path.stem
+    output_dir = Path(artifact_dir) / checkpoint_path.stem
     output_dir.mkdir(parents=True, exist_ok=True)
 
     workspace = workspace_cls(cfg, output_dir=str(output_dir))
-    workspace.load_payload(payload, exclude_keys=None, include_keys=None)
+    workspace.load_payload(payload, exclude_keys=("optimizer",), include_keys=None)
 
     policy = workspace.ema_model if getattr(cfg.training, "use_ema", False) else workspace.model
     policy.eval()
@@ -125,9 +161,21 @@ def run_rollout(
     max_decisions: Optional[int] = None,
     render_size: Optional[int] = None,
     max_steps: Optional[int] = None,
+    model_dir: Path = MODEL_DIR,
+    artifact_dir: Path = ARTIFACT_DIR,
+    preferred_checkpoint: Optional[str] = PREFERRED_CHECKPOINT,
 ) -> dict[str, Any]:
-    checkpoint_path = Path(checkpoint_path or default_checkpoint())
-    bundle = load_policy_bundle(checkpoint_path, device=device)
+    checkpoint_path = Path(
+        checkpoint_path or _default_checkpoint(
+            model_dir=model_dir,
+            preferred_checkpoint=preferred_checkpoint,
+        )
+    )
+    bundle = load_policy_bundle(
+        checkpoint_path,
+        device=device,
+        artifact_dir=artifact_dir,
+    )
     policy = bundle["policy"]
     cfg = bundle["cfg"]
     device = bundle["device"]
@@ -164,6 +212,7 @@ def run_rollout(
         result = {
             "checkpoint_name": checkpoint_path.name,
             "checkpoint_path": checkpoint_path,
+            "artifact_dir": Path(artifact_dir),
             "seed": seed,
             "device": str(device),
             "frames": frames,
@@ -185,7 +234,7 @@ def run_rollout(
 
 
 def save_gif(result: dict[str, Any], output_path: Optional[Path] = None, fps: int = 4) -> Path:
-    gif_dir = ARTIFACT_DIR / "gifs"
+    gif_dir = Path(result.get("artifact_dir", ARTIFACT_DIR)) / "gifs"
     gif_dir.mkdir(parents=True, exist_ok=True)
     if output_path is None:
         stem = Path(result["checkpoint_name"]).stem.replace("=", "_")
@@ -226,36 +275,72 @@ def compare_checkpoints(
     seed: int = 10000,
     device: Optional[Any] = None,
     max_checkpoints: Optional[int] = None,
+    artifact_dir: Path = ARTIFACT_DIR,
+    seeds: Optional[list[int]] = None,
 ) -> list[dict[str, Any]]:
     checkpoints = list_checkpoints(model_dir)
     if max_checkpoints is not None:
         checkpoints = checkpoints[:max_checkpoints]
 
+    if seeds is None:
+        seeds = [seed]
+    else:
+        seeds = list(seeds)
+    if len(seeds) == 0:
+        raise ValueError("seeds must contain at least one value")
+
     rows: list[dict[str, Any]] = []
     for checkpoint in checkpoints:
-        rollout = run_rollout(checkpoint_path=checkpoint, seed=seed, device=device)
+        rewards: list[float] = []
+        step_counts: list[int] = []
+        for this_seed in seeds:
+            rollout = run_rollout(
+                checkpoint_path=checkpoint,
+                seed=this_seed,
+                device=device,
+                model_dir=model_dir,
+                artifact_dir=artifact_dir,
+            )
+            rewards.append(rollout["max_reward"])
+            step_counts.append(rollout["n_env_steps"])
+
+        reward_array = np.asarray(rewards, dtype=np.float32)
         rows.append(
             {
                 "checkpoint": checkpoint.name,
-                "max_reward": rollout["max_reward"],
-                "success": rollout["success"],
-                "n_env_steps": rollout["n_env_steps"],
+                "max_reward": float(reward_array.mean()),
+                "std_reward": float(reward_array.std()),
+                "success": bool(np.any(reward_array >= 0.999)),
+                "success_rate": float(np.mean(reward_array >= 0.999)),
+                "n_env_steps": int(np.mean(step_counts)),
+                "n_seeds": len(seeds),
+                "seeds": seeds,
+                "per_seed_rewards": rewards,
             }
         )
     return rows
 
 
-def plot_checkpoint_comparison(rows: list[dict[str, Any]], figsize: tuple[int, int] = (9, 4)):
+def plot_checkpoint_comparison(
+    rows: list[dict[str, Any]],
+    figsize: tuple[int, int] = (9, 4),
+    title: str = "V0 checkpoints on the same seed",
+):
     labels = [row["checkpoint"].replace(".ckpt", "") for row in rows]
     values = [row["max_reward"] for row in rows]
+    errors = [row.get("std_reward", 0.0) for row in rows]
     colors = ["tab:green" if row["success"] else "tab:blue" for row in rows]
+    n_seeds = rows[0].get("n_seeds") if rows else None
 
     fig, ax = plt.subplots(figsize=figsize)
-    ax.bar(range(len(rows)), values, color=colors)
+    ax.bar(range(len(rows)), values, color=colors, yerr=errors, capsize=5)
     ax.axhline(1.0, color="tab:red", linestyle="--", linewidth=1)
     ax.set_ylim(0.0, 1.05)
-    ax.set_ylabel("Max reward")
-    ax.set_title("V0 checkpoints on the same seed")
+    ax.set_ylabel("Mean max reward")
+    if n_seeds is not None:
+        ax.set_title(f"{title} ({n_seeds} seeds)")
+    else:
+        ax.set_title(title)
     ax.set_xticks(range(len(rows)))
     ax.set_xticklabels(labels, rotation=25, ha="right")
     fig.tight_layout()

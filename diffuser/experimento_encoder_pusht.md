@@ -163,24 +163,50 @@ Reutiliza checkpoints, sólo evaluación con perturbaciones visuales.
 
 ## 7. Cómo lanzar un entrenamiento
 
-Desde `~/tfm/diffusion_policy/` con el env activo:
+**Siempre con `run_encoder_exp.sh`. Nunca `python train.py` a mano.**
+
+Desde `~/tfm/diffusion_policy/` (el script activa el conda env por su cuenta):
 
 ```bash
-HYDRA_FULL_ERROR=1 python train.py \
-  --config-dir=diffusion_policy/config \
-  --config-name=pusht_v0_resnet18_scratch \
-  training.num_epochs=500 \
-  training.seed=42 \
-  hydra.run.dir=data/outputs/encoder_exp/v0_seed42 \
-  logging.mode=disabled
+./run_encoder_exp.sh v1 42            # run nuevo
+./run_encoder_exp.sh v1 42 --resume   # reanudar desde latest.ckpt
+./run_encoder_exp.sh --status         # PID, época, it/s, VRAM, RAM
+./run_encoder_exp.sh --stop           # parada limpia del grupo de procesos
+```
+
+El script hace, en este orden: candado `flock` de instancia única, preflight de
+VRAM/RAM/`run_dir`, fija todos los overrides de Hydra, lanza con `setsid nohup`
+(sobrevive al cierre del terminal) y calibra la velocidad antes de dejarlo horas
+corriendo. Copia versionada en `diffuser/scripts/run_encoder_exp.sh` del repo git.
+
+> **Por qué no se lanza a mano.** El 27/07/2026 se perdió el run `v1_seed42` por
+> lanzar el comando suelto dos veces sobre el mismo `hydra.run.dir` y, además,
+> sin los overrides de memoria que sí llevaba V0. Detalle completo en `CLAUDE.md`.
+
+Los overrides que el script fija siempre (son los del run V0 que completó 500 épocas):
+
+```
+training.num_epochs=500  training.seed=<seed>  training.resume=<bool>
+dataloader.num_workers=2  dataloader.persistent_workers=false
+val_dataloader.num_workers=0
+task.env_runner.n_envs=8
+logging.mode=disabled
+hydra.run.dir=data/outputs/encoder_exp/<variante>_seed<seed>
 ```
 
 Notas:
 - `logging.mode=disabled` evita el prompt de wandb (env no-TTY).
-- `resume: True` en config: si se interrumpe, relanzar el mismo comando
-  reanuda desde el último checkpoint.
+- `task.env_runner.n_envs=8` es **obligatorio**: con el valor por defecto (`null`)
+  el rollout abre 56 procesos pymunk a la vez y desborda la RAM de la VM. No altera
+  las métricas — el runner trocea en 7 chunks y agrega sobre las 56 condiciones
+  igualmente (`pusht_image_runner.py:145-232`).
+- `dataloader.num_workers=2` / `val_dataloader.num_workers=0`: el replay buffer
+  ocupa 2,84 GB en RAM (el `img` del zarr es float32), así que cada worker cuenta.
+- `resume: True` en config: si se interrumpe, `--resume` reanuda desde el último
+  checkpoint. Si el `logs.json.txt` quedó corrupto, borrar el run entero en vez de
+  reanudar (`JsonLogger` parsea la última línea al abrir).
 - Los checkpoints van a `<run_dir>/checkpoints/` (top-3 por
-  `test_mean_score` + `latest.ckpt`).
+  `test_mean_score` + `latest.ckpt`, ~2,1 GB cada uno; `latest.ckpt` ~4,3 GB).
 
 ## 8. Cómo recuperar resultados
 
