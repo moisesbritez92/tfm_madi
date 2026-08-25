@@ -30,7 +30,11 @@ cd ~/tfm/diffusion_policy
 ```
 
 Python 3.9.15 · PyTorch 1.12.1+cu116 · torchvision 0.13.1 · diffusers 0.11.1 · timm 0.9.16
-· huggingface_hub 0.25.2 (pin por `cached_download`) · robomimic 0.2.0 (`--no-deps`).
+· huggingface_hub 0.25.2 (pin por `cached_download`) · robomimic 0.2.0 (`--no-deps`)
+· hydra-core 1.2.0 · zarr 2.12.0.
+
+Ojo: el `requirements.txt` de la raíz **no** describe este entorno, sino el de inferencia
+en Windows (torch 2.6.0+cu124, hydra-core 1.3.2, zarr 2.18.7). No copiar versiones de ahí.
 
 `run_encoder_exp.sh` ya hace el `source`/`activate`/`export` por su cuenta.
 

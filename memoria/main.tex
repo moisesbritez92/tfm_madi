@@ -1,0 +1,82 @@
+%% ---------------------------------------------------------------------------
+%% Memoria de Proyecto Fin de Master - Tecnun / MADI
+%% Compilar:  ./compilar.sh        (o make)
+%% Citas IEEE: \cite{clave} -> [1]  |  bibliografia: bib/referencias.bib
+%% ---------------------------------------------------------------------------
+\documentclass[11pt,a4paper,twoside,openright]{report}
+
+\usepackage{tecnun-tfm}
+\usepackage{multibib}
+\newcites{con}{Bibliograf\'ia}   % segunda lista: obras consultadas no citadas
+
+% --- Datos de la memoria -----------------------------------------------------
+\tfmtipo{Proyecto Fin de M\'aster}
+\tfmmaster{AN\'ALISIS DE DATOS EN INGENIER\'IA}
+\tfmtitulo{Influencia del codificador visual y su estrategia de entrenamiento
+           en Diffusion Policy para manipulaci\'on rob\'otica: estudio en Push-T}
+\tfmtitulocorto{Codificadores visuales en Diffusion Policy}
+\tfmautor{Moises Britez}
+\tfmdirector{Diego Borro}                    % dejar vacio si no procede
+\logotecnun{img/logo.png}
+\tfmlugar{Donostia-San Sebasti\'an}
+\tfmfecha{septiembre de 2026}
+
+\begin{document}
+
+% ============================ PRELIMINARES ==================================
+% Orden fijado por normas_redaccion.md: portada, primera hoja, agradecimientos,
+% indice de contenidos, indice de figuras, indice de tablas, resumen, abstract.
+\portadatfm
+
+\pagenumbering{roman}
+\include{secciones/primera-hoja}
+
+\include{secciones/agradecimientos}
+
+\tableofcontents
+\cleardoublepage
+\listoffigures
+\cleardoublepage
+\listoftables
+\cleardoublepage
+
+\include{secciones/resumen}
+\include{secciones/abstract}
+
+% ============================== CUERPO ======================================
+\cleardoublepage
+\pagenumbering{arabic}\setcounter{page}{1}
+\tfmpiecompleto
+
+\include{secciones/00-introduccion}
+\include{secciones/01-estado-del-arte}
+\include{secciones/02-metodologia}
+\include{secciones/03-resultados}
+\include{secciones/04-conclusiones}
+\include{secciones/05-presupuesto}
+
+% ============================ REFERENCIAS ===================================
+% Lista IEEE numerada por orden de aparicion: solo obras citadas en el texto.
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Referencias}
+\renewcommand{\bibname}{Referencias}   % multibib redefine \bibname: reponerlo aqui
+\bibliographystyle{bst/IEEEtran}
+\bibliography{bib/referencias}
+
+% ============================ BIBLIOGRAFIA ==================================
+% Obras consultadas que no se citan en el texto. Se listan con \nocitecon.
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliograf\'ia}
+\sinetiquetasbib
+\nocitecon{*}
+\bibliographystylecon{bst/IEEEtranS}   % variante ordenada alfabeticamente
+\bibliographycon{bib/bibliografia}
+
+% =============================== ANEXOS =====================================
+\cleardoublepage
+\appendix
+\include{secciones/anexos}
+
+\end{document}

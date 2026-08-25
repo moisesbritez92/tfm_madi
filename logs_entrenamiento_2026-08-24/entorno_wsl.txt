@@ -1,0 +1,61 @@
+==============================================================================
+CARACTERISTICAS DEL ENTORNO WSL - Maquina de entrenamiento (TFM diffusion_policy)
+Generado: 2026-08-24 18:35 (hora local)
+==============================================================================
+
+PLATAFORMA VIRTUAL
+------------------
+WSL version            : 2.5.9.0
+Kernel                 : 6.6.87.2-microsoft-standard-WSL2 (kernel WSL: 6.6.87.2-1)
+WSLg version           : 1.0.66
+Direct3D               : 1.611.1-81528511
+Distribucion           : Ubuntu 24.04.2 LTS
+
+HARDWARE ASIGNADO A WSL2 (.wslconfig)
+-------------------------------------
+Procesadores           : 16 (limite configurado)
+Memoria                : 18 GB (subido el 10/08/2026 para relanzamiento de V2:
+                         batch 64 + backbone trainable; antes 13 GB desde 04/08/2026)
+Swap                   : 16 GB
+vmIdleTimeout          : -1 (evita apagado automatico de la VM; anadido 27/07/2026
+                         tras perder un run de v1 por apagado a las 18:04)
+localhostForwarding    : true
+
+CPU / RAM FISICA
+----------------
+CPU                    : 12th Gen Intel(R) Core(TM) i9-12900H
+Nucleos/logicos vistos : 16
+RAM fisica del host    : ~23.7 GB (se reservan ~6 GB para Windows)
+RAM vista dentro WSL   : 17 GiB
+
+GPU / CUDA
+----------
+GPU                    : NVIDIA GeForce RTX 3070 Ti Laptop GPU
+VRAM                   : 8192 MiB
+Driver Windows         : 596.21
+Compute capability     : (8, 6) - Ampere
+CUDA (PyTorch build)   : 11.6
+nvcc toolkit del sistema: no instalado en PATH del sistema
+
+SOFTWARE DE ENTRENAMIENTO
+-------------------------
+Python                 : 3.9.15 (env conda "robodiff": /home/moise/mambaforge/envs/robodiff)
+PyTorch                : 1.12.1+cu116
+Framework              : diffusion_policy (Cheng Chi, fork TFM)
+Config system          : Hydra + wandb en modo disabled (logging local JSON)
+
+ALMACENAMIENTO
+--------------
+Disco raiz WSL (ext4/vhdx)      : 1007 GB virtuales
+Unidades Windows montadas       : C:\ en /mnt/c (drvfs 9p)
+Destino de copia de logs        : E:\ ("Tecnum", extraible, ~61.5 GB,
+                                  montado en /mnt/e para esta copia)
+
+NOTAS OPERATIVAS
+----------------
+- Entrenamientos lanzados con train.py (Hydra), run.dir bajo
+  data/outputs/encoder_exp/, seed 42.
+- dataloader.num_workers=2, persistent_workers=false, n_envs=8 en rollouts.
+- V2 y V4 usan checkpoint_every=10; V2 se reanudo (resume=true) el 21/08/2026.
+- Al momento de generar este archivo sigue activo el run v4_seed42
+  (pusht_v4_clip_vitb16_frozen, iniciado hoy 13:38).

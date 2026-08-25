@@ -1,0 +1,97 @@
+\chapter{Introducci\'on y objetivos}
+\label{cap:introduccion}
+
+Este cap\'itulo sit\'ua el trabajo en su \'ambito, delimita el problema que aborda y
+enuncia los objetivos que gu\'ian la investigaci\'on. Adem\'as, precisa el alcance del
+estudio y describe la organizaci\'on de la memoria.
+
+\section{Contexto y motivaci\'on}
+\label{sec:contexto}
+
+La manipulaci\'on rob\'otica requiere generar acciones continuas a partir de
+observaciones sensoriales de alta dimensi\'on. El aprendizaje por imitaci\'on aborda esa
+dificultad ajustando una pol\'itica sobre demostraciones humanas, sin necesidad de
+dise\~nar una funci\'on de recompensa \cite{ross2011dagger}.
+
+Sin embargo, las demostraciones humanas son multimodales. Ante una misma observaci\'on,
+un operario puede ejecutar acciones distintas y todas ellas v\'alidas. Los m\'etodos de
+clonaci\'on de comportamiento basados en regresi\'on promedian esas alternativas y
+producen trayectorias incoherentes \cite{florence2021ibc}.
+
+Para evitar ese promediado, Chi \textit{et al.} \cite{chi2025diffusion} proponen
+\textit{Diffusion Policy}, que representa la acci\'on como un proceso de difusi\'on
+condicionado por la observaci\'on. El m\'etodo hereda as\'i la capacidad de los modelos
+generativos de difusi\'on para representar distribuciones multimodales
+\cite{ho2020ddpm}.
+
+En su variante visuomotora, \textit{Diffusion Policy} se compone de dos bloques. Un
+codificador visual transforma las im\'agenes en un vector de caracter\'isticas, y una red
+generativa produce la secuencia de acciones condicionada por dicho vector. Por tanto, la
+representaci\'on visual determina qu\'e informaci\'on alcanza al bloque generativo.
+
+\section{Problema abordado}
+\label{sec:problema}
+
+La investigaci\'on sobre \textit{Diffusion Policy} ha modificado principalmente el
+bloque generativo y la modalidad de entrada. Algunos trabajos sustituyen las im\'agenes
+por nubes de puntos \cite{ze2024dp3}, mientras que otros reducen el coste de inferencia
+\cite{prasad2024consistency}.
+
+El trabajo original incluye una ablaci\'on de ResNet y CLIP en la tarea \textit{Square}
+\cite{chi2025diffusion}. Adem\'as, un estudio posterior compara ResNet-18 y DINOv3 en
+cuatro tareas, incluida Push-T \cite{egbe2025dinov3dp}. Sin embargo, ninguno contrasta
+conjuntamente ResNet-18, DINOv2 y CLIP bajo el mismo protocolo de Push-T.
+
+Por tanto, persisten dos cuestiones para esa configuraci\'on experimental. La primera
+afecta a la arquitectura, puesto que no se ha establecido qu\'e codificador visual
+conviene con un conjunto reducido de demostraciones. La segunda afecta a la estrategia
+de entrenamiento: desde cero, congelaci\'on o ajuste fino. Responder a ambas exige aislar
+el codificador visual y mantener constante el resto del sistema.
+
+\section{Objetivos}
+\label{sec:objetivos}
+
+El objetivo general consiste en evaluar la influencia del codificador visual y de su
+estrategia de entrenamiento sobre el rendimiento de una \textit{Diffusion Policy}
+aplicada a la tarea Push-T.
+
+Este prop\'osito se concreta en los objetivos espec\'ificos siguientes:
+
+\begin{enumerate}[label=\arabic*.,leftmargin=*]
+  \item Implementar cinco variantes del codificador visual dentro de la misma
+        \textit{Diffusion Policy}, manteniendo constantes la arquitectura de control y
+        la configuraci\'on experimental.
+  \item Comparar el rendimiento de las variantes mediante la puntuaci\'on media obtenida
+        en los entornos de evaluaci\'on de Push-T.
+  \item Analizar el coste computacional de cada variante a partir de sus par\'ametros
+        entrenables, sus tiempos de ejecuci\'on y su consumo de memoria gr\'afica.
+\end{enumerate}
+
+\section{Alcance del trabajo}
+\label{sec:alcance}
+
+El estudio se circunscribe a la tarea Push-T en simulaci\'on, que consiste en desplazar
+una pieza con forma de T hasta una posici\'on objetivo mediante un efector circular
+\cite{chi2025diffusion}. Todas las variantes comparten la misma pol\'itica generativa,
+los mismos hiperpar\'ametros y el mismo protocolo de evaluaci\'on. La \'unica variable
+manipulada es el codificador visual junto con su estrategia de entrenamiento.
+
+Quedan fuera del alcance tres aspectos. En primer lugar, la validaci\'on sobre un robot
+f\'isico, puesto que el trabajo opera \'unicamente en simulaci\'on. En segundo lugar, el
+an\'alisis de robustez frente a perturbaciones visuales. En tercer lugar, el contraste
+estad\'istico entre semillas de entrenamiento, limitado por el coste computacional
+disponible.
+
+\section{Estructura de la memoria}
+\label{sec:estructura}
+
+La memoria se organiza en seis cap\'itulos. El \cref{cap:estado-del-arte} revisa los
+fundamentos de los modelos de difusi\'on, su aplicaci\'on al control visuomotor y las
+familias de codificadores visuales consideradas. El \cref{cap:metodologia} describe el
+dise\~no experimental, el conjunto de datos, las variantes evaluadas y las m\'etricas.
+
+A continuaci\'on, el \cref{cap:resultados} presenta las curvas de entrenamiento, la
+comparativa de rendimiento y el coste computacional de cada variante. El
+\cref{cap:conclusiones} interpreta esos resultados, se\~nala las limitaciones del estudio
+y propone l\'ineas de continuaci\'on. Por \'ultimo, el \cref{cap:presupuesto} detalla los
+costes del proyecto.

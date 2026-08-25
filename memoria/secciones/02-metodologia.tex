@@ -1,0 +1,533 @@
+\chapter{Metodolog\'ia}
+\label{cap:metodologia}
+
+Este cap\'itulo describe el dise\~no experimental empleado para responder a los objetivos
+del \cref{cap:introduccion}. En primer lugar, expone el planteamiento comparativo y las
+variables implicadas. A continuaci\'on, detalla la tarea, el conjunto de datos y la
+arquitectura de la pol\'itica. Por \'ultimo, define las cinco variantes evaluadas, los
+protocolos de entrenamiento y evaluaci\'on, las m\'etricas, el entorno de ejecuci\'on y el
+coste temporal de los experimentos.
+
+\section{Planteamiento experimental}
+\label{sec:planteamiento}
+
+El estudio adopta un dise\~no comparativo controlado con una \'unica variable manipulada.
+Esa variable es el codificador visual de la pol\'itica, entendido como la combinaci\'on de
+una arquitectura de red y una estrategia de entrenamiento de sus pesos. El resto del
+sistema permanece id\'entico en todas las condiciones.
+
+De este planteamiento se derivan tres hip\'otesis de trabajo. La primera sostiene que un
+codificador preentrenado sobre un corpus amplio de im\'agenes aporta representaciones
+m\'as \'utiles que uno entrenado desde cero, puesto que el n\'umero de demostraciones
+disponibles es reducido. La segunda sostiene que el ajuste fino del codificador
+preentrenado mejora al codificador congelado, ya que adapta la representaci\'on a la
+distribuci\'on visual sint\'etica de la tarea. La tercera sostiene que los codificadores
+basados en transformador de visi\'on (\textit{Vision Transformer}, ViT) alcanzan un
+rendimiento comparable al de las redes convolucionales, pero con un coste de inferencia
+superior.
+
+Para que la comparaci\'on resulte interpretable, se mantienen constantes seis factores: la
+red generativa y sus hiperpar\'ametros, el conjunto de datos y su partici\'on, la semilla de
+entrenamiento, el presupuesto m\'aximo de \'epocas y su criterio de parada, el protocolo de
+evaluaci\'on y la dimensi\'on del vector de condicionamiento a la salida del codificador.
+Esta \'ultima restricci\'on resulta esencial: todas las variantes entregan un vector de
+\num{512} componentes, de modo que la red generativa recibe siempre una entrada de la misma
+dimensi\'on.
+
+Sin embargo, el dise\~no presenta una limitaci\'on asumida de forma expl\'icita. Cada
+variante se entrena con una \'unica semilla, por lo que las diferencias observadas no
+admiten contraste estad\'istico. Esta decisi\'on responde al coste computacional, ya que un
+entrenamiento ocupa entre \num{17} y \num{96} horas de la \'unica unidad de procesamiento
+gr\'afico (\textit{Graphics Processing Unit}, GPU) disponible, seg\'un se detalla en el
+\cref{sec:coste}.
+
+\section{Tarea y conjunto de datos}
+\label{sec:datos}
+
+La tarea de evaluaci\'on es Push-T, propuesta junto con \textit{Diffusion Policy}
+\cite{chi2025diffusion}. Un efector circular debe empujar una pieza r\'igida con forma de T
+sobre un plano hasta hacerla coincidir con una silueta objetivo. La tarea exige contacto
+intermitente y admite varias secuencias de empuje v\'alidas, de ah\'i su car\'acter
+multimodal.
+
+La pol\'itica observa dos modalidades: una imagen en color de \num{96}$\times$\num{96}
+p\'ixeles renderizada desde una vista cenital y la posici\'on bidimensional del efector. La
+acci\'on es la posici\'on objetivo del efector, es decir, se emplea control en posici\'on y
+no en velocidad. El entorno resuelve la din\'amica de contacto mediante un motor de
+cuerpos r\'igidos bidimensional.
+
+El conjunto de datos es el publicado por los autores del m\'etodo, en formato \texttt{zarr}
+y con un tama\~no aproximado de \num{30} megabytes. Contiene \num{206} demostraciones
+teleoperadas por un operador humano, que suman \num{25650} transiciones. Cada transici\'on
+almacena la imagen, el estado del efector, los puntos caracter\'isticos de la pieza, la
+acci\'on ejecutada y el n\'umero de contactos.
+
+La partici\'on de los datos reproduce la de la implementaci\'on de referencia. Un dos por
+ciento de los episodios se reserva para validaci\'on y el entrenamiento se limita a
+\num{90} episodios; los restantes se descartan. Mantener este criterio permite comparar los
+resultados con los publicados y, adem\'as, sit\'ua el experimento en el r\'egimen de pocas
+demostraciones que motiva las hip\'otesis del \cref{sec:planteamiento}.
+
+Conviene precisar que la evaluaci\'on no consume datos del fichero anterior. El rendimiento
+se mide ejecutando la pol\'itica en el simulador sobre condiciones iniciales generadas de
+forma independiente, seg\'un se detalla en el \cref{sec:evaluacion}.
+
+\section{Arquitectura de la pol\'itica}
+\label{sec:arquitectura}
+
+\textit{Diffusion Policy} modela la distribuci\'on condicional
+$p(\mathbf{A}_t \mid \mathbf{O}_t)$, donde $\mathbf{O}_t$ agrupa las observaciones de los
+\'ultimos $T_o$ instantes y $\mathbf{A}_t$ es una secuencia de $T_p$ acciones futuras
+\cite{chi2025diffusion}. El muestreo de esa distribuci\'on se realiza mediante un modelo
+probabil\'istico de difusi\'on con eliminaci\'on de ruido (\textit{Denoising Diffusion
+Probabilistic Model}, DDPM) \cite{ho2020ddpm}.
+
+El entrenamiento a\~nade ruido gaussiano $\epsilon^k$ a una secuencia de acciones real
+$\mathbf{A}^0_t$ y ajusta una red $\epsilon_\theta$ para predecirlo. La funci\'on de
+p\'erdida es el error cuadr\'atico medio sobre el ruido, recogido en la \cref{eq:perdida}.
+
+\begin{equation}
+  \mathcal{L} = \mathbb{E}\left[\lVert \epsilon^k -
+    \epsilon_\theta\!\left(\mathbf{O}_t,\, \mathbf{A}^0_t + \epsilon^k,\, k\right)
+    \rVert^2\right]
+  \label{eq:perdida}
+\end{equation}
+
+En la \cref{eq:perdida}, el \'indice $k$ identifica el paso de difusi\'on y determina la
+magnitud del ruido inyectado. La observaci\'on $\mathbf{O}_t$ act\'ua como
+condicionamiento, no como variable generada, lo que reduce el coste de inferencia. Por
+tanto, la calidad de la representaci\'on visual condiciona directamente lo que la red
+generativa puede aprender.
+
+Durante la inferencia, la pol\'itica parte de una secuencia de ruido puro y aplica $K$
+pasos de eliminaci\'on de ruido seg\'un la \cref{eq:muestreo}.
+
+\begin{equation}
+  \mathbf{A}^{k-1}_t = \alpha\left(\mathbf{A}^{k}_t -
+    \gamma\,\epsilon_\theta\!\left(\mathbf{O}_t,\, \mathbf{A}^{k}_t,\, k\right) +
+    \mathcal{N}\!\left(0, \sigma^2 I\right)\right)
+  \label{eq:muestreo}
+\end{equation}
+
+Los coeficientes $\alpha$, $\gamma$ y $\sigma$ de la \cref{eq:muestreo} proceden del
+planificador de ruido. El ruido fresco que se a\~nade en cada paso preserva el car\'acter
+estoc\'astico del muestreo y, con ello, la capacidad de representar varios modos de
+acci\'on. En este trabajo se emplea el planificador DDPM con \num{100} pasos tanto en
+entrenamiento como en inferencia, sin acelerarlo mediante muestreadores impl\'icitos.
+
+Las acciones generadas se aplican bajo un esquema de horizonte deslizante. La pol\'itica
+recibe $T_o = 2$ observaciones, predice $T_p = 16$ acciones y ejecuta \'unicamente las
+$T_a = 8$ primeras antes de replanificar \cite{chi2025diffusion}. Esta configuraci\'on
+equilibra la consistencia temporal de la trayectoria con la capacidad de reaccionar ante
+cambios en la escena.
+
+La red $\epsilon_\theta$ es una red convolucional unidimensional con arquitectura en U y
+dimensiones de canal \num{512}, \num{1024} y \num{2048} en sus tres niveles de
+submuestreo. El vector de observaci\'on se inyecta como condicionamiento global en cada
+capa mediante modulaci\'on lineal por caracter\'isticas (\textit{Feature-wise Linear
+Modulation}, FiLM) \cite{perez2018film}. Este bloque concentra unos \num{277} millones de
+par\'ametros y, por tanto, domina el coste de entrenamiento.
+
+Delante de la red generativa opera el codificador de observaciones. Dicho m\'odulo aplica
+las transformaciones de imagen propias de cada arquitectura, extrae un vector de
+caracter\'isticas visuales y lo concatena con el estado del efector. La implementaci\'on de
+referencia utiliza una ResNet-18 \cite{he2016resnet} entrenada desde cero con dos
+modificaciones: sustituye el promediado global por un \textit{spatial softmax}, que
+conserva la localizaci\'on espacial de las activaciones \cite{levine2016visuomotor}, y
+reemplaza la normalizaci\'on por lotes por normalizaci\'on por grupos
+\cite{wu2018groupnorm}, ya que la primera interfiere con la media m\'ovil exponencial de
+los pesos.
+
+\section{Variantes del codificador visual}
+\label{sec:variantes}
+
+Se definen cinco variantes, identificadas de V0 a V4, que difieren \'unicamente en el
+codificador visual y en el tratamiento de sus pesos. La \cref{tab:variantes} resume su
+configuraci\'on. Las tres primeras comparten arquitectura convolucional y aislan el efecto
+de la estrategia de entrenamiento; las dos \'ultimas introducen transformadores de
+visi\'on preentrenados con objetivos distintos.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Configuraci\'on de las cinco variantes del codificador visual evaluadas.}
+  \label{tab:variantes}
+  \small
+  \begin{tabular}{lllcc c}
+    \toprule
+    Variante & Codificador visual & Pesos iniciales & Estrategia &
+      \multicolumn{2}{c}{Par\'ametros (millones)} \\
+    \cmidrule(lr){5-6}
+     &  &  &  & Totales & Entrenables \\
+    \midrule
+    V0 & ResNet-18       & Aleatorios  & Desde cero  & \num{288} & \num{288} \\
+    V1 & ResNet-18       & ImageNet-1k & Congelado   & \num{288} & \num{277} \\
+    V2 & ResNet-18       & ImageNet-1k & Ajuste fino & \num{288} & \num{288} \\
+    V3 & DINOv2 ViT-S/14 & LVD-142M    & Congelado   & \num{299} & \num{277} \\
+    V4 & CLIP ViT-B/16   & WIT-400M    & Congelado   & \num{363} & \num{277} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+\divisionmenor{V0: l\'inea base entrenada desde cero}
+
+La variante V0 reproduce la configuraci\'on original de \textit{Diffusion Policy}
+\cite{chi2025diffusion}. Emplea una ResNet-18 con pesos aleatorios, opera sobre la imagen
+a su resoluci\'on nativa de \num{96} p\'ixeles y aplica recorte aleatorio como \'unico
+aumento de datos. El codificador se entrena de extremo a extremo junto con la red
+generativa y constituye la referencia frente a la que se comparan las dem\'as variantes.
+
+\divisionmenor{V1 y V2: transferencia desde ImageNet}
+
+Las variantes V1 y V2 parten de una ResNet-18 preentrenada sobre ImageNet-1k
+\cite{deng2009imagenet} y difieren en el tratamiento de sus pesos. En V1 el codificador
+permanece congelado, de modo que act\'ua como extractor fijo de caracter\'isticas; en V2
+sus pesos se actualizan junto con el resto de la pol\'itica. Ambas redimensionan la imagen
+a \num{224} p\'ixeles y aplican la normalizaci\'on est\'andar de ImageNet, condiciones
+bajo las que se obtuvieron los pesos originales.
+
+El contraste entre V1 y V2 aisla el efecto de la estrategia de entrenamiento, puesto que
+ambas comparten arquitectura, pesos iniciales y cadena de preprocesado. El contraste entre
+V0 y las dos variantes preentrenadas no aisla, en cambio, el efecto de la
+inicializaci\'on, ya que el preprocesado viaja con los pesos. V0 opera a \num{96}
+p\'ixeles, aplica recorte aleatorio y agrega las activaciones mediante \textit{spatial
+softmax}, mientras que V1 y V2 operan a \num{224} p\'ixeles, prescinden del recorte y
+entregan un descriptor global. Cuatro factores var\'ian as\'i de forma conjunta, de modo
+que esa comparaci\'on debe leerse sobre el bloque formado por el codificador y su
+preprocesado. El entrenamiento que los separar\'ia se describe en el
+\cref{sec:trabajo-futuro}.
+
+\divisionmenor{V3 y V4: transformadores de visi\'on preentrenados}
+
+Las variantes V3 y V4 sustituyen la red convolucional por un transformador de visi\'on
+\cite{dosovitskiy2021vit}. V3 utiliza DINOv2 ViT-S/14, preentrenado de forma
+autosupervisada sobre el corpus LVD-142M \cite{oquab2024dinov2}. V4 utiliza CLIP ViT-B/16,
+preentrenado con supervisi\'on de lenguaje natural sobre pares de imagen y texto
+\cite{radford2021clip}. En ambos casos los pesos permanecen congelados, ya que el ajuste
+fino de un transformador no cabe en la memoria gr\'afica disponible.
+
+Dado que la dimensi\'on de salida de estos modelos no coincide con la de la ResNet-18, se
+a\~nade una capa lineal de proyecci\'on que reduce el descriptor a \num{512} componentes.
+Dicha capa s\'i se entrena, puesto que forma parte de la pol\'itica y no del modelo
+preentrenado. Los codificadores preentrenados se cargan mediante la biblioteca
+\texttt{timm} \cite{wightman2019timm}, salvo la ResNet-18 de V2, que procede de
+\texttt{torchvision}.
+
+\section{Protocolo de entrenamiento}
+\label{sec:protocolo}
+
+Todas las variantes comparten los hiperpar\'ametros recogidos en la
+\cref{tab:hiperparametros}, heredados de la configuraci\'on oficial del m\'etodo. El
+presupuesto m\'aximo se fij\'o en \num{500} \'epocas, frente a las \num{3000} del
+art\'iculo original, por limitaciones de c\'omputo. Cada entrenamiento se detiene antes de
+agotar ese presupuesto cuando deja de mejorar, criterio que se precisa m\'as adelante en
+este mismo apartado. En consecuencia, las variantes completan entre \num{200} y \num{500}
+\'epocas.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Hiperpar\'ametros comunes a las cinco variantes.}
+  \label{tab:hiperparametros}
+  \small
+  \begin{tabular}{ll}
+    \toprule
+    Par\'ametro & Valor \\
+    \midrule
+    Horizonte de predicci\'on $T_p$        & \num{16} pasos \\
+    Pasos de observaci\'on $T_o$           & \num{2} \\
+    Pasos de acci\'on ejecutados $T_a$     & \num{8} \\
+    Pasos de difusi\'on (entrenamiento e inferencia) & \num{100} \\
+    Planificador de ruido                  & DDPM, varianza fija, predicci\'on de ruido \\
+    Optimizador                            & AdamW \cite{loshchilov2019adamw} \\
+    Tasa de aprendizaje                    & \num{1e-4}, decaimiento coseno \\
+    Pasos de calentamiento                 & \num{500} \\
+    Media m\'ovil exponencial de los pesos & Activada \\
+    Tama\~no de lote                       & \num{64} (\num{32} en V4) \\
+    Presupuesto m\'aximo de \'epocas       & \num{500}, con parada anticipada \\
+    Semilla                                & \num{42} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+El tama\~no de lote de V4 se redujo a la mitad porque CLIP ViT-B/16 no cabe en los ocho
+gigabytes de memoria gr\'afica con lotes de \num{64} muestras. Se trata de la \'unica
+desviaci\'on respecto a la configuraci\'on com\'un y afecta al n\'umero de actualizaciones
+por \'epoca, extremo que se retoma al interpretar los resultados.
+
+Cada entrenamiento se lanza mediante un script de control que fija los par\'ametros de
+ejecuci\'on, verifica la memoria disponible e impide que se ejecuten dos procesos de forma
+simult\'anea. Esta salvaguarda responde a un incidente previo, en el que dos procesos
+concurrentes sobre el mismo directorio de salida agotaron la memoria del sistema y
+corrompieron el registro de m\'etricas. El detalle de la configuraci\'on efectiva se
+recoge en el \cref{anx:primero}.
+
+Durante el entrenamiento se guarda un punto de control cada \num{50} \'epocas y se
+conservan los tres mejores seg\'un la puntuaci\'on de evaluaci\'on. El modelo evaluado en
+el \cref{cap:resultados} es el de mayor puntuaci\'on, criterio coherente con el empleado
+en la literatura de la tarea \cite{mandlekar2021robomimic}.
+
+El criterio de parada anticipada se apoya en esos mismos puntos de control. Un
+entrenamiento se interrumpe cuando la puntuaci\'on de evaluaci\'on no supera su m\'aximo en
+dos evaluaciones consecutivas, esto es, tras \num{100} \'epocas sin mejora, mientras la
+p\'erdida de entrenamiento sigue descendiendo. Esa combinaci\'on apunta a sobreajuste, de
+modo que prolongar la ejecuci\'on no aportar\'ia un punto de control mejor. La parada no se
+aplica antes de la \'epoca \num{200}, para no interrumpir una variante de convergencia
+lenta. El criterio no altera el modelo seleccionado, puesto que este se elige entre los
+puntos de control ya guardados.
+
+Este criterio no precedi\'o al experimento, sino que se adopt\'o durante su ejecuci\'on, y
+la memoria lo describe as\'i por exactitud. Las dos primeras variantes lanzadas, V0 y V1,
+agotaron el presupuesto de \num{500} \'epocas porque entonces no exist\'ia regla alguna de
+parada. La formulaci\'on anterior se fij\'o al observar sus curvas y el coste de las
+\'epocas improductivas que recoge el \cref{sec:coste}, y solo se aplic\'o a V2, detenida
+en la \'epoca \num{266}. La decisi\'on se tom\'o adem\'as por inspecci\'on visual, no de
+forma autom\'atica.
+
+Esa asimetr\'ia afecta a la comparabilidad del coste, no a la del rendimiento, puesto que
+el mejor punto de control de cada variante procede de una regi\'on de la curva ya
+explorada. El \cref{sec:coste} cuantifica el coste que habr\'ian tenido las tres
+ejecuciones bajo el criterio aplicado de forma uniforme.
+
+\section{Protocolo de evaluaci\'on}
+\label{sec:evaluacion}
+
+La evaluaci\'on se ejecuta cada \num{50} \'epocas sobre \num{56} condiciones iniciales del
+simulador. Seis de ellas proceden de la distribuci\'on de entrenamiento y las \num{50}
+restantes se generan con semillas de entorno reservadas, no empleadas durante el ajuste.
+Las primeras permiten estimar el ajuste a los datos vistos; las segundas constituyen la
+medida de rendimiento que se reporta.
+
+Cada condici\'on inicial se resuelve en un episodio completo de bucle cerrado. La
+pol\'itica recibe las observaciones, genera una secuencia de acciones, ejecuta las
+primeras $T_a$ y repite el ciclo hasta alcanzar el l\'imite de pasos del episodio o
+completar la tarea. Los pesos utilizados son los de la media m\'ovil exponencial, no los
+del modelo instant\'aneo, tal como prescribe la implementaci\'on de referencia.
+
+Las condiciones se agrupan en tandas de ocho procesos para no agotar la memoria del
+sistema. Esta agrupaci\'on modifica el tiempo de ejecuci\'on de la evaluaci\'on, pero no las
+m\'etricas resultantes, puesto que la agregaci\'on recorre las \num{56} condiciones con
+independencia del n\'umero de procesos simult\'aneos.
+
+\section{M\'etricas}
+\label{sec:metricas}
+
+La m\'etrica principal es la puntuaci\'on de cobertura de la tarea Push-T
+\cite{chi2025diffusion}. Para un episodio $j$, se calcula en cada instante $t$ la
+cobertura $c_{j,t}$, definida como la fracci\'on del \'area objetivo cubierta por la
+pieza. La puntuaci\'on del episodio se obtiene seg\'un la \cref{eq:score}.
+
+\begin{equation}
+  s_j = \max_{1 \le t \le T} \min\!\left(\frac{c_{j,t}}{\tau},\, 1\right)
+  \label{eq:score}
+\end{equation}
+
+En la \cref{eq:score}, $T$ es la duraci\'on m\'axima del episodio y $\tau$ el umbral de
+cobertura que define el \'exito, fijado en \num{0.95} por la implementaci\'on de
+referencia. La puntuaci\'on resulta as\'i continua y acotada en el intervalo unidad: vale
+uno cuando la pieza alcanza el umbral en alg\'un instante y crece de forma proporcional a
+la cobertura en caso contrario. Se toma el m\'aximo a lo largo del episodio, y no el valor
+final, porque la pieza puede desplazarse tras alcanzar la posici\'on objetivo.
+
+La m\'etrica que se reporta es la media de $s_j$ sobre los \num{50} episodios evaluados,
+denominada puntuaci\'on media de evaluaci\'on. Junto a ella se reportan la desviaci\'on
+t\'ipica y el error est\'andar de esos \num{50} valores, magnitudes que describen la
+dispersi\'on de la propia m\'etrica. Se registran adem\'as cuatro cantidades auxiliares:
+la p\'erdida de entrenamiento, la p\'erdida de validaci\'on, el error cuadr\'atico medio
+de la acci\'on predicha y la puntuaci\'on media sobre las condiciones de entrenamiento.
+Las dos primeras describen el ajuste, mientras que la comparaci\'on entre las dos
+puntuaciones permite detectar sobreajuste.
+
+El nombre de la m\'etrica principal requiere una precisi\'on. Las \num{50} condiciones se
+generan con semillas reservadas y no intervienen en el ajuste de los pesos, pero se
+eval\'uan cada \num{50} \'epocas y determinan qu\'e punto de control se conserva. Cumplen,
+por tanto, la funci\'on de un conjunto de selecci\'on y no la de una evaluaci\'on final
+independiente. El t\'ermino \textit{prueba} se reserva en esta memoria para una medida
+sobre condiciones ajenas a la selecci\'on, que este trabajo no realiza; el sesgo que se
+deriva de ello se analiza en el \cref{sec:limitaciones}.
+
+La dispersi\'on entre episodios permite acompa\~nar cada diferencia observada de un
+intervalo de confianza y contrastarla mediante la prueba de los rangos con signo de
+Wilcoxon, aplicada sobre los pares de episodios comunes a dos variantes. Ambas medidas
+caracterizan la variabilidad debida a las condiciones iniciales del simulador. No
+sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
+repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
+
+El coste computacional se caracteriza mediante cuatro indicadores. El primero es el
+n\'umero de par\'ametros totales y entrenables de cada variante, recogido en la
+\cref{tab:variantes}. El segundo es el tiempo por paso de optimizaci\'on, medido tras la
+fase de calentamiento. El tercero es la latencia de inferencia para un lote de tama\~no
+fijo. El cuarto es el pico de memoria gr\'afica reservada durante el entrenamiento.
+
+\section{Entorno de ejecuci\'on y reproducibilidad}
+\label{sec:entorno}
+
+Todos los experimentos se ejecutan sobre un \'unico equipo port\'atil, cuyas
+caracter\'isticas se recogen en la \cref{tab:entorno}. El c\'omputo no se reparte entre
+varias m\'aquinas ni se recurre a servicios en la nube, de modo que las medidas de coste
+del \cref{sec:coste} son directamente comparables entre variantes.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Plataforma de ejecuci\'on de los experimentos.}
+  \label{tab:entorno}
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    Bloque & Componente & Caracter\'isticas \\
+    \midrule
+    \multirow{3}{*}{C\'omputo}
+      & Procesador       & Intel Core i9-12900H, \num{16} n\'ucleos l\'ogicos \\
+      & GPU              & NVIDIA GeForce RTX 3070 Ti Laptop, \num{8} GB \\
+      & Capacidad CUDA   & 8.6 (Ampere), controlador 596.21 \\
+    \midrule
+    \multirow{2}{*}{Memoria}
+      & RAM f\'isica     & \num{23.7} GB \\
+      & RAM del subsistema & \num{18} GB, m\'as \num{16} GB de intercambio \\
+    \midrule
+    \multirow{3}{*}{Plataforma}
+      & Sistema anfitri\'on & Windows 11 \\
+      & Subsistema          & WSL 2.5.9.0, n\'ucleo 6.6.87.2 \\
+      & Distribuci\'on      & Ubuntu 24.04.2 LTS \\
+    \midrule
+    Almacenamiento & Disco de trabajo & \num{1007} GB virtuales (ext4 sobre VHDX) \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La restricci\'on determinante es la memoria gr\'afica de ocho gigabytes. Dicho l\'imite
+condiciona el tama\~no de lote de V4 y descarta el ajuste fino de los transformadores de
+visi\'on, seg\'un se justific\'o en el \cref{sec:variantes}. La memoria principal impone una
+segunda restricci\'on menos evidente: el conjunto de datos se carga \'integramente en RAM y
+ocupa unos \num{2.8} GB por proceso, cifra que obliga a limitar los procesos de carga y de
+simulaci\'on. La asignaci\'on de memoria al subsistema se ampli\'o de \num{13} a \num{18}
+GB antes de ejecutar V2, ya que el ajuste fino del codificador aumenta el consumo respecto
+a las variantes congeladas.
+
+Sobre esa plataforma se despliega la pila de software detallada en la
+\cref{tab:componentes}. Las versiones est\'an fijadas y no se actualizan entre variantes,
+puesto que la comparaci\'on exige que el \'unico factor que cambie sea el codificador
+visual.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Componentes de la pila de software y funci\'on de cada uno.}
+  \label{tab:componentes}
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    Componente & Versi\'on & Funci\'on en el experimento \\
+    \midrule
+    Python              & 3.9.15  & Int\'erprete, en entorno \texttt{conda} aislado \\
+    PyTorch             & 1.12.1  & Marco de trabajo de aprendizaje profundo
+                                    \cite{paszke2019pytorch} \\
+    CUDA                & 11.6    & Biblioteca de c\'alculo sobre GPU \\
+    torchvision         & 0.13.1  & ResNet-18 y pesos de ImageNet-1k \\
+    timm                & 0.9.16  & DINOv2 y CLIP preentrenados \cite{wightman2019timm} \\
+    diffusers           & 0.11.1  & Planificador de ruido DDPM \\
+    huggingface\_hub    & 0.25.2  & Descarga de los pesos preentrenados \\
+    robomimic           & 0.2.0   & Utilidades de clonaci\'on de comportamiento
+                                    \cite{mandlekar2021robomimic} \\
+    \texttt{diffusion\_policy} & Bifurcaci\'on propia & Pol\'itica, entorno Push-T y
+                                    evaluaci\'on \\
+    Hydra               & 1.2.0   & Configuraci\'on y registro de cada
+                                    ejecuci\'on \\
+    Zarr                & 2.12.0  & Formato del conjunto de
+                                    demostraciones \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+El c\'odigo de partida es la implementaci\'on p\'ublica de \textit{Diffusion Policy}
+\cite{chi2025diffusion}, sobre la que se a\~naden los codificadores de V1 a V4 y sus
+configuraciones. Las modificaciones se concentran en el m\'odulo del codificador de
+observaciones, mientras que la red generativa, el bucle de entrenamiento y el evaluador
+permanecen sin cambios. Por tanto, cualquier diferencia entre variantes es atribuible al
+codificador y no a la infraestructura que lo rodea.
+
+La reproducibilidad se apoya en tres medidas. En primer lugar, la semilla global se fija
+en \num{42} para todas las variantes y las condiciones de evaluaci\'on emplean semillas
+reservadas y constantes. En segundo lugar, las versiones exactas de las bibliotecas se
+documentan en el \cref{anx:primero}. En tercer lugar, la configuraci\'on efectiva de cada
+ejecuci\'on se almacena junto a sus resultados.
+
+No obstante, la reproducibilidad no es exacta. Los algoritmos deterministas de la
+biblioteca de aceleraci\'on no est\'an activados, ya que resultan incompatibles con las
+operaciones convolucionales empleadas. En consecuencia, dos ejecuciones con la misma
+semilla pueden diferir ligeramente, y las diferencias peque\~nas entre variantes deben
+interpretarse con cautela. El \cref{cap:resultados} aplica ese criterio al comparar las
+puntuaciones obtenidas.
+
+\section{Coste temporal de los entrenamientos}
+\label{sec:coste}
+
+El coste de c\'omputo condiciona el alcance del estudio y merece, por ello, una
+cuantificaci\'on expl\'icita. La \cref{tab:coste} recoge la duraci\'on de cada ejecuci\'on
+sobre la plataforma descrita en el \cref{sec:entorno}. Se distinguen dos magnitudes: el
+tiempo del bucle de optimizaci\'on, medido sobre las \'epocas de entrenamiento, y el tiempo
+total transcurrido, que a\~nade la validaci\'on por \'epoca, las evaluaciones en el
+simulador y el guardado de puntos de control.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Coste temporal de los entrenamientos ejecutados.}
+  \label{tab:coste}
+  \small
+  \begin{tabular}{lcccc}
+    \toprule
+    Variante & \'Epocas completas & Bucle por \'epoca & Bucle acumulado & Tiempo total \\
+    \midrule
+    V0 & \num{500} & \SI{1.5}{\minute}  & \SI{12.4}{\hour}$^{\dagger}$ & \SI{17.4}{\hour} \\
+    V1 & \num{500} & \SI{5.3}{\minute}  & \SI{43.8}{\hour}             & \SI{96.5}{\hour} \\
+    V2 & \num{266} & \SI{14.7}{\minute} & \SI{65.3}{\hour}$^{\dagger}$ & \SI{84.9}{\hour}$^{\dagger}$ \\
+    V3 & \multicolumn{4}{c}{en ejecuci\'on} \\
+    V4 & \multicolumn{4}{c}{en ejecuci\'on} \\
+    \midrule
+    Total (V0--V2) & \num{1266} & & \SI{121.6}{\hour} & \SI{198.8}{\hour} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{$^{\dagger}$ Valor estimado a partir del tiempo medio por \'epoca de las
+    \'epocas efectivamente cronometradas.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Las tres variantes completadas suman casi \num{200} horas de c\'omputo, muy por encima de
+las \num{75} horas que cabr\'ia proyectar a partir de la primera ejecuci\'on. La
+discrepancia procede de dos factores. En primer lugar, el coste por \'epoca crece un orden
+de magnitud entre V0 y V2, ya que las variantes preentrenadas operan sobre im\'agenes de
+\num{224} p\'ixeles en lugar de \num{96}. En segundo lugar, la validaci\'on y las
+evaluaciones en el simulador llegan a duplicar el tiempo del bucle de optimizaci\'on,
+puesto que la simulaci\'on de los episodios se ejecuta en el procesador y no en la GPU.
+
+Las dos \'ultimas columnas no admiten, sin embargo, una lectura directa como medida de
+coste relativo. V2 acumula menos tiempo total que V1 pese a ser casi tres veces m\'as cara
+por \'epoca, simplemente porque se detuvo antes. La comparaci\'on entre variantes debe
+apoyarse, por tanto, en el tiempo por \'epoca, mientras que el tiempo total mide lo que ha
+consumido el experimento tal como se ejecut\'o.
+
+Tres aclaraciones acotan la lectura de la tabla. En primer lugar, V0 y V2 conservan el
+cron\'ometro de una parte de sus \'epocas, no de todas, de modo que sus tiempos acumulados
+se extrapolan a partir de la media por \'epoca; el s\'imbolo $\dagger$ marca esos valores.
+En segundo lugar, V2 se ejecut\'o en dos sesiones separadas por una interrupci\'on de dos
+d\'ias, cuya duraci\'on se descuenta del tiempo total por no corresponder a c\'omputo
+efectivo. En tercer lugar, la columna de \'epocas recoge las completadas: V2 registra una
+\'epoca adicional que qued\'o interrumpida y que no se contabiliza aqu\'i ni en el
+\cref{cap:resultados}.
+
+Este coste explica dos decisiones del dise\~no experimental. La primera es el uso de una
+\'unica semilla por variante, ya que replicar las cinco condiciones tres veces exigir\'ia
+del orden de \num{1000} horas de la misma GPU. La segunda es la adopci\'on del criterio de
+parada anticipada del \cref{sec:protocolo}: V1 dedic\'o unas \num{70} horas a \'epocas
+posteriores a su mejor punto de control, sin obtener ninguna mejora.
+
+Puesto que ese criterio solo lleg\'o a aplicarse a V2, la tabla mide el experimento tal
+como se ejecut\'o y no el protocolo declarado. La diferencia se reconstruye a partir de los
+registros de evaluaci\'on. Bajo el criterio, V0 se habr\'ia detenido en la \'epoca
+\num{300} y V1 en la \num{250}, de modo que el bucle de optimizaci\'on habr\'ia sumado unas
+\SI{91}{\hour} en lugar de \SI{121.6}{\hour} y el tiempo total unas \SI{139}{\hour} en
+lugar de \SI{198.8}{\hour}, esto es, un ahorro pr\'oximo al \SI{30}{\percent}. El punto de
+control seleccionado solo cambiar\'ia en V0, que conservar\'ia el de la \'epoca \num{200}
+con \num{0.8643} en lugar del de la \num{350} con \num{0.8645}. Ninguna conclusi\'on del
+\cref{cap:resultados} depende de esa diferencia.

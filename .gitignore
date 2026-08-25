@@ -7,3 +7,5 @@ temp
 diff_policy.pdf
 diffuser/repo
 diffuser/models
+models
+.DS_Store

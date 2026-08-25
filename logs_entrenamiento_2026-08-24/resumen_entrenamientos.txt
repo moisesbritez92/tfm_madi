@@ -1,0 +1,64 @@
+==============================================================================
+RESUMEN DE ENTRENAMIENTOS - EXPERIMENTO ENCODERS (PushT, seed 42)
+Generado: 2026-08-24 18:39:41
+==============================================================================
+
+--- V0: pusht_v0_resnet18_scratch ---
+  Run dir            : data/outputs/encoder_exp/v0_seed42
+  Inicio (train.log) : 2026-05-22 10:03:34
+  Fin (logs.json.txt): 2026-05-23 03:27:08.521878
+  Epocas registradas : 500 (indice maximo 499)
+  Global steps       : 83999
+  Epocas cronometradas (tqdm): 89
+  Tiempo acumulado entrenamiento: 2h 12m 45s
+  Tiempo medio por epoca        : 1m 29s
+  Ultimo train_loss  : 0.00454
+  Ultimo val_loss    : 0.16470
+  Rollouts evaluados : 10
+  Mejor score        : epoch 350 -> test/mean_score=0.8645
+  Ultimo score       : epoch 450 -> 0.8588
+  Checkpoints (.ckpt): 4
+
+--- V1: pusht_v1_resnet18_imagenet_frozen ---
+  Run dir            : data/outputs/encoder_exp/v1_seed42
+  Inicio (train.log) : 2026-07-27 18:55:36
+  Fin (logs.json.txt): 2026-07-31 19:24:38.696570
+  Epocas registradas : 500 (indice maximo 499)
+  Global steps       : 83999
+  Epocas cronometradas (tqdm): 500
+  Tiempo acumulado entrenamiento: 43h 48m 22s
+  Tiempo medio por epoca        : 5m 15s
+  Ultimo train_loss  : 0.00156
+  Ultimo val_loss    : 0.23074
+  Rollouts evaluados : 10
+  Mejor score        : epoch 150 -> test/mean_score=0.6676
+  Ultimo score       : epoch 450 -> 0.5536
+  Checkpoints (.ckpt): 4
+
+--- V2: pusht_v2_resnet18_imagenet_ft ---
+  Run dir            : data/outputs/encoder_exp/v2_seed42
+  Inicio (train.log) : 2026-08-19 15:00:46
+  Fin (logs.json.txt): 2026-08-24 05:46:55.074825
+  Epocas registradas : 267 (indice maximo 266)
+  Global steps       : 44859
+  Epocas cronometradas (tqdm): 196
+  Tiempo acumulado entrenamiento: 48h 09m 07s
+  Tiempo medio por epoca        : 14m 44s
+  Ultimo train_loss  : 0.00329
+  Ultimo val_loss    : n/d
+  Rollouts evaluados : 6
+  Mejor score        : epoch 150 -> test/mean_score=0.6477
+  Ultimo score       : epoch 250 -> 0.5590
+  Checkpoints (.ckpt): 4
+
+NOTAS
+-----
+- Tiempos de entrenamiento extraidos de las barras tqdm del log crudo
+  (frames completados N/N). En v0 solo se conservaron 89/500 epocas con
+  timestamp completo en el log (buffering); su tiempo acumulado real es mayor.
+  El rango de fechas inicio->fin incluye validaciones, rollouts y pausas.
+- v2 se ejecuto en dos sesiones: 19/08/2026 15:00 (epocas 0-69 aprox,
+  interrumpida) y reanudada (resume=true) el 21/08/2026 15:11 hasta epoch 266;
+  config num_epochs=300, por lo que el run quedo detenido en epoch 266.
+- Epocas 0-indexadas: "500 epocas registradas" = indices 0..499.
+- test/mean_score proviene de rollouts de evaluacion cada 50 epocas (10 max).

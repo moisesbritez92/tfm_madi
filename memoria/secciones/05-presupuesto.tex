@@ -1,0 +1,202 @@
+\chapter{Presupuesto}
+\label{cap:presupuesto}
+
+Este cap\'itulo cuantifica el coste de ejecuci\'on del proyecto. El presupuesto recoge
+cuatro partidas: material fungible y suministros, amortizaci\'on de los equipos, licencias
+de software y mano de obra. A ellas se a\~naden unos costes indirectos y, con todo, se
+obtiene el importe total.
+
+Tres criterios de imputaci\'on gobiernan las cifras que siguen. En primer lugar, el
+periodo imputado abarca siete meses, de marzo a septiembre de 2026, que comprenden
+desde la revisi\'on bibliogr\'afica hasta la entrega de la memoria. En segundo lugar, los
+equipos se amortizan de forma lineal y se imputa la fracci\'on correspondiente a esos
+siete meses, con independencia de su uso efectivo dentro de cada jornada. En tercer lugar,
+los importes se expresan sin impuestos indirectos, puesto que el trabajo se desarrolla en
+el \'ambito acad\'emico y no da lugar a facturaci\'on.
+
+\section{Material fungible y suministros}
+\label{sec:fungible}
+
+El proyecto es de naturaleza computacional, de modo que apenas consume material f\'isico.
+La \'unica partida relevante es la energ\'ia el\'ectrica, dominada por los entrenamientos
+desatendidos. Seg\'un el \cref{sec:coste}, estos ocuparon \SI{198.8}{\hour} de c\'omputo;
+con un consumo aproximado de \SI{150}{\watt} bajo carga, suman unos \num{30}
+kilovatios-hora. El resto de la dedicaci\'on a\~nade otros \num{24} kilovatios-hora, con el
+equipo en r\'egimen de trabajo ordinario. La \cref{tab:fungible} recoge ambos conceptos.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Presupuesto de material fungible y suministros.}
+  \label{tab:fungible}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Concepto & Cantidad & Coste unitario (\texteuro) & Total (\texteuro) \\
+    \midrule
+    Energ\'ia el\'ectrica (kWh)        & \num{54} & \num{0.15} & \num{8.10} \\
+    Material de oficina e impresi\'on  & \num{1}  & \num{45.00} & \num{45.00} \\
+    \midrule
+    \textbf{Total} & & & \textbf{\num{53.10}} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Se adopta un precio de \num{0.15} \texteuro/kWh, valor de referencia para el
+    suministro dom\'estico durante el periodo imputado.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+\section{Amortizaci\'on de los equipos}
+\label{sec:equipos}
+
+El proyecto se ejecuta sobre un \'unico equipo, descrito en el \cref{sec:entorno}. Dado
+que su vida \'util excede la duraci\'on del trabajo, no se imputa el precio de
+adquisici\'on sino la amortizaci\'on correspondiente al periodo de uso, seg\'un la
+\cref{eq:amortizacion}.
+
+\begin{equation}
+  A = C \cdot \frac{t}{V}
+  \label{eq:amortizacion}
+\end{equation}
+
+En la \cref{eq:amortizacion}, $A$ es el importe imputado, $C$ el precio de adquisici\'on,
+$t$ el periodo de uso y $V$ la vida \'util, ambos expresados en meses. Se aplica
+amortizaci\'on lineal y sin valor residual, criterio habitual para equipos de proceso de
+informaci\'on. La \cref{tab:equipos} detalla el resultado para cada elemento.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Amortizaci\'on de los equipos imputada al proyecto.}
+  \label{tab:equipos}
+  \small
+  \begin{tabular}{lrrrr}
+    \toprule
+    Equipo & Precio (\texteuro) & Vida \'util (a\~nos) & Uso (meses) &
+      Imputaci\'on (\texteuro) \\
+    \midrule
+    Port\'atil con GPU dedicada & \num{1800.00} & \num{4} & \num{7} & \num{262.50} \\
+    Monitor externo                & \num{180.00}  & \num{5} & \num{7} & \num{21.00} \\
+    Unidad externa de respaldo     & \num{60.00}   & \num{3} & \num{7} & \num{11.67} \\
+    \midrule
+    \textbf{Total} & & & & \textbf{\num{295.17}} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Conviene se\~nalar que la unidad de procesamiento gr\'afico condiciona el dise\~no
+experimental, seg\'un se argument\'o en el \cref{sec:entorno}, pero apenas condiciona el
+presupuesto. Su amortizaci\'on forma parte de los \num{262.50} \texteuro{} imputados al
+port\'atil, importe menor que el coste de dos jornadas de trabajo.
+
+\section{Licencias de software}
+\label{sec:software}
+
+Todas las herramientas empleadas son de c\'odigo abierto o de uso gratuito, de modo que
+esta partida asciende a \num{0.00} \texteuro. La \cref{tab:componentes} enumera la pila de
+software: Python, PyTorch, torchvision, timm, diffusers, robomimic, Hydra y Zarr se
+distribuyen bajo licencias libres. A ellas se suman la distribuci\'on Ubuntu, el sistema
+de composici\'on \TeX{} Live y el control de versiones Git, tambi\'en libres. La licencia de
+Windows 11 viene incluida en el precio del port\'atil y queda, por tanto, recogida en el
+\cref{sec:equipos}.
+
+\section{Mano de obra}
+\label{sec:mano-de-obra}
+
+La mano de obra distingue dos perfiles. El autor asume la implementaci\'on, la
+ejecuci\'on, el an\'alisis y la redacci\'on, con el coste horario de un ingeniero de datos
+junior. El director asume la definici\'on del alcance, el seguimiento peri\'odico y la
+revisi\'on de la memoria, con el coste horario de un investigador s\'enior. Ambos importes
+corresponden al coste bruto para la entidad, incluidas las cargas sociales.
+
+La \cref{tab:horas} desglosa la dedicaci\'on del autor por fases. El reparto refleja el
+peso real de cada actividad: la preparaci\'on del entorno de c\'omputo result\'o m\'as
+costosa de lo previsto, mientras que la ejecuci\'on de los entrenamientos, aunque ocup\'o
+casi \num{200} horas de m\'aquina, exigi\'o poca intervenci\'on por tratarse de procesos
+desatendidos.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Dedicaci\'on del autor por fases del proyecto.}
+  \label{tab:horas}
+  \small
+  \begin{tabular}{lr}
+    \toprule
+    Fase & Horas \\
+    \midrule
+    Revisi\'on bibliogr\'afica y estado del arte          & \num{70} \\
+    Preparaci\'on del entorno de c\'omputo                & \num{55} \\
+    Implementaci\'on de las variantes del codificador     & \num{90} \\
+    Ejecuci\'on y supervisi\'on de los entrenamientos     & \num{60} \\
+    An\'alisis de resultados y comprobaci\'on cualitativa & \num{65} \\
+    Redacci\'on de la memoria                             & \num{110} \\
+    \midrule
+    \textbf{Total} & \textbf{\num{450}} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La dedicaci\'on del director se estima en \num{40} horas: unas \num{20} reuniones de
+seguimiento de una hora, repartidas a lo largo de los siete meses, y otras \num{20} horas
+de revisi\'on de los borradores. La \cref{tab:mano-de-obra} aplica los costes horarios a
+ambos perfiles.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Presupuesto de mano de obra.}
+  \label{tab:mano-de-obra}
+  \small
+  \begin{tabular}{lrrr}
+    \toprule
+    Perfil & Horas & Coste horario (\texteuro) & Total (\texteuro) \\
+    \midrule
+    Ingeniero de datos junior (autor) & \num{450} & \num{30.00} & \num{13500.00} \\
+    Investigador s\'enior (director)  & \num{40}  & \num{60.00} & \num{2400.00} \\
+    \midrule
+    \textbf{Total} & \textbf{\num{490}} & & \textbf{\num{15900.00}} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+\section{Resumen del presupuesto}
+\label{sec:resumen-presupuesto}
+
+La \cref{tab:resumen-presupuesto} agrega las cuatro partidas anteriores y a\~nade unos
+costes indirectos del \SI{15}{\percent} sobre el subtotal, porcentaje que cubre espacio de
+trabajo, conectividad y servicios generales no imputables a un concepto concreto.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resumen del presupuesto.}
+  \label{tab:resumen-presupuesto}
+  \small
+  \begin{tabular}{lr}
+    \toprule
+    Partida & Importe (\texteuro) \\
+    \midrule
+    Material fungible y suministros & \num{53.10} \\
+    Amortizaci\'on de equipos       & \num{295.17} \\
+    Licencias de software           & \num{0.00} \\
+    Mano de obra                    & \num{15900.00} \\
+    \midrule
+    Subtotal                        & \num{16248.27} \\
+    Costes indirectos (\SI{15}{\percent}) & \num{2437.24} \\
+    \midrule
+    \textbf{Total}                  & \textbf{\num{18685.51}} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+El coste total del proyecto asciende, por tanto, a \num{18685.51} \texteuro. La
+distribuci\'on entre partidas resulta muy desigual: la mano de obra representa el
+\SI{85}{\percent} del total, mientras que los equipos apenas alcanzan el
+\SI{1.6}{\percent}. Esa asimetr\'ia es caracter\'istica de un proyecto de investigaci\'on
+computacional ejecutado sobre hardware propio.
+
+De ah\'i se sigue una consideraci\'on econ\'omica sobre el dise\~no experimental. Las
+limitaciones descritas en el \cref{sec:coste} no proceden del presupuesto, sino del tiempo
+de calendario: ampliar el estudio a tres semillas por variante multiplicar\'ia por tres el
+c\'omputo sin apenas alterar el coste, ya que la amortizaci\'on y la energ\'ia son
+partidas menores. El factor limitante es que esas horas de m\'aquina deben transcurrir
+dentro del plazo del proyecto, no lo que cuestan.

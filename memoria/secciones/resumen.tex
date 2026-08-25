@@ -1,0 +1,41 @@
+\preliminar{Resumen del proyecto}
+
+\textit{Diffusion Policy} genera acciones de manipulaci\'on rob\'otica mediante un proceso
+de difusi\'on condicionado por la observaci\'on. Su variante visuomotora encadena un
+codificador visual y una red generativa, de modo que la representaci\'on de la imagen
+delimita la informaci\'on disponible para el control. La investigaci\'on posterior ha
+modificado sobre todo el bloque generativo, mientras que la elecci\'on del codificador y de
+su estrategia de entrenamiento sigue sin resolverse cuando solo se dispone de un conjunto
+reducido de demostraciones.
+
+Este trabajo eval\'ua la influencia del codificador visual y de su estrategia de
+entrenamiento sobre el rendimiento de una \textit{Diffusion Policy} en la tarea Push-T. Con
+ese fin se implementan cinco variantes del codificador dentro de la misma pol\'itica: una
+ResNet-18 entrenada desde cero, la misma red preentrenada sobre ImageNet en versiones
+congelada y con ajuste fino, y dos transformadores de visi\'on congelados, DINOv2 ViT-S/14
+y CLIP ViT-B/16. Todas entregan un vector de \num{512} componentes y comparten red
+generativa, hiperpar\'ametros, datos y protocolo de evaluaci\'on, de manera que la \'unica
+variable manipulada es el codificador. El ajuste emplea \num{206} demostraciones
+teleoperadas y un presupuesto m\'aximo de \num{500} \'epocas con parada anticipada. La
+evaluaci\'on mide la puntuaci\'on media de cobertura sobre \num{50} episodios generados
+con semillas reservadas, junto con el tiempo de c\'omputo consumido.
+
+Los resultados corresponden a las tres variantes convolucionales completadas, ya que las
+dos basadas en transformador siguen en ejecuci\'on. La l\'inea base entrenada desde cero
+alcanza una puntuaci\'on de \num{0.864}, frente a \num{0.668} de la variante congelada y
+\num{0.648} de la ajustada, ca\'idas del \SI{23}{\percent} y del \SI{25}{\percent} cuyos
+intervalos de confianza excluyen el cero. El
+preentrenamiento tampoco compensa en coste: cada \'epoca de la l\'inea base ocupa
+\SI{1.5}{\minute}, frente a \SI{5.3}{\minute} y \SI{14.7}{\minute} de las variantes
+preentrenadas, y las tres ejecuciones suman casi \num{200} horas de procesamiento
+gr\'afico. Ese sobrecoste se atribuye a la resoluci\'on de entrada y no al n\'umero de
+par\'ametros entrenables, que apenas var\'ia entre variantes.
+
+Se concluye que, en Push-T y con pocas demostraciones, el preentrenamiento supervisado
+sobre im\'agenes naturales degrada el rendimiento y encarece el entrenamiento. La ventaja
+de la l\'inea base debe atribuirse al codificador junto con su cadena de preprocesado,
+puesto que ambos var\'ian de forma conjunta.
+
+\vspace{1em}
+\noindent\textbf{Palabras clave:} aprendizaje por imitaci\'on, modelos de difusi\'on,
+codificador visual, transferencia de aprendizaje, manipulaci\'on rob\'otica.

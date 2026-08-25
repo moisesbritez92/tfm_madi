@@ -1,0 +1,316 @@
+%% ---------------------------------------------------------------------------
+%% tecnun-tfm.sty - Estilo para memorias de Proyecto Fin de Master (Tecnun)
+%% Modelado sobre el formato de "Vera Aguinaga, Jorge_TFM_MADI".
+%% Citas en IEEE (bibtex + IEEEtran.bst). Texto justificado, interlineado
+%% sencillo, presentacion sobria.
+%% ---------------------------------------------------------------------------
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tecnun-tfm}[2026/08/24 v1.0 Plantilla TFM Tecnun estilo IEEE]
+
+% --- Codificacion e idioma ---------------------------------------------------
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+% es-nodecimaldot: sin ella babel convierte todo punto en modo matematico en coma,
+% incluido el separador de millares de siunitx (\num{3000} salia como "3,000").
+\RequirePackage[spanish,es-tabla,es-noquoting,es-lcroman,es-nodecimaldot]{babel}
+\RequirePackage{csquotes}
+
+% --- Matematicas (antes de la fuente, que redefine simbolos AMS) -------------
+\RequirePackage{amsmath}
+
+% --- Tipografia: Arial o similar (normas de redaccion) ----------------------
+% Helvetica escalada es la sustituta metrica habitual de Arial en LaTeX.
+\RequirePackage{helvet}   % sin escalar: las normas piden 11 pt reales
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage{newtxsf}          % matematicas sans, a juego con el texto
+\RequirePackage{microtype}
+\RequirePackage[normalem]{ulem}   % \uline para los titulos subrayados
+
+% Babel-spanish traduce los operadores matematicos (max->max con tilde,
+% min->min con tilde, lim->lim con tilde) y compone la tilde como acento
+% matematico. Con newtxsf el acento cae sobre la letra y los glifos se solapan.
+% Se redefinen en modo texto, donde la fuente T1 si tiene los caracteres.
+% Babel reaplica sus definiciones en cada cambio de idioma, de ahi el \addto:
+% las nuestras deben ejecutarse despues, tambien tras un \selectlanguage.
+\newcommand{\tfm@operadores}{%
+  \renewcommand{\max}{\mathop{\text{m\'ax}}\limits}%
+  \renewcommand{\min}{\mathop{\text{m\'{\i}n}}\limits}%
+  \renewcommand{\lim}{\mathop{\text{l\'{\i}m}}\limits}%
+}
+\AtBeginDocument{%
+  \addto\extrasspanish{\tfm@operadores}%
+  \tfm@operadores
+}
+
+% --- Caja de pagina ----------------------------------------------------------
+% Normas: DIN A4, superior 35 mm, inferior 30 mm, izquierdo 30 mm, derecho 25 mm.
+% A doble cara, "izquierdo/derecho" se traducen en interior/exterior.
+\RequirePackage[a4paper,top=35mm,bottom=30mm,inner=30mm,outer=25mm,
+                headheight=15pt,headsep=8mm,footskip=12mm]{geometry}
+
+% Interlineado sencillo y parrafos con separacion (sin sangria doble marca)
+\RequirePackage{setspace}
+\singlespacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+
+% --- Utilidades --------------------------------------------------------------
+\RequirePackage{graphicx}
+\RequirePackage{float}
+\RequirePackage{booktabs}
+\RequirePackage{multirow}
+\RequirePackage{array}
+\RequirePackage{longtable}
+\RequirePackage{enumitem}
+\RequirePackage{siunitx}
+\RequirePackage{xcolor}
+\RequirePackage{listings}
+\RequirePackage[bottom,hang]{footmisc}
+
+% group-digits=integer: sin ella el agrupamiento tambien parte los decimales y
+% \num{0.8645} sale como "0,864.5".
+\sisetup{output-decimal-marker={,},group-separator={.},group-minimum-digits=4,
+         group-digits=integer}
+\setlist{itemsep=2pt,parsep=0pt,topsep=4pt}
+
+% --- Datos de la memoria -----------------------------------------------------
+\newcommand{\tfmtitulo}[1]{\def\@tfmtitulo{#1}}
+\newcommand{\tfmtitulocorto}[1]{\def\@tfmtitulocorto{#1}}
+\newcommand{\tfmautor}[1]{\def\@tfmautor{#1}}
+\newcommand{\tfmmaster}[1]{\def\@tfmmaster{#1}}
+\newcommand{\tfmtipo}[1]{\def\@tfmtipo{#1}}
+\newcommand{\tfmdirector}[1]{\def\@tfmdirector{#1}}
+\newcommand{\tfmlugar}[1]{\def\@tfmlugar{#1}}
+\newcommand{\tfmfecha}[1]{\def\@tfmfecha{#1}}
+\tfmtipo{Proyecto Fin de M\'aster}
+\tfmtitulo{T\'itulo de la memoria}
+\tfmtitulocorto{T\'itulo de la memoria}
+\tfmautor{Nombre Apellidos}
+\tfmmaster{AN\'ALISIS DE DATOS EN INGENIER\'IA}
+\tfmdirector{}
+\tfmlugar{Donostia-San Sebasti\'an}
+\tfmfecha{\the\year}
+
+% Accesores publicos de los datos (para usarlos fuera del .sty)
+\newcommand{\tfmtipoactual}{\@tfmtipo}
+\newcommand{\tfmmasteractual}{\@tfmmaster}
+\newcommand{\tfmtituloactual}{\@tfmtitulo}
+\newcommand{\tfmautoractual}{\@tfmautor}
+\newcommand{\tfmlugaractual}{\@tfmlugar}
+\newcommand{\tfmfechaactual}{\@tfmfecha}
+\newcommand{\tfmdirectoractual}{\ifx\@tfmdirector\empty\else Director: \@tfmdirector\fi}
+
+% --- Encabezados y pies ------------------------------------------------------
+% Normas: encabezado par = titulo abreviado a la izquierda;
+%         encabezado impar = nombre del alumno a la derecha;
+%         pie centrado con "Pagina X de Y".
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+% En los preliminares (numeracion romana) se imprime solo el numero; en el cuerpo,
+% "Pagina X de Y" como piden las normas. Se conmuta con \tfmpiecompletotrue.
+\newif\if@tfmpiecompleto
+\newcommand{\tfmpiecompleto}{\@tfmpiecompletotrue}
+\newcommand{\piepagina}{%
+  \small\if@tfmpiecompleto P\'agina \thepage\ de \pageref{LastPage}\else\thepage\fi}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[EL]{\small\@tfmtitulocorto}
+\fancyhead[OR]{\small\@tfmautor}
+\fancyfoot[C]{\piepagina}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\piepagina}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+% --- Paginas de relleno en blanco -------------------------------------------
+% En impresion a doble cara, \cleardoublepage inserta un verso vacio antes de
+% cada capitulo. Esa hoja no debe llevar encabezado ni numero de pagina.
+% (dentro de un .sty la arroba ya es letra: nada de \makeatletter aqui)
+\renewcommand{\cleardoublepage}{%
+  \clearpage
+  \if@twoside
+    \ifodd\c@page\else
+      \hbox{}%
+      \thispagestyle{empty}%
+      \newpage
+      \if@twocolumn\hbox{}\newpage\fi
+    \fi
+  \fi}
+
+% --- Titulos de capitulo y epigrafe -----------------------------------------
+% Formato del modelo: "1.  ESTADO DEL ARTE", "1.1.  Tags Chipless RFID"
+\RequirePackage{titlesec}
+% Normas: capitulo 16 pt, mayusculas, negrita, sin subrayar, siempre en pagina
+% impar (lo garantiza la opcion openright de la clase). Apartado 14 pt, negrita,
+% subrayado, en minusculas. Subapartado 13 pt, negrita, subrayado. La numeracion
+% NO lleva punto final: "1.1 Esto es un apartado".
+\newcommand{\tfmchapfont}{\fontsize{16}{19}\selectfont\bfseries}
+\newcommand{\tfmsecfont}{\fontsize{14}{17}\selectfont\bfseries}
+\newcommand{\tfmsubsecfont}{\fontsize{13}{16}\selectfont\bfseries}
+
+\titleformat{\chapter}[hang]
+  {\normalfont\tfmchapfont}{\thechapter.}{0.6em}{\MakeUppercase}
+\titleformat{name=\chapter,numberless}[hang]
+  {\normalfont\tfmchapfont}{}{0pt}{\MakeUppercase}
+\titlespacing*{\chapter}{0pt}{0pt}{24pt}
+\titlespacing*{name=\chapter,numberless}{0pt}{0pt}{24pt}
+
+\titleformat{\section}[hang]
+  {\normalfont\tfmsecfont}{\thesection}{0.6em}{\uline}
+\titleformat{\subsection}[hang]
+  {\normalfont\tfmsubsecfont}{\thesubsection}{0.6em}{\uline}
+\titleformat{\subsubsection}[hang]
+  {\normalfont\normalsize\bfseries}{\thesubsubsection}{0.5em}{\uline}
+\titlespacing*{\section}{0pt}{16pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{6pt}
+\setcounter{secnumdepth}{3}
+
+% Division menor sin numerar: no aparece en el indice.
+\newcommand{\divisionmenor}[1]{%
+  \par\vspace{8pt}\noindent{\normalsize\uline{#1}}\par\vspace{4pt}}
+
+% --- Numeracion continua de figuras, tablas y ecuaciones ---------------------
+% El modelo numera "Figura 1..14" y "Tabla 1..11" de forma corrida.
+\RequirePackage{chngcntr}
+\counterwithout{figure}{chapter}
+\counterwithout{table}{chapter}
+\counterwithout{equation}{chapter}
+
+% --- Pies de figura y titulos de tabla --------------------------------------
+% "Figura 1. Texto." debajo de la figura; "Tabla 1. Texto." encima de la tabla.
+\RequirePackage[font=small,labelsep=period,justification=justified,
+                singlelinecheck=false]{caption}
+\RequirePackage{subcaption}
+\captionsetup[figure]{name=Figura,position=below}
+\captionsetup[table]{name=Tabla,position=above}
+
+% Fuente de una figura o tabla ajena: \fuente{adaptado de \cite{clave}}
+\newcommand{\fuente}[1]{\par\vspace{2pt}{\footnotesize\textit{Fuente: #1.}}}
+
+% Nota aclaratoria al pie de una tabla, antes de la fuente
+\newcommand{\notatabla}[1]{\par\vspace{2pt}{\footnotesize #1}}
+
+% --- Indices (general, de figuras, de tablas) --------------------------------
+\RequirePackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\tfmchapfont\MakeUppercase}
+\renewcommand{\cftloftitlefont}{\tfmchapfont\MakeUppercase}
+\renewcommand{\cftlottitlefont}{\tfmchapfont\MakeUppercase}
+% babel-spanish fija estos nombres en \begin{document}: hay que sobrescribirlos despues
+\AtBeginDocument{%
+  \renewcommand{\contentsname}{\'Indice de contenidos}%
+  \renewcommand{\listfigurename}{\'Indice de figuras}%
+  \renewcommand{\listtablename}{\'Indice de tablas}%
+  \renewcommand{\bibname}{Referencias}%
+  \renewcommand{\appendixname}{Anexo}%
+}
+\renewcommand{\cftchapfont}{\bfseries}
+\renewcommand{\cftchappagefont}{\bfseries}
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}   % puntos tambien en capitulos
+\renewcommand{\cftchapaftersnum}{.}   % el capitulo si lleva punto: "1. TITULO"
+% apartados y subapartados, sin punto: "1.1 Titulo"
+\setlength{\cftsecnumwidth}{2.6em}
+\setlength{\cftsubsecnumwidth}{3.4em}
+\renewcommand{\cftfigpresnum}{Figura }
+\renewcommand{\cfttabpresnum}{Tabla }
+\newlength{\tfmfigwidth}\settowidth{\tfmfigwidth}{\bfseries Figura 99.\quad}
+\setlength{\cftfignumwidth}{\tfmfigwidth}
+\setlength{\cfttabnumwidth}{\tfmfigwidth}
+\renewcommand{\cftfigaftersnum}{.}
+\renewcommand{\cfttabaftersnum}{.}
+
+% --- Codigo fuente -----------------------------------------------------------
+\definecolor{tfmgris}{gray}{0.95}
+\definecolor{tfmcomentario}{gray}{0.40}
+\lstset{
+  basicstyle=\ttfamily\footnotesize,
+  commentstyle=\color{tfmcomentario}\itshape,
+  keywordstyle=\bfseries,
+  backgroundcolor=\color{tfmgris},
+  frame=single, rulecolor=\color{gray},
+  breaklines=true, breakatwhitespace=true,
+  showstringspaces=false, captionpos=b,
+  numbers=left, numberstyle=\tiny\color{gray}, numbersep=8pt,
+  xleftmargin=16pt, framexleftmargin=16pt,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1
+           {Ú}{{\'U}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1 {¡}{{!`}}1
+}
+\renewcommand{\lstlistingname}{C\'odigo}
+
+% --- Enlaces -----------------------------------------------------------------
+\RequirePackage[hidelinks,breaklinks=true]{hyperref}
+\hypersetup{
+  pdftitle={\@tfmtitulo},
+  pdfauthor={\@tfmautor},
+  pdfsubject={\@tfmtipo. \@tfmmaster},
+  bookmarksnumbered=true,
+}
+\RequirePackage[spanish,capitalise,nameinlink]{cleveref}
+\crefname{figure}{Figura}{Figuras}
+\crefname{table}{Tabla}{Tablas}
+\crefname{equation}{Ecuaci\'on}{Ecuaciones}
+\crefname{chapter}{Cap\'itulo}{Cap\'itulos}
+\crefname{section}{Apartado}{Apartados}
+
+% --- Lista de obras consultadas sin etiqueta numerica ---------------------
+% La segunda bibliografia (multibib) recoge obras NO citadas: numerarlas como
+% si fueran referencias IEEE induciria a error, asi que se imprimen sin numero.
+\newcommand{\sinetiquetasbib}{\makeatletter\renewcommand{\@biblabel}[1]{}\makeatother}
+
+% --- Portada -----------------------------------------------------------------
+% Reproduce la primera pagina del modelo: logo, tipo de trabajo, master,
+% titulo, autor, lugar y fecha, y pie con la direccion del centro.
+\newcommand{\logotecnun}[1]{\def\@logotecnun{#1}}
+\logotecnun{img/logo-tecnun.pdf}
+
+\newcommand{\piecentro}{%
+  P\textsuperscript{o} Manuel Lardizabal, 13. 20018 Donostia-San Sebasti\'an, Gipuzkoa\\
+  Tel. 943 219 877 $\cdot$ Fax 943 311 442 $\cdot$ www.tecnun.es}
+
+% Nota: no se usa el entorno titlepage porque reinicia el contador de pagina y
+% desincroniza la paridad fisica (los capitulos dejarian de caer en pagina impar).
+\newcommand{\portadatfm}{%
+  \thispagestyle{empty}
+  \begin{center}
+    \IfFileExists{\@logotecnun}
+      {\includegraphics[height=2.2cm]{\@logotecnun}}
+      {\framebox[6cm][c]{\rule{0pt}{2.2cm}\small [logo del centro]}}
+    \vspace{2.5cm}
+
+    {\large \@tfmtipo\par}
+    \vspace{1.2cm}
+
+    {\LARGE\bfseries \@tfmmaster\par}
+    \vspace{2.5cm}
+
+    {\Large \@tfmtitulo\par}
+    \vspace{3cm}
+
+    {\large \@tfmautor\par}
+    \vspace{0.6cm}
+
+    \ifx\@tfmdirector\empty\else
+      {\normalsize Director: \@tfmdirector\par}
+      \vspace{0.6cm}
+    \fi
+
+    \vfill
+    {\normalsize \@tfmlugar, \@tfmfecha\par}
+    \vspace{1.2cm}
+    {\footnotesize \piecentro\par}
+  \end{center}
+  \cleardoublepage
+}
+
+% --- Paginas preliminares sin numeracion arabiga -----------------------------
+\newcommand{\preliminar}[1]{%
+  \chapter*{#1}%
+  \addcontentsline{toc}{chapter}{#1}%
+  \markboth{#1}{#1}%
+}
+
+\endinput

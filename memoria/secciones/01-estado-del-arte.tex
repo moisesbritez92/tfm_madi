@@ -1,0 +1,382 @@
+\chapter{Estado del arte}
+\label{cap:estado-del-arte}
+
+Este cap\'itulo revisa los fundamentos que permiten estudiar la influencia del
+codificador visual en una pol\'itica de difusi\'on. La exposici\'on parte del
+aprendizaje por imitaci\'on y contin\'ua con los modelos generativos de difusi\'on.
+Despu\'es, se describe \textit{Diffusion Policy} y se analizan sus principales
+extensiones.
+
+A continuaci\'on, la revisi\'on se centra en las representaciones visuales empleadas
+en este trabajo. Se consideran las redes residuales, los transformadores visuales y
+el preentrenamiento supervisado, autosupervisado y multimodal. El cap\'itulo concluye
+delimitando el hueco experimental que aborda la metodolog\'ia.
+
+\section{Aprendizaje por imitaci\'on en manipulaci\'on rob\'otica}
+\label{sec:imitacion}
+
+El aprendizaje por imitaci\'on obtiene una pol\'itica a partir de demostraciones de un
+experto. Su formulaci\'on m\'as directa, denominada clonaci\'on del comportamiento,
+trata cada par observaci\'on-acci\'on como un ejemplo supervisado. Este planteamiento
+evita dise\~nar una funci\'on de recompensa, pero depende de la cobertura y calidad de
+las demostraciones \cite{ross2011dagger}, \cite{mandlekar2021robomimic}.
+
+Sin embargo, el entrenamiento supervisado y la ejecuci\'on de la pol\'itica siguen
+distribuciones diferentes. Un error modifica el estado visitado y puede llevar al
+robot fuera de los datos de entrenamiento. Los errores posteriores se acumulan
+porque la pol\'itica carece de ejemplos en esas nuevas regiones. DAgger reduce este
+desplazamiento mediante la agregaci\'on iterativa de correcciones del experto
+\cite{ross2011dagger}.
+
+Adem\'as, las demostraciones de manipulaci\'on suelen contener varias acciones
+v\'alidas para una misma observaci\'on. Una p\'erdida cuadr\'atica aplicada a una
+pol\'itica determinista aproxima la media condicional de esas alternativas. Dicha
+media puede situarse entre modos v\'alidos y generar una acci\'on que no aparece en
+ninguna demostraci\'on \cite{florence2021ibc}.
+
+Para representar esa multimodalidad, la clonaci\'on de comportamiento impl\'icita
+define una funci\'on de energ\'ia sobre pares de observaci\'on y acci\'on. La acci\'on se
+obtiene minimizando esa energ\'ia durante la inferencia. Este enfoque mejora la
+expresividad, aunque requiere muestras negativas y una optimizaci\'on adicional
+\cite{florence2021ibc}. Estas limitaciones motivan el uso de modelos generativos
+directamente sobre las secuencias de control.
+
+\section{Fundamentos de los modelos de difusi\'on}
+\label{sec:fundamentos-difusion}
+
+Los modelos de difusi\'on aprenden a invertir una degradaci\'on gradual de los datos.
+Los modelos probabil\'isticos de difusi\'on por eliminaci\'on de ruido (DDPM) definen
+un proceso directo que a\~nade ruido gaussiano durante $K$ pasos. Para una muestra
+limpia $\mathbf{x}^{0}$, un estado perturbado puede expresarse como
+\cite{ho2020ddpm}
+
+\begin{equation}
+  q(\mathbf{x}^{k}\mid\mathbf{x}^{0}) =
+  \mathcal{N}\!\left(\sqrt{\bar{\alpha}_{k}}\,\mathbf{x}^{0},
+  (1-\bar{\alpha}_{k})\mathbf{I}\right).
+  \label{eq:proceso-directo}
+\end{equation}
+
+En cambio, el proceso inverso parte de ruido y estima sucesivamente una muestra de
+la distribuci\'on original. Ho \textit{et al.} \cite{ho2020ddpm} parametrizan una red
+que predice el ruido incorporado en cada paso. Su objetivo simplificado es un error
+cuadr\'atico entre el ruido real y el estimado, lo que permite un entrenamiento
+estable.
+
+Asimismo, los modelos basados en puntuaci\'on aprenden la direcci\'on de mayor
+crecimiento de la densidad logar\'itmica. Este campo permite generar muestras
+mediante din\'amica de Langevin
+\cite{song2019ncsn}. La introducci\'on de varios niveles de ruido facilita la
+estimaci\'on en regiones con pocos datos.
+
+Por otra parte, las ecuaciones diferenciales estoc\'asticas (SDE) ofrecen una
+formulaci\'on continua com\'un para estos procesos. El proceso inverso depende de la
+funci\'on de puntuaci\'on de las distribuciones perturbadas. Esta perspectiva conecta
+los DDPM con otros modelos basados en puntuaci\'on y ampl\'ia las alternativas de
+muestreo \cite{song2021sde}.
+
+No obstante, el muestreo iterativo aumenta la latencia. Los modelos impl\'icitos de
+difusi\'on por eliminaci\'on de ruido (DDIM) conservan el objetivo de entrenamiento de
+los DDPM, pero emplean un proceso inverso no markoviano. Esta modificaci\'on reduce el
+n\'umero de evaluaciones necesarias durante la generaci\'on \cite{song2021ddim}.
+
+En conjunto, estos trabajos proporcionan tres elementos para el control rob\'otico:
+una distribuci\'on generativa expresiva, un objetivo de predicci\'on de ruido y un
+procedimiento iterativo de muestreo. \textit{Diffusion Policy} traslada esos
+elementos desde la generaci\'on de datos al espacio de acciones.
+
+\section{Diffusion Policy para control visuomotor}
+\label{sec:diffusion-policy}
+
+\textit{Diffusion Policy} modela la distribuci\'on condicional
+$p(\mathbf{A}_{t}\mid\mathbf{O}_{t})$, donde $\mathbf{O}_{t}$ contiene las
+observaciones recientes y $\mathbf{A}_{t}$ representa una secuencia de acciones
+futuras \cite{chi2025diffusion}. Durante el entrenamiento, se perturba una secuencia
+demostrada y se minimiza la p\'erdida
+
+\begin{equation}
+  \mathcal{L}_{\mathrm{DP}} =
+  \mathbb{E}_{k,\boldsymbol{\epsilon}}
+  \left[\left\lVert
+  \boldsymbol{\epsilon} -
+  \boldsymbol{\epsilon}_{\theta}
+  (\mathbf{O}_{t},\mathbf{A}_{t}^{k},k)
+  \right\rVert_{2}^{2}\right].
+  \label{eq:perdida-diffusion-policy}
+\end{equation}
+
+De este modo, la red $\boldsymbol{\epsilon}_{\theta}$ aprende a eliminar el ruido de
+una trayectoria condicionada por la observaci\'on. La formulaci\'on admite varios
+modos de acci\'on sin promediarlos en una \'unica salida. Adem\'as, evita estimar la
+constante de normalizaci\'on que dificulta el entrenamiento de los modelos de energ\'ia
+\cite{chi2025diffusion}.
+
+En cuanto a la arquitectura, el trabajo original propone dos redes para predecir el
+ruido. La primera es una red convolucional temporal con estructura U-Net y
+modulaci\'on lineal por caracter\'isticas (FiLM). La segunda emplea un transformador
+temporal con atenci\'on cruzada. La variante convolucional ofrece mayor estabilidad,
+mientras que el transformador responde mejor ante cambios de acci\'on r\'apidos
+\cite{chi2025diffusion}.
+
+Adem\'as, la pol\'itica aplica control de horizonte recesivo. A partir de una ventana
+de observaciones, predice una secuencia completa y ejecuta solo sus primeras
+acciones. Despu\'es, incorpora una nueva observaci\'on y repite la predicci\'on. Esta
+estrategia combina coherencia temporal con capacidad de reacci\'on ante desviaciones
+\cite{chi2025diffusion}.
+
+En la rama visual, cada imagen se transforma en un vector antes del proceso de
+eliminaci\'on de ruido. La implementaci\'on de referencia utiliza una ResNet-18 sin
+preentrenamiento. El promedio espacial global se sustituye por un \textit{spatial
+softmax} para conservar informaci\'on posicional. Asimismo, la normalizaci\'on por
+lotes se reemplaza por normalizaci\'on por grupos para estabilizar el entrenamiento
+\cite{chi2025diffusion}.
+
+La influencia de esta rama ya se examina parcialmente en el art\'iculo original. La
+\cref{tab:ablation-visual-dp} resume la comparaci\'on realizada sobre la tarea
+\textit{Square} de RoboMimic. Se mantienen fijos el conjunto de demostraciones y la
+pol\'itica convolucional, pero cambian la arquitectura y la estrategia de adaptaci\'on
+del codificador.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Resultado de la ablaci\'on de codificadores visuales de \textit{Diffusion
+  Policy} en la tarea \textit{Square}.}
+  \label{tab:ablation-visual-dp}
+  \begin{tabular}{lccc}
+    \toprule
+    Codificador y preentrenamiento & Desde cero & Congelado & Ajuste fino \\
+    \midrule
+    ResNet-18, ImageNet-21k & \num{0.94} & \num{0.58} & \num{0.92} \\
+    ResNet-34, ImageNet-21k & \num{0.92} & \num{0.40} & \num{0.94} \\
+    ViT-B/16, CLIP           & \num{0.22} & \num{0.70} & \num{0.98} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{adaptado de \cite[Tabla~5]{chi2025diffusion}}
+\end{table}
+
+Como muestra la tabla, ninguna estrategia domina para todas las arquitecturas. El
+ajuste fino obtiene el mejor resultado con ViT-B/16, mientras que ResNet-18 desde
+cero supera ligeramente a su versi\'on ajustada. En cambio, la congelaci\'on reduce el
+rendimiento de ambas redes residuales \cite{chi2025diffusion}.
+
+Por \'ultimo, Push-T permite estudiar estas decisiones en una tarea de contacto
+planar. Un efector circular debe empujar una pieza con forma de T hasta una regi\'on
+objetivo. La puntuaci\'on depende del solapamiento entre la pieza y dicha regi\'on, por
+lo que exige controlar posici\'on y orientaci\'on \cite{florence2021ibc},
+\cite{chi2025diffusion}. En la versi\'on f\'isica, la pol\'itica entrenada de extremo a
+extremo alcanz\'o un \num{0.95} de \'exito, frente a \num{0.80} con R3M congelado y
+\num{0.15} con ImageNet congelado \cite{chi2025diffusion}. Estos resultados confirman
+que la representaci\'on visual puede alterar el control aun cuando la red generativa
+permanece fija.
+
+\section{Evoluci\'on de las pol\'iticas de difusi\'on}
+\label{sec:evolucion-diffusion-policy}
+
+Tras la publicaci\'on de \textit{Diffusion Policy}, la investigaci\'on se ha dividido
+en varias l\'ineas. Unos trabajos modifican la representaci\'on sensorial, mientras
+que otros act\'uan sobre la jerarqu\'ia, la geometr\'ia o la velocidad de inferencia.
+La \cref{tab:evolucion-dp} sintetiza las extensiones m\'as relacionadas con este
+estudio.
+
+\begin{table}[htbp]
+  \centering
+  \small
+  \caption{Principales l\'ineas de extensi\'on de \textit{Diffusion Policy}.}
+  \label{tab:evolucion-dp}
+  \begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}
+                  >{\raggedright\arraybackslash}p{3.2cm}
+                  >{\raggedright\arraybackslash}p{3.4cm}
+                  >{\raggedright\arraybackslash}p{4.5cm}}
+    \toprule
+    Trabajo & Componente modificado & Representaci\'on & Contribuci\'on principal \\
+    \midrule
+    DP3 \cite{ze2024dp3} & Percepci\'on & Nube de puntos & Sustituye la imagen 2D por
+    una representaci\'on geom\'etrica 3D compacta. \\
+    HDP \cite{ma2024hdp} & Jerarqu\'ia y cinem\'atica & RGB-D y nube de puntos &
+    Separa la planificaci\'on de alto nivel del control difusivo local. \\
+    Consistency Policy \cite{prasad2024consistency} & Inferencia & Imagen 2D &
+    Destila la trayectoria de eliminaci\'on de ruido para reducir la latencia. \\
+    Percepci\'on activa \cite{sun2024active} & Espacio de estado y acci\'on & C\'amara
+    m\'ovil RGB & Coordina el punto de vista mediante una restricci\'on cinem\'atica. \\
+    ET-SEED \cite{tie2025etseed} & Equivarianza geom\'etrica & Nube de puntos &
+    Introduce simetr\'ia SE(3) en la generaci\'on de trayectorias. \\
+    DINOv3-DP \cite{egbe2025dinov3dp} & Codificador visual & Imagen 2D & Compara
+    ResNet-18 y DINOv3 bajo tres estrategias de entrenamiento. \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+En primer lugar, DP3, HDP y ET-SEED incorporan estructura geom\'etrica mediante
+nubes de puntos o restricciones cinem\'aticas \cite{ze2024dp3}, \cite{ma2024hdp},
+\cite{tie2025etseed}. Estas propuestas mejoran la generalizaci\'on espacial, pero
+cambian simult\'aneamente la modalidad y la arquitectura perceptiva. Por ello, sus
+resultados no permiten aislar el efecto de un codificador de imagen 2D.
+
+En segundo lugar, \textit{Consistency Policy} reduce el coste del muestreo mediante
+destilaci\'on. El trabajo mantiene constante la codificaci\'on de imagen y concentra
+la comparaci\'on en la etapa generativa \cite{prasad2024consistency}. De forma
+an\'aloga, la percepci\'on activa modifica el espacio de control para coordinar la
+c\'amara y el manipulador \cite{sun2024active}.
+
+Finalmente, el estudio DINOv3-DP es el antecedente m\'as pr\'oximo a esta
+investigaci\'on. Compara ResNet-18 y un ViT-S/16 autosupervisado en Push-T, Lift, Can
+y Square. Adem\'as, eval\'ua entrenamiento desde cero, congelaci\'on y ajuste fino
+durante 100 \'epocas \cite{egbe2025dinov3dp}. Sus resultados muestran que la ventaja
+del preentrenamiento depende de la tarea y de la estrategia de adaptaci\'on.
+
+\section{Codificadores visuales y preentrenamiento}
+\label{sec:codificadores-visuales}
+
+La revisi\'on anterior muestra que la imagen condiciona toda la secuencia de acciones.
+Por tanto, el codificador debe conservar la geometr\'ia relevante y descartar
+variaciones que no afecten a la tarea. Las familias seleccionadas difieren tanto en
+su arquitectura como en la se\~nal utilizada durante el preentrenamiento.
+
+\subsection{Redes residuales y supervisi\'on en ImageNet}
+\label{subsec:resnet-imagenet}
+
+Las redes residuales aprenden funciones de correcci\'on respecto a la entrada de cada
+bloque. Las conexiones de identidad facilitan la optimizaci\'on de redes profundas y
+permiten reutilizar caracter\'isticas en distintas escalas \cite{he2016resnet}. En
+particular, ResNet-18 ofrece un compromiso entre capacidad y coste que favorece su
+uso en pol\'iticas visuomotoras.
+
+Asimismo, el preentrenamiento supervisado en ImageNet emplea etiquetas de objeto
+sobre un conjunto visual amplio \cite{deng2009imagenet}. Estos pesos proporcionan
+detectores generales de textura, forma y categor\'ia. Sin embargo, la clasificaci\'on
+no exige conservar toda la posici\'on espacial que requiere una tarea de contacto.
+
+Por esta raz\'on, una representaci\'on adecuada para reconocimiento puede no serlo
+para control.
+
+\subsection{Transformadores visuales y aprendizaje autosupervisado}
+\label{subsec:vit-dinov2}
+
+En cambio, el transformador visual (ViT) divide la imagen en parches y los procesa
+como una secuencia de \textit{tokens}. La autoatenci\'on relaciona regiones alejadas
+sin depender exclusivamente de la localidad convolucional. Su rendimiento mejora
+cuando existe un preentrenamiento a gran escala \cite{dosovitskiy2021vit}.
+
+Sobre esta arquitectura, DINOv2 aprende mediante autodestilaci\'on sin etiquetas. El
+m\'etodo combina datos visuales diversos y curados con una estrategia de
+entrenamiento autosupervisado. Sus caracter\'isticas transfieren a tareas de imagen y
+de nivel de p\'ixel sin ajuste espec\'ifico \cite{oquab2024dinov2}.
+
+En consecuencia, DINOv2 resulta pertinente para manipulaci\'on con pocas
+demostraciones. Sus representaciones densas pueden aportar correspondencias
+espaciales aprendidas fuera del dominio rob\'otico. Sin embargo, la congelaci\'on
+impide adaptar esas caracter\'isticas a la din\'amica y a los contactos de Push-T. La
+comparaci\'on con DINOv3 confirma que esta decisi\'on debe evaluarse para cada tarea
+\cite{egbe2025dinov3dp}.
+
+\subsection{Preentrenamiento multimodal con CLIP}
+\label{subsec:clip}
+
+Por su parte, el preentrenamiento contrastivo de imagen y lenguaje (CLIP) alinea una
+imagen con su descripci\'on textual. El modelo original utiliza 400 millones de pares
+obtenidos de Internet y transfiere sus representaciones a distintas tareas visuales
+\cite{radford2021clip}. La supervisi\'on ling\"u\'istica favorece caracter\'isticas con
+contenido sem\'antico general.
+
+Sin embargo, Push-T no requiere interpretar instrucciones ni reconocer categor\'ias
+abiertas. La pol\'itica necesita localizar una pieza, estimar su orientaci\'on y
+relacionarla con una meta. Por tanto, la sem\'antica de CLIP solo resultar\'a \'util si
+su representaci\'on conserva tambi\'en la informaci\'on geom\'etrica necesaria.
+
+Adem\'as, la ablaci\'on original muestra una diferencia marcada entre congelaci\'on y
+ajuste fino. El ViT-B/16 preentrenado con CLIP obtiene \num{0.70} cuando permanece
+fijo y \num{0.98} cuando se adapta \cite{chi2025diffusion}. Este resultado impide
+suponer que un corpus de preentrenamiento mayor garantiza por s\'i solo una pol\'itica
+mejor.
+
+\subsection{Representaciones visuales preentrenadas para control}
+\label{subsec:representaciones-control}
+
+Frente al preentrenamiento visual gen\'erico, otra l\'inea utiliza datos y objetivos
+relacionados con la interacci\'on. R3M aprende de v\'ideo egoc\'entrico mediante
+objetivos temporales y alineaci\'on con lenguaje. Como m\'odulo congelado, mejora
+varias tareas de manipulaci\'on con pocos datos \cite{nair2022r3m}. No obstante, en
+Push-T queda por debajo del codificador entrenado de extremo a extremo
+\cite{chi2025diffusion}.
+
+Asimismo, MVP preentrena un ViT mediante modelado enmascarado sobre im\'agenes de
+interacci\'on humana. Despu\'es, mantiene fijo el codificador y aprende controladores
+mediante aprendizaje por refuerzo. En las ocho tareas de PixMC, esta estrategia
+supera al preentrenamiento supervisado en ImageNet en siete casos
+\cite{xiao2022mvp}. Sin embargo, el estudio no utiliza demostraciones ni una
+pol\'itica de difusi\'on.
+
+Por su parte, Voltron combina reconstrucci\'on visual enmascarada con supervisi\'on
+ling\"u\'istica. Su evaluaci\'on sobre cinco problemas rob\'oticos muestra que las
+representaciones reconstructivas favorecen detalles espaciales, mientras que los
+objetivos contrastivos capturan mejor la sem\'antica. El equilibrio entre ambos
+niveles depende de la tarea, y una mayor carga sem\'antica puede perjudicar algunos
+problemas de control de bajo nivel \cite{karamcheti2023voltron}.
+
+Finalmente, CortexBench compara CLIP, R3M, MVP y VIP sobre 17 tareas de siete bancos
+de pruebas. Ninguna representaci\'on obtiene el mejor resultado en todos los dominios.
+VC-1 alcanza el mejor promedio, pero tampoco domina cada tarea; adem\'as, su adaptaci\'on
+espec\'ifica produce mejoras sustanciales \cite{majumdar2023vc1}. Por tanto, la escala
+del preentrenamiento no determina por s\'i sola la utilidad de un codificador para
+control.
+
+\subsection{Estrategias de adaptaci\'on}
+\label{subsec:estrategias-adaptacion}
+
+En t\'erminos generales, el entrenamiento desde cero adapta toda la representaci\'on a
+la tarea, pero depende exclusivamente de las demostraciones disponibles. Esta opci\'on
+reduce el sesgo entre preentrenamiento y control a costa de una mayor necesidad de
+datos.
+
+En cambio, un codificador congelado conserva el conocimiento previo y reduce los
+par\'ametros entrenables. Tambi\'en evita que un conjunto peque\~no degrade las
+caracter\'isticas iniciales. Su principal limitaci\'on es que la pol\'itica solo puede
+adaptar las capas posteriores a una representaci\'on fija.
+
+Por \'ultimo, el ajuste fino permite adaptar los pesos preentrenados. Esta estrategia
+ofrece mayor flexibilidad, aunque incrementa la memoria necesaria y puede producir
+sobreajuste. La evidencia disponible no establece una regla universal: el resultado
+cambia con la arquitectura, la tarea y el dominio de preentrenamiento
+\cite{chi2025diffusion}, \cite{egbe2025dinov3dp}.
+
+\section{S\'intesis y hueco de investigaci\'on}
+\label{sec:hueco}
+
+En conjunto, la literatura confirma que las pol\'iticas de difusi\'on representan
+acciones multimodales y mantienen coherencia temporal. Los trabajos posteriores han
+mejorado la geometr\'ia, la jerarqu\'ia y la velocidad de inferencia. Sin embargo, la
+representaci\'on visual 2D suele permanecer fija o cambia junto con otros componentes.
+
+De forma complementaria, los estudios sobre representaciones preentrenadas para
+control descartan la existencia de un codificador universalmente superior. El
+resultado depende del dominio, del objetivo de preentrenamiento y de la estrategia
+de adaptaci\'on \cite{xiao2022mvp}, \cite{karamcheti2023voltron},
+\cite{majumdar2023vc1}.
+
+El art\'iculo original constituye una excepci\'on, puesto que compara ResNet-18,
+ResNet-34 y CLIP ViT-B/16 bajo tres estrategias. No obstante, esa ablaci\'on se limita
+a la tarea \textit{Square} \cite{chi2025diffusion}. En Push-T f\'isico solo se
+contrastan el entrenamiento de extremo a extremo y dos codificadores congelados,
+ImageNet y R3M.
+
+Asimismo, DINOv3-DP ampl\'ia la evidencia a cuatro tareas e incluye Push-T. Ese
+estudio no eval\'ua DINOv2 ni incorpora CLIP en la misma matriz comparativa
+\cite{egbe2025dinov3dp}. Adem\'as, utiliza 100 \'epocas y una configuraci\'on de red
+distinta de la implementaci\'on original empleada en este trabajo.
+
+Los estudios generales de representaciones tampoco cierran este hueco, puesto que
+emplean aprendizaje por refuerzo o clonaci\'on de comportamiento sobre bancos de
+pruebas heterog\'eneos. Ninguno mantiene fija una \textit{Diffusion Policy} para
+comparar estas alternativas bajo un protocolo com\'un de Push-T.
+
+Por tanto, en el corpus revisado no se ha identificado una comparaci\'on conjunta de
+cinco configuraciones concretas: ResNet-18 desde cero, ResNet-18 preentrenada en
+ImageNet congelada y ajustada, DINOv2 congelado y CLIP congelado. Tampoco se informa
+su relaci\'on entre rendimiento, par\'ametros entrenables, tiempo y memoria bajo un
+protocolo \'unico de Push-T.
+
+Este hueco justifica un estudio controlado que mantenga constante la pol\'itica
+generativa, el conjunto de demostraciones y la evaluaci\'on. La variable experimental
+queda as\'i restringida al codificador y a su estrategia de entrenamiento. El
+\cref{cap:metodologia} presenta el dise\~no empleado para realizar esa comparaci\'on.
