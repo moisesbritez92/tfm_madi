@@ -94,10 +94,23 @@ tiempo. La resoluci\'on, la arquitectura y el tama\~no de lote tambi\'en intervi
 se sigue una conclusi\'on pr\'actica: congelar el codificador no garantiza un entrenamiento
 m\'as barato.
 
-El tercer objetivo espec\'ifico se cumple de forma parcial. Se comparan los par\'ametros y
-los tiempos de entrenamiento, pero no la latencia de inferencia ni el pico de memoria bajo
-un protocolo com\'un. En consecuencia, las conclusiones de coste se restringen al tiempo
-por \'epoca y al tiempo total registrado.
+El tercer objetivo espec\'ifico se cumple con los cuatro indicadores anunciados. A los
+par\'ametros y los tiempos de entrenamiento se a\~naden la latencia de inferencia y el pico
+de memoria gr\'afica, ambos medidos bajo un protocolo com\'un a las cinco variantes.
+
+De esas dos medidas se siguen dos conclusiones que el tiempo por \'epoca no permit\'ia
+alcanzar. La primera es que el codificador apenas influye en la latencia de la pol\'itica.
+Aislado cuesta entre \SI{2.7}{\milli\second} y \SI{16.1}{\milli\second} seg\'un la variante,
+pero la llamada completa var\'ia solo un \SI{1.5}{\percent}, porque los \num{100} pasos de
+difusi\'on dominan el tiempo. Ninguna variante alcanza el control en tiempo real sobre este
+equipo, y la v\'ia para conseguirlo pasa por el muestreo y no por el bloque visual.
+
+La segunda es que el ajuste fino, y no el preentrenamiento, es lo que agota la memoria. V2
+reserva \num{10.293} gibibytes sobre una tarjeta de \num{8} y solo se completa gracias al
+respaldo en memoria del sistema, lo que explica su coste por \'epoca. Las cuatro variantes
+restantes se mantienen entre el \SI{78}{\percent} y el \SI{90}{\percent} de la capacidad.
+En inferencia ninguna supera el \SI{23}{\percent}: la restricci\'on de memoria de este
+trabajo pertenece al entrenamiento, no al despliegue.
 
 \divisionmenor{Respuesta al objetivo general}
 

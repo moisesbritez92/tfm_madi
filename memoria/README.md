@@ -66,6 +66,32 @@ sin encabezado ni numero.
 una seccion *Bibliografia* (obras consultadas no citadas) que las normas no contemplan, y
 figuras y tablas se numeran de forma corrida en todo el documento, como en el TFM modelo.
 
+## Scripts de analisis y medida
+
+`scripts/` produce los CSV de `datos/` que respaldan las tablas del capitulo de
+resultados. Ninguna cifra de la memoria se escribe a mano.
+
+| Script | Salida | Donde se ejecuta |
+|---|---|---|
+| `scripts/resumen_entrenamiento.py` | `../logs_entrenamiento/resumen.json` y CSV de tiempos | Windows |
+| `scripts/analisis_dispersion.py` | `datos/dispersion_puntuaciones.csv`, `datos/wilcoxon_puntuaciones.csv` | Windows |
+| `scripts/coste_parada_uniforme.py` | contrafactual de la parada anticipada (salida por pantalla) | Windows |
+| `scripts/latencia_inferencia.py` | `datos/latencia_inferencia.csv` | Windows, `.venv_diffuser_infer`, **con GPU libre** |
+| `../diffuser/scripts/memoria_gpu.py` | `datos/memoria_gpu.csv` | **WSL**, entorno `robodiff`, **con GPU libre** |
+
+Los dos ultimos miden sobre la GPU y exigen que no haya nada mas usandola. La latencia se
+mide en el entorno de inferencia de Windows; el pico de memoria, en el entorno de WSL en
+el que se entreno, porque el asignador de PyTorch cambio entre las dos versiones y una
+cifra tomada en Windows no describiria los entrenamientos de la Tabla 7.
+
+```bash
+# latencia: ronda las cinco variantes, ~45 min
+.venv_diffuser_infer/Scripts/python.exe memoria/scripts/latencia_inferencia.py
+
+# pico de VRAM: un proceso por variante y modo, desde WSL
+wsl -d Ubuntu -- bash /mnt/c/Users/moise/Documents/0001_MADI/TFM/diffuser/scripts/medir_memoria_gpu.sh
+```
+
 ## Citas IEEE
 
 ```latex

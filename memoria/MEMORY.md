@@ -151,6 +151,61 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
     se recalculo con 60 kWh y asciende a 18.686,55 euros. Resumen, abstract, resultados y
     conclusiones ya no presentan V3 y V4 como ejecuciones pendientes.
 
+15. **26 de agosto de 2026: latencia de inferencia y pico de VRAM medidos (M4).** El
+    apartado 3.7 prometia cuatro indicadores de coste y el capitulo 4 solo reportaba dos.
+    Ahora estan los cuatro, con dos tablas nuevas en el apartado 4.4: `tab:latencia` y
+    `tab:memoria-gpu`. Se hicieron **dos tablas y no una** porque los indicadores se miden
+    en entornos distintos y una tabla unica obligaria a mezclar milisegundos con gibibytes
+    y dos pilas de software en la misma nota.
+    - **Latencia** (`scripts/latencia_inferencia.py` -> `datos/latencia_inferencia.csv`),
+      medida en Windows con `.venv_diffuser_infer`. Round-robin de 10 rondas x 5
+      repeticiones = 50 cronometradas por celda, 20 de calentamiento, `cudnn.benchmark`
+      desactivado, observaciones reales del simulador (no tensores sinteticos). Resultado
+      central: **la llamada completa no distingue las variantes** (1.723,8-1.749,1 ms con
+      lote 1, un 1,5 %, por debajo del propio IQR), mientras el **codificador aislado va de
+      2,7 a 16,1 ms** (factor 5,9) y con lote 8, de 3,1 a 131,8 ms (factor 43). Los 100
+      pasos de difusion diluyen el codificador. Por eso el desglose no es opcional.
+      Consecuencia: 215,5-218,6 ms por accion, unas 4,6 acciones/s, frente a los 10 Hz del
+      simulador. **Ninguna variante alcanza el control en tiempo real en este equipo.**
+    - **Pico de VRAM** (`../diffuser/scripts/memoria_gpu.py` +
+      `medir_memoria_gpu.sh` -> `datos/memoria_gpu.csv`), medido **en WSL con torch
+      1.12.1**, un proceso por variante y modo, 12 pasos de optimizacion completos con
+      optimizador, EMA y acumulacion reales. Hallazgo fuerte: **V2 reserva 10,293 GiB sobre
+      una tarjeta de 8 (128,7 %)**; no aborta porque el controlador respalda el exceso con
+      memoria del sistema, y ahi esta la explicacion de sus 14,7 min por epoca frente a los
+      5,3 de V1, con la que comparte todo salvo la retropropagacion por el codificador. En
+      inferencia ninguna variante pasa del 23 %: el problema de memoria es de
+      entrenamiento, no de despliegue.
+    - **Comprobacion de coherencia, como pedia el prompt.** El 3.3 (descartar el ajuste
+      fino de los ViT por VRAM) **queda respaldado** y ahora cita la cifra. El 3.4 (lote
+      reducido en V3/V4) **solo se sostiene para V4** (90,3 % de la tarjeta); V3 se queda en
+      78,2 % y el texto lo reconoce ahora como cautela, no como necesidad.
+    - **Dos errores de la memoria detectados al verificar los supuestos**, ambos corregidos:
+      la Tabla 8 decia «lote 64 (32 en V4)» cuando **V3 tambien usa 32**, y tanto 3.4 como
+      4.4 afirmaban que eso duplicaba las actualizaciones por epoca. Es falso: **V3 y V4
+      acumulan el gradiente durante dos lotes**, asi que el lote efectivo es 64 en las cinco
+      y las actualizaciones por epoca son 168 en todas (verificado contra los `global_step`
+      de los logs: 336 lotes/epoca en V3-V4 frente a 168 en V0-V2). Lo que se duplica son
+      las pasadas por el codificador.
+    - Ojo tambien con **la resolucion**: solo V0 opera a 96 px (con recorte a 76). V1 y V2
+      redimensionan a 224 igual que los transformadores.
+    - **Trampa de medida**: el asignador de PyTorch no devuelve el pool ya crecido, de modo
+      que medir lote 1 y lote 8 en el mismo proceso reporta el primero dos veces. De ahi un
+      proceso por combinacion. Y en WSL los factories de `pretrained_encoders.py` fijan
+      `pretrained=True` en su firma (la copia de Windows si acepta el parametro), asi que
+      instanciarlos **bloquea el proceso descargando pesos**; el script envuelve
+      `timm.create_model` para forzar `pretrained=False`, sin tocar el arbol de WSL.
+
+16. **26 de agosto de 2026: MiKTeX desactualizado rompia `compilar.sh`.** El fallo era
+    previo a los cambios de M4: `lastpage` 2025 exigia un `hyperref` mas nuevo, y el
+    `hyperref` 2025 exige un nucleo de LaTeX posterior a 2024-11. Se actualizaron
+    `hyperref`, `ltxbase`, `l3backend`, `l3packages`, `latex-firstaid`, `latex-tools`,
+    `amsmath`, `graphics`, `unicode-data`, `etoolbox`, `bookmark`, `rerunfilecheck` y
+    `oberdiek`, y se regenero el formato con `initexmf --dump=pdflatex`. Si vuelve a
+    fallar con `\IfDocumentMetadataT` indefinido, el nucleo se ha quedado atras otra vez.
+    Nota: `siunitx` **no admite numeros de version** en `\num{}`; `\num{2.6.0}` aborta la
+    compilacion. Las versiones van en `\texttt{}`.
+
 ## Origen de la bibliografia
 
 `bib/referencias.bib` se construyo a partir del cuaderno de NotebookLM **«Diffusion Policy
@@ -253,6 +308,8 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
       y PyTorch, pero no un `pip freeze`. El `requirements.txt` de la raiz **no** sirve,
       describe el entorno de inferencia en Windows (torch 2.6, hydra 1.3.2, zarr 2.18.7),
       no el de entrenamiento (torch 1.12.1).
+- [x] **M4 del informe: latencia de inferencia y pico de VRAM.** Medidos el 26 de agosto
+      de 2026 sobre los puntos de control seleccionados, sin reentrenar. Ver la decision 15.
 - [ ] Verificar los dos campos marcados `% verificar` en `bib/referencias.bib`.
 - [x] Anadir a `bib/referencias.bib` las obras de los codificadores visuales (ResNet,
       ImageNet, DINOv2, CLIP y ViT) y citarlas en el texto.
@@ -266,8 +323,7 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [ ] **Del informe de evaluacion, lo que necesita GPU o acceso a WSL** (ver
       `../../respuestas_evaluador.md`): evaluar los tres puntos de control sobre semillas
       disjuntas 200000-200049, para convertir la puntuacion de seleccion en prueba
-      independiente (P2.1, tres inferencias); medir pico de VRAM y latencia de inferencia,
-      que el apartado 3.7 promete y el capitulo 4 no reporta (P2.3, M4); caracterizar el
+      independiente (P2.1, tres inferencias); caracterizar el
       `zarr` con distribucion de longitudes y puntuaciones de las demostraciones y explicitar
       el reparto train/val/descartados (P2.8, M5); y los dos runs de ablacion que separan
       los cuatro factores confundidos (~85 h a 224 px, ~17 h a 96 px sin recorte).

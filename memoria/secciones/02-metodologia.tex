@@ -204,8 +204,14 @@ Las variantes V3 y V4 sustituyen la red convolucional por un transformador de vi
 \cite{dosovitskiy2021vit}. V3 utiliza DINOv2 ViT-S/14, preentrenado de forma
 autosupervisada sobre el corpus LVD-142M \cite{oquab2024dinov2}. V4 utiliza CLIP ViT-B/16,
 preentrenado con supervisi\'on de lenguaje natural sobre pares de imagen y texto
-\cite{radford2021clip}. En ambos casos los pesos permanecen congelados, ya que el ajuste
-fino de un transformador no cabe en la memoria gr\'afica disponible.
+\cite{radford2021clip}. En ambos casos los pesos permanecen congelados, decisi\'on que
+impone la memoria gr\'afica disponible. La medida recogida en la \cref{tab:memoria-gpu} la
+respalda: el ajuste fino de la ResNet-18 de V2, con once millones de par\'ametros en el
+codificador, ya reclama m\'as memoria de la que tiene la tarjeta y solo se completa porque
+el controlador respalda el exceso con memoria del sistema, a costa de triplicar el tiempo
+por \'epoca. Los dos transformadores aportan \num{22} y \num{86} millones de par\'ametros a
+ese bloque, seg\'un se deduce de la \cref{tab:variantes}, de modo que ajustarlos agravar\'ia
+el problema en lugar de aliviarlo.
 
 Dado que la dimensi\'on de salida de estos modelos no coincide con la de la ResNet-18, se
 a\~nade una capa lineal de proyecci\'on que reduce el descriptor a \num{512} componentes.
@@ -242,7 +248,9 @@ criterio de parada que se precisa m\'as adelante.
     Tasa de aprendizaje                    & \num{1e-4}, decaimiento coseno \\
     Pasos de calentamiento                 & \num{500} \\
     Media m\'ovil exponencial de los pesos & Activada \\
-    Tama\~no de lote                       & \num{64} (\num{32} en V4) \\
+    Tama\~no de lote                       & \num{64} (\num{32} en V3 y V4) \\
+    Acumulaci\'on de gradiente             & \num{1} (\num{2} en V3 y V4) \\
+    Tama\~no de lote efectivo              & \num{64} en las cinco variantes \\
     Presupuesto m\'aximo de \'epocas       & \num{500} (V0--V1); \num{300} (V2--V3);
                                                \num{200} (V4) \\
     Semilla                                & \num{42} \\
@@ -251,10 +259,19 @@ criterio de parada que se precisa m\'as adelante.
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Adem\'as del presupuesto, el tama\~no de lote de V4 se redujo a la mitad porque CLIP
-ViT-B/16 no cabe en los ocho gigabytes de memoria gr\'afica con lotes de \num{64} muestras.
-Esta desviaci\'on duplica el n\'umero de actualizaciones por \'epoca respecto a las dem\'as
-variantes, extremo que se retoma al interpretar los resultados.
+Adem\'as del presupuesto, el tama\~no de lote de V3 y V4 se redujo a la mitad, ya que los
+dos transformadores operan a \num{224} p\'ixeles y comprometen la memoria gr\'afica
+disponible con lotes de \num{64} muestras. La reducci\'on se compensa acumulando el
+gradiente durante dos lotes antes de cada actualizaci\'on, de modo que el tama\~no de lote
+efectivo y el n\'umero de actualizaciones por \'epoca coinciden con los de V0, V1 y V2:
+\num{336} lotes y \num{168} actualizaciones frente a \num{168} lotes y otras tantas
+actualizaciones. Lo que s\'i cambia es el n\'umero de pasadas por el codificador, que se
+duplica, y con \'el el tiempo por \'epoca. La \cref{tab:memoria-gpu} matiza esta
+decisi\'on: con lote reducido V4 llega al \SI{90.3}{\percent} de la memoria de la tarjeta,
+de modo que la reducci\'on estaba justificada, mientras que V3 se queda en el
+\SI{78.2}{\percent} y dispon\'ia de m\'as margen. En V3 la medida no sostiene la necesidad
+y la reducci\'on debe leerse como cautela y como forma de igualar las condiciones de los
+dos transformadores.
 
 Cada entrenamiento se lanza mediante un script de control que fija los par\'ametros de
 ejecuci\'on, verifica la memoria disponible e impide que se ejecuten dos procesos de forma
@@ -361,8 +378,35 @@ ajustados con un umbral de \num{0.05}.
 El coste computacional se caracteriza mediante cuatro indicadores. El primero es el
 n\'umero de par\'ametros totales y entrenables de cada variante, recogido en la
 \cref{tab:variantes}. El segundo es el tiempo por paso de optimizaci\'on, medido tras la
-fase de calentamiento. El tercero es la latencia de inferencia para un lote de tama\~no
-fijo. El cuarto es el pico de memoria gr\'afica reservada durante el entrenamiento.
+fase de calentamiento y agregado por \'epoca en la \cref{tab:coste}. El tercero es la
+latencia de inferencia para un lote de tama\~no fijo. El cuarto es el pico de memoria
+gr\'afica reservada durante el entrenamiento. Los dos \'ultimos se reportan en el
+\cref{sec:coste-resultados}.
+
+La latencia se desglosa en tres magnitudes, porque una sola oculta el efecto que se
+estudia. Cada llamada a la pol\'itica ejecuta el codificador visual una vez y la red
+generativa cien veces, de modo que el tiempo total lo domina un componente id\'entico en
+las cinco variantes. Se reportan, por tanto, la latencia de la llamada completa, la del
+codificador aislado y la de la llamada dividida entre las ocho acciones que emite, esta
+\'ultima porque acota la frecuencia de control alcanzable. Las medidas se toman en
+precisi\'on \texttt{float32}, con lotes de \num{1} y \num{8} muestras, y se resumen
+mediante la mediana y el recorrido intercuart\'ilico de \num{50} repeticiones
+cronometradas, precedidas de \num{20} descartadas. Las repeticiones se alternan entre
+variantes por rondas, para que la deriva t\'ermica del equipo port\'atil afecte por igual
+a todas.
+
+El pico de memoria exige reproducir el paso de optimizaci\'on completo, ya que los
+gradientes, los momentos de AdamW y la copia de la media m\'ovil son justamente lo que
+ocupa la tarjeta. Se ejecutan doce pasos sobre lotes reales, con el tama\~no propio de cada
+variante, y se registra la memoria reservada por el asignador. Se acompa\~na del pico en
+inferencia, que describe lo que exigir\'ia un despliegue.
+
+Ambas medidas se toman en entornos de ejecuci\'on distintos y esa diferencia se declara en
+cada tabla. La latencia se mide en el entorno de inferencia sobre Windows y el pico de
+memoria en el entorno de WSL en el que se entren\'o, puesto que el asignador de memoria de
+PyTorch cambi\'o entre ambas versiones y una cifra tomada en Windows no describir\'ia las
+ejecuciones recogidas en la \cref{tab:coste}. Dentro de cada indicador, las cinco variantes
+comparten entorno.
 
 \section{Entorno de ejecuci\'on y reproducibilidad}
 \label{sec:entorno}

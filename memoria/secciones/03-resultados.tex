@@ -182,15 +182,149 @@ requiere \SI{1.6}{\minute} por \'epoca, frente a \SI{5.3}{\minute} en V1,
 multiplican el coste de la l\'inea base por factores entre \num{1.5} y \num{9.5}.
 
 V2 a\~nade la retropropagaci\'on a trav\'es del codificador y presenta el mayor coste por
-\'epoca. V4 duplica las actualizaciones debido a su lote de \num{32} muestras. V3 muestra,
-sin embargo, que operar a \num{224} p\'ixeles no determina por s\'i solo el tiempo: su
-codificador congelado queda m\'as cerca de V0 que de V1.
+\'epoca. V3 y V4 duplican el n\'umero de lotes al reducir su tama\~no a \num{32} muestras,
+si bien la acumulaci\'on de gradiente mantiene las actualizaciones por \'epoca en las
+\num{168} comunes a las cinco variantes. V3 muestra, sin embargo, que operar a \num{224}
+p\'ixeles no determina por s\'i solo el tiempo: su codificador congelado queda m\'as cerca
+de V0 que de V1.
 
 Conviene no confundir ese coste unitario con el tiempo total. V2 acumula \SI{84.9}{\hour}
 frente a las \SI{96.5}{\hour} de V1 pese a ser la variante m\'as cara por \'epoca, porque
 se detuvo antes. V3 solo suma \SI{10.9}{\hour} por la misma raz\'on. La comparaci\'on v\'alida
 entre variantes es el tiempo por \'epoca; el total de \SI{237.1}{\hour} describe el
 experimento ejecutado con presupuestos distintos.
+
+\divisionmenor{Latencia de inferencia}
+
+El tiempo de entrenamiento no describe el coste de usar la pol\'itica una vez ajustada. La
+\cref{tab:latencia} recoge la latencia de una llamada completa, medida sobre los puntos de
+control seleccionados y bajo el protocolo del \cref{sec:metricas}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Latencia de inferencia de las cinco variantes, en milisegundos.}
+  \label{tab:latencia}
+  \small
+  \begin{tabular}{lccccccc}
+    \toprule
+    & & \multicolumn{3}{c}{Lote de \num{1} muestra} & \multicolumn{3}{c}{Lote de \num{8} muestras} \\
+    \cmidrule(lr){3-5}\cmidrule(lr){6-8}
+    Variante & P\'ixeles & Llamada & Codificador & Por acci\'on
+             & Llamada & Codificador & Por acci\'on \\
+    \midrule
+    V0 & \num{76}  & \num{1743.9} & \num{3.0}  & \num{218.0} &
+                     \num{2080.8} & \num{3.1}  & \num{260.1} \\
+    V1 & \num{224} & \num{1727.1} & \num{2.7}  & \num{215.9} &
+                     \num{2094.6} & \num{10.5} & \num{261.8} \\
+    V2 & \num{224} & \num{1723.8} & \num{2.8}  & \num{215.5} &
+                     \num{2096.2} & \num{10.6} & \num{262.0} \\
+    V3 & \num{224} & \num{1731.9} & \num{8.4}  & \num{216.5} &
+                     \num{2168.3} & \num{44.1} & \num{271.0} \\
+    V4 & \num{224} & \num{1749.1} & \num{16.1} & \num{218.6} &
+                     \num{2253.9} & \num{131.8} & \num{281.7} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Mediana de \num{50} repeticiones cronometradas, precedidas de \num{20}
+    descartadas y alternadas entre variantes por rondas. El recorrido intercuart\'ilico no
+    supera los \SI{82.6}{\milli\second} en la columna de la llamada ni los
+    \SI{11.6}{\milli\second} en la del codificador. Condiciones: \num{100} pasos de
+    difusi\'on, \num{2} observaciones de entrada, \num{8} acciones de salida, precisi\'on
+    \texttt{float32}, entorno de inferencia sobre Windows con PyTorch \texttt{2.6.0} y
+    CUDA \texttt{12.4}. La columna de p\'ixeles indica la resoluci\'on que recibe el
+    codificador.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La llamada completa apenas distingue las variantes. Con lote unitario oscila entre
+\SI{1723.8}{\milli\second} en V2 y \SI{1749.1}{\milli\second} en V4, un margen del
+\SI{1.5}{\percent} que queda dentro de la dispersi\'on de las propias medidas. La causa es
+estructural: cada llamada ejecuta el codificador una vez y la red generativa cien, de modo
+que el tiempo lo domina un componente id\'entico en las cinco variantes. Una tabla que solo
+recogiera esa columna sugerir\'ia que el codificador no influye en el coste de inferencia,
+conclusi\'on que las dos columnas siguientes desmienten.
+
+El codificador aislado s\'i ordena las variantes. Con lote unitario va de
+\SI{2.7}{\milli\second} en V1 a \SI{16.1}{\milli\second} en V4, un factor de \num{5.9}.
+Con lote de ocho muestras la separaci\'on se ampl\'ia hasta un factor de \num{43}, entre
+\SI{3.1}{\milli\second} en V0 y \SI{131.8}{\milli\second} en V4. El contraste entre ambos
+lotes tambi\'en revela el efecto de la resoluci\'on: con una sola muestra, V0, V1 y V2 se
+separan menos de un milisegundo pese a operar a \num{76} y \num{224} p\'ixeles, porque a
+ese tama\~no domina el coste de lanzar los n\'ucleos y no el de la aritm\'etica; con ocho
+muestras, V0 mantiene sus \SI{3.1}{\milli\second} mientras V1 y V2 se van a
+\SI{10.5}{\milli\second}. En conjunto, el sobrecoste del codificador existe y sigue el
+orden esperado, pero se diluye en el muestreo iterativo.
+
+La tercera columna traduce el resultado a t\'erminos de control. Cada llamada emite ocho
+acciones, de modo que el coste por acci\'on se sit\'ua entre \SI{215.5}{\milli\second} y
+\SI{218.6}{\milli\second}, equivalente a unas \num{4.6} acciones por segundo. El
+simulador consume esas ocho acciones a \SI{10}{\hertz}, esto es, en \SI{0.8}{\second},
+frente a los \SI{1.7}{\second} que cuesta generarlas. Ninguna de las cinco variantes
+alcanza el control en tiempo real sobre este equipo con \num{100} pasos de difusi\'on, y la
+diferencia entre codificadores no cambia esa conclusi\'on: el margen est\'a en el n\'umero
+de pasos del muestreo, sobre el que act\'uan los planificadores acelerados y la
+destilaci\'on revisados en el \cref{sec:fundamentos-difusion}.
+
+\divisionmenor{Memoria gr\'afica}
+
+El \'ultimo indicador anunciado en el \cref{sec:metricas} es el pico de memoria gr\'afica
+reservada. La \cref{tab:memoria-gpu} lo recoge junto al pico en inferencia, que describe lo
+que exigir\'ia un despliegue.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Pico de memoria gr\'afica reservada, en gibibytes.}
+  \label{tab:memoria-gpu}
+  \small
+  \begin{tabular}{lcccccc}
+    \toprule
+    & & \multicolumn{3}{c}{Entrenamiento} & \multicolumn{2}{c}{Inferencia} \\
+    \cmidrule(lr){3-5}\cmidrule(lr){6-7}
+    Variante & Codificador & Lote & Reservado & Ocupaci\'on
+             & Lote \num{1} & Lote \num{8} \\
+    \midrule
+    V0 & Desde cero  & \num{64} & \num{6.447} & \SI{80.6}{\percent}  & \num{1.348} & \num{1.307} \\
+    V1 & Congelado   & \num{64} & \num{6.896} & \SI{86.2}{\percent}  & \num{1.355} & \num{1.395} \\
+    V2 & Ajuste fino & \num{64} & \num{10.293} & \SI{128.7}{\percent} & \num{1.355} & \num{1.375} \\
+    V3 & Congelado   & \num{32} & \num{6.252} & \SI{78.2}{\percent}  & \num{1.385} & \num{1.461} \\
+    V4 & Congelado   & \num{32} & \num{7.223} & \SI{90.3}{\percent}  & \num{1.646} & \num{1.807} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Memoria reservada por el asignador de PyTorch sobre una tarjeta de
+    \num{8} gibibytes; la ocupaci\'on es su cociente con esa capacidad. Medida sobre
+    \num{12} pasos de optimizaci\'on completos, con el lote propio de cada variante, en el
+    entorno de WSL empleado para entrenar, con PyTorch \texttt{1.12.1} y CUDA
+    \texttt{11.6}.
+    Cada combinaci\'on de variante y modo se midi\'o en un proceso independiente. V3 y V4
+    acumulan el gradiente durante dos lotes, de modo que su lote efectivo tambi\'en es de
+    \num{64} muestras.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+V2 es el caso extremo y el m\'as informativo. Su paso de optimizaci\'on reserva
+\num{10.293} gibibytes frente a los \num{8} de la tarjeta, un \SI{128.7}{\percent} de la
+capacidad disponible. La ejecuci\'on no aborta porque el controlador respalda el exceso con
+memoria del sistema, pero cada acceso que cae fuera de la tarjeta se paga en tiempo. Ah\'i
+est\'a la explicaci\'on de sus \SI{14.7}{\minute} por \'epoca, casi el triple que V1, con la
+que comparte arquitectura, pesos iniciales, resoluci\'on y tama\~no de lote. Lo \'unico que
+las separa es la retropropagaci\'on a trav\'es del codificador.
+
+Congelar el codificador, en cambio, no reduce el pico por s\'i solo. V1 reserva
+\num{6.896} gibibytes, por encima de los \num{6.447} de V0, porque opera a \num{224}
+p\'ixeles en lugar de \num{76}. Lo que la congelaci\'on ahorra son el gradiente y el estado
+del optimizador del codificador, once millones de par\'ametros frente a los \num{277}
+millones del resto de la pol\'itica; las activaciones del paso hacia delante se calculan
+igual. La memoria la determinan, por tanto, la resoluci\'on de entrada y el tama\~no de
+lote antes que la estrategia de entrenamiento, con la salvedad del ajuste fino, que a\~nade
+el grafo de retropropagaci\'on completo.
+
+Los dos transformadores se midieron con su lote de \num{32} muestras. V3 reserva
+\num{6.252} gibibytes y V4, \num{7.223}, el \SI{90.3}{\percent} de la tarjeta. Esa cifra de
+V4 respalda la reducci\'on de lote descrita en el \cref{sec:protocolo}; la de V3 deja
+bastante m\'as margen, de modo que en su caso la reducci\'on se explica mejor como cautela y
+como forma de mantener id\'enticas las condiciones de los dos transformadores. En
+inferencia el panorama se invierte: las cinco variantes ocupan entre \num{1.307} y
+\num{1.807} gibibytes, esto es, entre el \num{16} y el \SI{23}{\percent} de la tarjeta. El
+coste de memoria de este experimento es un problema de entrenamiento y no de despliegue.
 
 \section{Comprobaci\'on cualitativa}
 \label{sec:resultados-cualitativos}
@@ -251,9 +385,15 @@ ajuste fino en esta ejecuci\'on.
 La tercera hip\'otesis propon\'ia que los transformadores alcanzar\'ian un rendimiento
 comparable al de las redes convolucionales con mayor coste de inferencia. V3 y V4 quedan
 por debajo de V0, pero no se distinguen de V1 y V2 tras la correcci\'on familiar. Por tanto,
-los datos no muestran una ventaja de rendimiento propia de la arquitectura ViT. La parte
-relativa a inferencia no puede contrastarse porque no se midi\'o su latencia bajo un
-protocolo com\'un.
+los datos no muestran una ventaja de rendimiento propia de la arquitectura ViT.
+
+Su segunda parte, la relativa al coste, se cumple en el codificador y no en la pol\'itica.
+La \cref{tab:latencia} sit\'ua el codificador de V3 y V4 entre tres y seis veces por encima
+del de las variantes convolucionales, y la distancia crece con el tama\~no de lote. La
+llamada completa, en cambio, apenas var\'ia un \SI{1.5}{\percent} entre las cinco, porque
+los \num{100} pasos de difusi\'on diluyen esa diferencia. El mayor coste de inferencia de
+los transformadores es real y medible, pero no se traduce en un coste apreciable de la
+pol\'itica en la configuraci\'on evaluada.
 
 \section{Limitaciones}
 \label{sec:limitaciones}

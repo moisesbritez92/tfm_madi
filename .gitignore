@@ -9,3 +9,4 @@ diffuser/repo
 diffuser/models
 models
 .DS_Store
+__pycache__/
