@@ -1,0 +1,19 @@
+%% notacion.tex — macros de la charla, alineadas con la memoria (cap. Metodologia)
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\est}[1]{\hat{#1}}
+
+% Notacion de Diffusion Policy, identica a la de la memoria
+\newcommand{\Obs}{\mathbf{O}_t}            % observaciones de los ultimos T_o instantes
+\newcommand{\Act}[1]{\mathbf{A}^{#1}_t}    % secuencia de T_p acciones futuras
+\newcommand{\rnet}{\epsilon_\theta}        % red que predice el ruido
+\newcommand{\rui}{\epsilon^k}              % ruido inyectado en el paso de difusion k
+
+% "donde ..." debajo de una ecuacion, en gris y pequeno
+\newcommand{\donde}[1]{\par\vspace{0.35em}{\small\color{tsMute}donde #1}}

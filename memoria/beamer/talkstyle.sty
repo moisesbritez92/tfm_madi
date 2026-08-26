@@ -1,0 +1,203 @@
+%% talkstyle.sty — estilo sobrio para charlas academicas
+%% Uso: \usepackage[oxford,serif]{talkstyle}
+%%   Paletas: oxford (azul/granate) | slate (grafito/teal) | ember (tinta/ambar)
+%%   Tipografia: serif (por defecto) | sans | latin
+%% Todo se degrada con elegancia si faltan paquetes de fuentes.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{talkstyle}[2026/08/26 v1.0 estilo charla academica]
+
+\RequirePackage{xcolor}
+\RequirePackage{etoolbox}
+
+% ---------------------------------------------------------------- opciones
+\def\ts@palette{oxford}
+\def\ts@font{serif}
+\DeclareOption{oxford}{\def\ts@palette{oxford}}
+\DeclareOption{slate}{\def\ts@palette{slate}}
+\DeclareOption{ember}{\def\ts@palette{ember}}
+\DeclareOption{serif}{\def\ts@font{serif}}
+\DeclareOption{sans}{\def\ts@font{sans}}
+\DeclareOption{latin}{\def\ts@font{latin}}
+\DeclareOption*{}
+\ProcessOptions\relax
+
+% ---------------------------------------------------------------- color
+% Regla: 1 color estructural + 1 acento (solo para dirigir la mirada) + grises.
+\definecolor{tsInk}{HTML}{1A1A1A}
+\definecolor{tsMute}{HTML}{767676}
+\definecolor{tsRule}{HTML}{D6D6D6}
+\definecolor{tsWash}{HTML}{F3F2EF}
+\ifdefstring{\ts@palette}{oxford}{%
+  \definecolor{tsPrimary}{HTML}{0B2E4F}\definecolor{tsAccent}{HTML}{A3182A}}{}
+\ifdefstring{\ts@palette}{slate}{%
+  \definecolor{tsPrimary}{HTML}{1F2937}\definecolor{tsAccent}{HTML}{0F766E}}{}
+\ifdefstring{\ts@palette}{ember}{%
+  \definecolor{tsPrimary}{HTML}{2E2A26}\definecolor{tsAccent}{HTML}{B45309}}{}
+
+% ---------------------------------------------------------------- fuentes
+% \ifts@scalable: las fuentes vectoriales admiten expansion de microtype; las
+% bitmap de Computer Modern no, y provocan un error fatal si se activa.
+\newif\ifts@scalable
+\usefonttheme{professionalfonts}
+\ifdefstring{\ts@font}{serif}{%
+  \IfFileExists{newtxtext.sty}{\RequirePackage{newtxtext}\RequirePackage[varg]{newtxmath}\ts@scalabletrue}{%
+    \IfFileExists{mathpazo.sty}{\RequirePackage[osf]{mathpazo}\linespread{1.04}\ts@scalabletrue}{%
+      \IfFileExists{mathptmx.sty}{\RequirePackage{mathptmx}\ts@scalabletrue}{}}}%
+  \renewcommand{\familydefault}{\rmdefault}%
+}{}
+\ifdefstring{\ts@font}{sans}{%
+  \IfFileExists{FiraSans.sty}{\RequirePackage[sfdefault,scaled=1.02]{FiraSans}\ts@scalabletrue}{%
+    \IfFileExists{sourcesanspro.sty}{\RequirePackage[default]{sourcesanspro}\ts@scalabletrue}{%
+      \IfFileExists{helvet.sty}{\RequirePackage[scaled=0.94]{helvet}\ts@scalabletrue}{}}}%
+  \renewcommand{\familydefault}{\sfdefault}%
+  \usefonttheme[onlymath]{serif}% las matematicas siempre en serif: se leen mejor
+}{}
+\ifdefstring{\ts@font}{latin}{%
+  \IfFileExists{lmodern.sty}{\RequirePackage{lmodern}\ts@scalabletrue}{}%
+  \usefonttheme{serif}\renewcommand{\familydefault}{\rmdefault}%
+}{}
+\ifts@scalable
+  \IfFileExists{microtype.sty}{\RequirePackage{microtype}}{}
+\else
+  \IfFileExists{microtype.sty}{\RequirePackage[expansion=false]{microtype}}{}
+\fi
+
+% ---------------------------------------------------------------- lienzo
+\setbeamersize{text margin left=1.15em,text margin right=1.15em}
+\setbeamertemplate{navigation symbols}{}
+\setbeamercolor{normal text}{fg=tsInk,bg=white}
+\setbeamercolor{structure}{fg=tsPrimary}
+\setbeamercolor{alerted text}{fg=tsAccent}
+\setbeamercolor{title}{fg=tsPrimary}
+\setbeamercolor{frametitle}{fg=tsPrimary,bg=}
+\setbeamercolor{framesubtitle}{fg=tsMute}
+\setbeamercolor{footline}{fg=tsMute,bg=}
+\setbeamercolor{itemize item}{fg=tsPrimary}
+\setbeamercolor{itemize subitem}{fg=tsMute}
+\setbeamercolor{enumerate item}{fg=tsPrimary}
+\setbeamercolor{caption name}{fg=tsMute}
+\setbeamercolor{caption}{fg=tsMute}
+
+\setbeamerfont{title}{size=\LARGE,series=\bfseries}
+\setbeamerfont{subtitle}{size=\normalsize,series=\mdseries}
+\setbeamerfont{author}{size=\normalsize}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{date}{size=\small}
+\setbeamerfont{frametitle}{size=\large,series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\small,series=\mdseries,shape=\itshape}
+\setbeamerfont{footline}{size=\tiny}
+\setbeamerfont{caption}{size=\scriptsize}
+
+% ---------------------------------------------------------------- titulo de frame
+\setbeamertemplate{frametitle}{%
+  \vspace*{0.85em}%
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=1.15em,rightskip=1.15em]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\par
+    \ifx\insertframesubtitle\@empty\else
+      {\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle\par}%
+    \fi
+    \vspace{0.35em}{\color{tsRule}\hrule height 0.4pt}%
+  \end{beamercolorbox}%
+  \vspace{0.4em}%
+}
+
+% ---------------------------------------------------------------- pie
+\setbeamertemplate{footline}{%
+  \hbox{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.4ex,dp=1.6ex,leftskip=1.2em,rightskip=1.2em]{footline}%
+    \usebeamerfont{footline}\insertshortauthor\hfill\insertshorttitle\hfill\insertframenumber\,/\,\inserttotalframenumber%
+  \end{beamercolorbox}}%
+}
+
+% ---------------------------------------------------------------- portada
+\setbeamertemplate{title page}{%
+  \vfill
+  {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}%
+  \ifx\insertsubtitle\@empty\else
+    {\vspace{0.35em}\usebeamerfont{subtitle}\color{tsMute}\insertsubtitle\par}%
+  \fi
+  \vspace{0.9em}{\color{tsAccent}\hrule height 1.4pt width 3.2em}\vspace{0.9em}
+  {\usebeamerfont{author}\insertauthor\par}%
+  {\usebeamerfont{institute}\color{tsMute}\insertinstitute\par}%
+  \vspace{0.7em}{\usebeamerfont{date}\color{tsMute}\insertdate\par}%
+  \vfill
+}
+
+% ---------------------------------------------------------------- separador de seccion
+\AtBeginSection[]{%
+  \begin{frame}[plain,noframenumbering]
+    \vfill
+    {\color{tsMute}\small\S\,\insertsectionnumber}\par\vspace{0.2em}
+    {\usebeamerfont{frametitle}\color{tsPrimary}\Large\insertsectionhead\par}
+    \vspace{0.6em}{\color{tsAccent}\hrule height 1.2pt width 2.4em}
+    \vfill
+  \end{frame}%
+}
+
+% ---------------------------------------------------------------- listas
+\setbeamertemplate{itemize item}{\raisebox{0.28ex}{\rule{0.55em}{0.9pt}}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.28ex}{\rule{0.4em}{0.7pt}}}
+\setbeamertemplate{itemize subsubitem}{\raisebox{0.28ex}{\rule{0.3em}{0.6pt}}}
+\setbeamertemplate{enumerate item}{\insertenumlabel.}
+\addtobeamertemplate{itemize/enumerate body begin}{\setlength{\itemsep}{0.55em}}{}
+\addtobeamertemplate{itemize/enumerate subbody begin}{\setlength{\itemsep}{0.3em}}{}
+
+% ---------------------------------------------------------------- bloques y pies de figura
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\setbeamertemplate{caption label separator}{}
+\setbeamertemplate{bibliography item}{}
+\setbeamertemplate{blocks}[default]
+\setbeamercolor{block title}{fg=white,bg=tsPrimary}
+\setbeamercolor{block body}{fg=tsInk,bg=tsWash}
+\setbeamerfont{block title}{size=\normalsize,series=\bfseries}
+
+% Estilo por defecto de pgfplots: ejes limpios, sin marco, sin separador de miles
+% en los anos, tipografia del cuerpo y trazos gruesos para que se vean de lejos.
+\AtBeginDocument{%
+  \@ifpackageloaded{pgfplots}{%
+    \pgfplotsset{
+      every axis/.append style={
+        axis lines=left, tick align=outside, tick style={color=tsMute},
+        every axis label/.append style={font=\small},
+        tick label style={font=\small},
+        label style={color=tsInk},
+        legend style={draw=none,fill=none,font=\small},
+        legend cell align=left,
+        scaled ticks=false,
+        /pgf/number format/1000 sep={},
+      },
+      every axis plot/.append style={very thick},
+    }%
+  }{}%
+}
+
+% Caja de "esto es lo que hay que recordar"
+% (el cuerpo va fuera de \IfFileExists: un #1 dentro de sus argumentos rompe la
+%  definicion con "Illegal parameter number")
+\newif\ifts@tcb
+\IfFileExists{tcolorbox.sty}{\ts@tcbtrue}{\ts@tcbfalse}
+\ifts@tcb
+  \RequirePackage[most]{tcolorbox}
+  \newtcolorbox{keypoint}[1][]{enhanced,colback=tsWash,colframe=tsWash,boxrule=0pt,
+    arc=0pt,outer arc=0pt,left=0.9em,right=0.9em,top=0.55em,bottom=0.55em,
+    borderline west={2.2pt}{0pt}{tsAccent},#1}
+\else
+  \newenvironment{keypoint}[1][]{\par\medskip\leftskip=1em\color{tsInk}}%
+    {\par\medskip\leftskip=0pt}
+\fi
+
+% Frase de cierre al pie de una diapositiva (usar como mucho en 1 de cada 3)
+\newcommand{\takeaway}[1]{%
+  \vfill\noindent{\color{tsAccent}\rule[-0.2em]{2.2pt}{1.05em}}\hspace{0.5em}%
+  {\small #1}\par\vspace{0.15em}}
+
+% Fuente / cita discreta en la esquina
+\newcommand{\src}[1]{\par\vspace{0.3em}{\scriptsize\color{tsMute}#1}}
+
+% ---------------------------------------------------------------- macros de enfasis
+\newcommand{\hl}[1]{\textcolor{tsAccent}{#1}}      % resaltar (texto o matematicas)
+\newcommand{\fade}[1]{\textcolor{tsMute}{#1}}      % apagar lo secundario
+\newcommand{\ann}[2]{\underbrace{#1}_{\text{\scriptsize\color{tsMute}#2}}}  % anotar debajo
+\newcommand{\annup}[2]{\overbrace{#1}^{\text{\scriptsize\color{tsMute}#2}}} % anotar encima
+
+\endinput
