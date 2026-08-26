@@ -16,13 +16,15 @@ from pathlib import Path
 from scipy.stats import wilcoxon
 
 ROOT = Path(__file__).resolve().parents[2]
-RAW_DIR = ROOT / "logs_entrenamiento_2026-08-24" / "raw"
+RAW_DIR = ROOT / "logs_entrenamiento" / "raw"
 OUT_DIR = ROOT / "memoria" / "datos"
 
 VARIANTS = {
     "v0": "V0: ResNet-18 desde cero",
     "v1": "V1: ResNet-18 congelada",
     "v2": "V2: ResNet-18 con ajuste fino",
+    "v3": "V3: DINOv2 ViT-S/14 congelada",
+    "v4": "V4: CLIP ViT-B/16 congelada",
 }
 
 # Selected checkpoint and published mean score of each variant.
@@ -30,6 +32,8 @@ SELECTED = {
     "v0": (350, 0.8645003451686891),
     "v1": (150, 0.6675816882533911),
     "v2": (150, 0.6477134479849783),
+    "v3": (100, 0.6224012451194982),
+    "v4": (100, 0.5351329876277153),
 }
 
 LAST_K = 3
@@ -72,7 +76,7 @@ def describe(scores):
 
 
 def validate(evaluations_by_variant):
-    expected_counts = {"v0": 10, "v1": 10, "v2": 6}
+    expected_counts = {"v0": 10, "v1": 10, "v2": 6, "v3": 4, "v4": 4}
     for variant, (epoch, score) in SELECTED.items():
         evaluations = evaluations_by_variant[variant]
         assert len(evaluations) == expected_counts[variant]
@@ -118,7 +122,16 @@ def main():
 
     print()
     comparisons = []
-    for first, second in (("v0", "v1"), ("v0", "v2"), ("v1", "v2")):
+    pairs = (
+        ("v0", "v1"),
+        ("v0", "v2"),
+        ("v1", "v2"),
+        ("v0", "v3"),
+        ("v0", "v4"),
+        ("v1", "v3"),
+        ("v3", "v4"),
+    )
+    for first, second in pairs:
         a = evaluations_by_variant[first][SELECTED[first][0]]
         b = evaluations_by_variant[second][SELECTED[second][0]]
         # Normal approximation: the paired differences contain zeros, so the

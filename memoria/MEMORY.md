@@ -59,7 +59,7 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
    y contraste entre semillas quedan declarados fuera de alcance.
 8. **24 de agosto de 2026: el coste de computo real, no la proyeccion.** La metodologia
    afirmaba que las cinco variantes sumaban «unas 75 horas de GPU», cifra proyectada desde
-   V0. Los logs de `../logs_entrenamiento_2026-08-24/` dan **casi 200 h solo para V0, V1 y
+   V0. Los logs de `../logs_entrenamiento/` dan **casi 200 h solo para V0, V1 y
    V2** (cifra afinada a 198,8 h en la decision 9): 17,4 + 96,5 + 84,9 h. El apartado 3.9
    (`sec:coste`) separa el tiempo del bucle de optimizacion (121,6 h) del tiempo total
    transcurrido, que incluye validacion y rollouts. V0 y V2 solo conservan el cronometro
@@ -122,6 +122,24 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
    139 h totales frente a 121,6 y 198,8. El unico punto de control que cambiaria es el de
    V0 (epoca 200, 0,8643 frente a 0,8645): ninguna conclusion depende de eso.
    Las cifras de puntuacion pasaron a **tres decimales** en todo el documento.
+
+13. **26 de agosto de 2026: entran V3 y V4.** Se copiaron sus checkpoints desde WSL a
+    `../diffuser/models/V{3,4}/` (SHA-256 verificado) y se exportaron sus logs a
+    `../logs_entrenamiento/`, carpeta que perdio la fecha del nombre. Cifras: **V3
+    (DINOv2 ViT-S/14 congelada) 0,622 en la epoca 100** y **V4 (CLIP ViT-B/16 congelada)
+    0,535 en la epoca 100**. Dos matices que la redaccion no puede pasar por alto:
+    **(a) el presupuesto de epocas no fue uniforme** — 500 en V0 y V1, 300 en V2 y V3,
+    200 en V4 —, asi que V3 y V4 solo tienen 4 evaluaciones frente a las 10 de V0 y V1,
+    y V3 quedo detenido en la epoca 154 de sus 300. **(b) el orden entre las cuatro
+    variantes no ganadoras no es estadisticamente distinguible**: V1-V2 p = 0,82,
+    V1-V3 p = 0,46 y V3-V4 p = 0,14, mientras que V0 supera a las cuatro con p < 0,001.
+    La conclusion se refuerza: lo que separa a V0 no es la familia de codificador sino su
+    entrenamiento conjunto con la politica.
+    La exportacion dejo de ser manual. `../diffuser/scripts/exportar_logs_wsl.sh` vuelca
+    logs, config efectiva y un `raw/*_meta.json` con la mtime del log (de ahi sale el
+    campo `end`, que no existe dentro del JSON); `scripts/resumen_entrenamiento.py`
+    reconstruye el CSV de tiempos por epoca y la entrada de `resumen.json`. El parser se
+    valido contra V1: reproduce sus 500 epocas y sus 157.702 s exactos.
 
 ## Origen de la bibliografia
 
@@ -205,11 +223,26 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
       30 y 60 \euro/h de coste horario, 1.800 \euro de precio del portatil, siete meses de
       imputacion (marzo-septiembre de 2026) y 15 % de costes indirectos. Si cambia alguno,
       recalcular la Tabla 13; el total actual es 18.685,51 \euro.
-- [ ] Revisar conclusiones, resumen y abstract cuando entren V3 y V4: hay un
+- [ ] Revisar conclusiones, resumen y abstract ahora que V3 y V4 existen: hay un
       `[PENDIENTE: resultados de V3 y V4]` al final del apartado 5.1, y tanto el resumen
       como el abstract dicen que solo se completaron las tres variantes convolucionales.
-- [ ] Completar la Tabla 7 (`sec:coste`) con V3 y V4 cuando terminen de entrenarse; ahora
-      figuran como «en ejecucion».
+      Usar 0,622 (V3) y 0,535 (V4), y decir que ninguna de las cuatro variantes con
+      codificador preentrenado se distingue de las otras tres con significacion.
+- [ ] Completar la Tabla 7 (`sec:coste`) con V3 y V4: **5 h 52 min de bucle y 10,9 h
+      totales en V3** (155 epocas cronometradas, 2 min 16 s por epoca) y **13 h 20 min de
+      bucle y 27,4 h totales en V4** (200 epocas, 4 min 0 s por epoca). Ojo: son los
+      unicos dos runs con cronometro completo junto a V1, no llevan daga.
+- [ ] Rehacer el `[PENDIENTE]` del apartado sobre el presupuesto de epocas: la
+      metodologia dice 500 como maximo, pero V2 y V3 se lanzaron con 300 y V4 con 200.
+- [ ] **Decidir si se rehace la fila de V0 en la Tabla 7.** Al validar
+      `scripts/resumen_entrenamiento.py` aparecio que el log de V0 si conserva las
+      **500 epocas cronometradas, no 89**: la extraccion manual de agosto se dejo 411 por
+      un patron demasiado estricto. El total medido son **46.793 s = 13,0 h de bucle**,
+      frente a las 12,4 h que hoy figuran extrapoladas y marcadas con daga. La diferencia
+      es del 4,6 %, asi que ninguna conclusion cambia, pero la daga de V0 sobraria y el
+      total del bucle subiria. El CSV de V0 **no se ha tocado** para no mover cifras que
+      ya estan citadas en cuatro capitulos; para rehacerlo basta
+      `python memoria/scripts/resumen_entrenamiento.py v0`.
 - [x] Versiones exactas de Hydra y Zarr en el entorno de WSL, consultadas en la maquina de
       entrenamiento el 25 de agosto de 2026: **hydra-core 1.2.0 y zarr 2.12.0**, ya en la
       Tabla 6 y en `../CLAUDE.md`. Faltaban porque ni `CLAUDE.md` ni
@@ -223,8 +256,8 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
       `secciones/00-introduccion.tex`, apartado 1.2.
 - [x] Autor y ano de la monografia propia sobre Diffusion Policy: Moises Britez, 2026,
       registrados en `bib/bibliografia.bib`.
-- [ ] Resultados de V3 (DINOv2) y V4 (CLIP): pendientes de entrenar, sin ellos el capitulo
-      de resultados queda incompleto.
+- [x] Resultados de V3 (DINOv2) y V4 (CLIP): entrenados y volcados el 26 de agosto de
+      2026. Ver la decision 13.
 - [ ] Decidir si el encabezado se mantiene con filete y cursiva o se simplifica.
 - [ ] **Del informe de evaluacion, lo que necesita GPU o acceso a WSL** (ver
       `../../respuestas_evaluador.md`): evaluar los tres puntos de control sobre semillas

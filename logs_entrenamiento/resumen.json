@@ -82,5 +82,61 @@
     "n_ckpt": 4,
     "start": "2026-08-19 15:00:46",
     "end": "2026-08-24 05:46:55.074825"
+  },
+  "v3": {
+    "variant": "pusht_v3_dinov2_vits14_frozen",
+    "num_epochs_cfg": 300,
+    "max_epoch": 155,
+    "epochs_logged": 155,
+    "last_step": 51800,
+    "train_epochs_timed": 155,
+    "total_train_secs": 21094.0,
+    "avg_epoch": 136.09032258064516,
+    "last_train_loss": 0.008414873853325844,
+    "last_val_loss": null,
+    "n_rollouts": 4,
+    "first_score": [
+      0,
+      0.11772328643117172
+    ],
+    "last_score": [
+      150,
+      0.5792086416297612
+    ],
+    "best": [
+      100,
+      0.6224012451194982
+    ],
+    "n_ckpt": 4,
+    "start": "2026-08-26 03:01:57",
+    "end": "2026-08-26 13:57:38.091721"
+  },
+  "v4": {
+    "variant": "pusht_v4_clip_vitb16_frozen",
+    "num_epochs_cfg": 200,
+    "max_epoch": 200,
+    "epochs_logged": 200,
+    "last_step": 67199,
+    "train_epochs_timed": 200,
+    "total_train_secs": 48007.0,
+    "avg_epoch": 240.035,
+    "last_train_loss": 0.0039483073893885985,
+    "last_val_loss": 0.24304930865764618,
+    "n_rollouts": 4,
+    "first_score": [
+      0,
+      0.15540529668595482
+    ],
+    "last_score": [
+      150,
+      0.4352777409684637
+    ],
+    "best": [
+      100,
+      0.5351329876277153
+    ],
+    "n_ckpt": 4,
+    "start": "2026-08-24 13:14:30",
+    "end": "2026-08-25 16:37:24.566657"
   }
 }

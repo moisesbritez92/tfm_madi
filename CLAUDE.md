@@ -13,10 +13,22 @@ visuales como `obs_encoder` de una Diffusion Policy sobre Push-T. Ver
 | `diffuser/repo/diffusion_policy/` | Respaldo del repo upstream en Windows. | No (`.gitignore:8`) |
 
 Los entrenamientos y sus resultados completos viven en WSL, que es la fuente autoritativa.
-Los checkpoints seleccionados de V0, V1 y V2 también están copiados en
-`diffuser/models/{V0,V1,V2}/` para inferencia en Windows; esa carpeta está ignorada por
-git. Si se toca una config o un módulo del modelo en WSL, no está versionado: hay que
-copiarlo a mano al repo.
+Los checkpoints seleccionados de V0 a V4 también están copiados en
+`diffuser/models/{V0..V4}/` para inferencia en Windows; esa carpeta está ignorada por
+git y ocupa unos 60 GB. Si se toca una config o un módulo del modelo en WSL, no está
+versionado: hay que copiarlo a mano al repo.
+
+Para traer un run nuevo desde WSL hay dos scripts, y **no se hace a mano**:
+
+```bash
+# logs, config efectiva y metadatos -> logs_entrenamiento/raw/
+wsl -d Ubuntu -- bash -c "/tmp/exportar_logs_wsl.sh v3 42"   # diffuser/scripts/exportar_logs_wsl.sh
+# CSV de tiempos por epoca + entrada en resumen.json
+python memoria/scripts/resumen_entrenamiento.py v3 v4
+```
+
+Los checkpoints se copian aparte con `rsync -ah --info=progress2` desde el lado WSL (la
+escritura a `/mnt/c` va por 9p, ~50 MB/s) y se verifican comparando `sha256sum`.
 
 ## Entorno (WSL2 Ubuntu 24.04)
 
@@ -105,18 +117,23 @@ las 56, no sobre `n_envs`. Solo cambia el tiempo de pared del rollout.
 | V0 | ResNet-18 scratch | ✅ 500 épocas. Mejor `test_mean_score` **0,8645** (época 350) |
 | V1 | ResNet-18 ImageNet frozen | ✅ 500 épocas. Mejor checkpoint **0,668** (época 150) |
 | V2 | ResNet-18 ImageNet fine-tune | ⏹️ detenido en época 266. Mejor `test_mean_score` **0,6477** (época 150) |
-| V3 | DINOv2 ViT-S/14 frozen | ⬜ pendiente |
-| V4 | CLIP ViT-B/16 frozen | ⬜ pendiente |
+| V3 | DINOv2 ViT-S/14 frozen | ⏹️ detenido en época 154 (presupuesto 300). Mejor **0,6224** (época 100) |
+| V4 | CLIP ViT-B/16 frozen | ✅ 200 épocas (presupuesto agotado). Mejor **0,5351** (época 100) |
 
 V2 se detuvo de forma deliberada: después del máximo de la época 150, el score bajó a
 0,5487 (época 200) y 0,5590 (época 250) mientras la pérdida de entrenamiento seguía
 descendiendo, señal compatible con sobreajuste. No debe describirse como un run de 500
 épocas completado.
 
-Fase 1 = 1 seed (42) × 500 épocas × 5 variantes; se han ejecutado 3 de 5. Todas las
+**El presupuesto de épocas no fue el mismo para todas las variantes**: 500 en V0 y V1,
+300 en V2 y V3, 200 en V4. Se recortó a medida que el coste por época crecía. Por eso V3
+y V4 solo tienen 4 evaluaciones de rollout, frente a las 10 de V0 y V1, y por eso **el
+tiempo total no sirve para comparar variantes**: hay que usar los minutos por época.
+
+Fase 1 = 1 seed (42) × 5 variantes, **completada el 26 de agosto de 2026**. Todas las
 métricas anteriores agregan los 50 entornos de test con seeds 100000–100049; la seed 42
 es la del entrenamiento. Fase 2 = seeds 43 y 44 sobre las 3 variantes seleccionadas.
-Referencia de duración: V0 tardó ~17 h.
+Referencia de duración: V0 tardó ~17 h; V1, ~96 h.
 
 ## Dónde están los resultados
 
@@ -129,9 +146,14 @@ data/outputs/encoder_exp/<variante>_seed<seed>/
 ```
 
 Para inferencia gráfica en Windows están los notebooks
-`diffuser/inferencia_v{0,1,2}_pusht.ipynb` y las copias de checkpoints en
-`diffuser/models/V{0,1,2}/`. Los logs, configs efectivas y medios completos permanecen
-en WSL.
+`diffuser/inferencia_v{0,1,2,3,4}_pusht.ipynb` y las copias de checkpoints en
+`diffuser/models/V{0..4}/`. Los logs, configs efectivas y medios completos permanecen
+en WSL, con copia de los logs en `logs_entrenamiento/`.
+
+El entorno de inferencia de Windows es `.venv_diffuser_infer` (Python 3.11, torch
+2.6.0+cu124, **timm 1.0.7**). Aunque se entrenó con timm 0.9.16, los checkpoints de V3 y
+V4 cargan sin desajustes: `load_policy_bundle` fuerza `rgb_model.pretrained = False`, así
+que no se descarga nada de HuggingFace y `load_state_dict` no se queja.
 
 `logs.json.txt` se lee con `read_json_log()` de `diffusion_policy/common/json_logger.py`.
 Cuidado: `JsonLogger` abre en modo append y hace `json.loads` de la última línea al

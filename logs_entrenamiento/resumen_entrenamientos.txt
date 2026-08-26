@@ -51,6 +51,40 @@ Generado: 2026-08-24 18:39:41
   Ultimo score       : epoch 250 -> 0.5590
   Checkpoints (.ckpt): 4
 
+--- V3: pusht_v3_dinov2_vits14_frozen ---
+  Run dir            : data/outputs/encoder_exp/v3_seed42
+  Inicio (train.log) : 2026-08-26 03:01:57
+  Fin (logs.json.txt): 2026-08-26 13:57:38.091721
+  Epocas registradas : 155 (indice maximo 154)
+  Presupuesto (cfg)  : 300 epocas
+  Global steps       : 51800
+  Epocas cronometradas (tqdm): 155
+  Tiempo acumulado entrenamiento: 5h 51m 34s
+  Tiempo medio por epoca        : 2m 16s
+  Ultimo train_loss  : 0.00841
+  Ultimo val_loss    : n/d
+  Rollouts evaluados : 4
+  Mejor score        : epoch 100 -> test/mean_score=0.6224
+  Ultimo score       : epoch 150 -> 0.5792
+  Checkpoints (.ckpt): 4
+
+--- V4: pusht_v4_clip_vitb16_frozen ---
+  Run dir            : data/outputs/encoder_exp/v4_seed42
+  Inicio (train.log) : 2026-08-24 13:14:30
+  Fin (logs.json.txt): 2026-08-25 16:37:24.566657
+  Epocas registradas : 200 (indice maximo 199)
+  Presupuesto (cfg)  : 200 epocas
+  Global steps       : 67199
+  Epocas cronometradas (tqdm): 200
+  Tiempo acumulado entrenamiento: 13h 20m 07s
+  Tiempo medio por epoca        : 4m 00s
+  Ultimo train_loss  : 0.00395
+  Ultimo val_loss    : 0.24305
+  Rollouts evaluados : 4
+  Mejor score        : epoch 100 -> test/mean_score=0.5351
+  Ultimo score       : epoch 150 -> 0.4353
+  Checkpoints (.ckpt): 4
+
 NOTAS
 -----
 - Tiempos de entrenamiento extraidos de las barras tqdm del log crudo
@@ -62,3 +96,10 @@ NOTAS
   config num_epochs=300, por lo que el run quedo detenido en epoch 266.
 - Epocas 0-indexadas: "500 epocas registradas" = indices 0..499.
 - test/mean_score proviene de rollouts de evaluacion cada 50 epocas (10 max).
+- v3 y v4 se exportaron el 26/08/2026 con diffuser/scripts/exportar_logs_wsl.sh
+  y se resumieron con memoria/scripts/resumen_entrenamiento.py; sus secciones no
+  se escribieron a mano. v3 quedo detenido en epoch 154 de un presupuesto de 300;
+  v4 agoto su presupuesto de 200 epocas. Ambos solo tienen 4 rollouts, frente a
+  los 10 de v0 y v1, porque su presupuesto de epocas fue menor.
+- La carpeta se llamaba logs_entrenamiento_2026-08-24 y se renombro el 26/08/2026
+  al incorporar v3 y v4; la fecha de cada exportacion vive en raw/*_meta.json.
