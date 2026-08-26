@@ -16,27 +16,23 @@ the performance of a \textit{Diffusion Policy} on the Push-T task. To that end, 
 encoder variants are implemented within the same policy: a ResNet-18 trained from scratch,
 the same network pretrained on ImageNet in frozen and fine-tuned versions, and two frozen
 vision transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a
-\num{512}-component vector and share the generative network, the hyperparameters, the data
-and the evaluation protocol, so that the encoder is the only manipulated variable.
-Training uses \num{206} teleoperated demonstrations and a maximum budget of \num{500}
-epochs with early stopping. Evaluation measures the mean coverage score over \num{50}
-episodes generated with held-out seeds, together with the compute time consumed.
+\num{512}-component vector and share the generative network, the data, and the evaluation
+protocol.
+Training uses \num{206} teleoperated demonstrations and budgets ranging from \num{200} to
+\num{500} epochs, with early stopping. Evaluation measures the mean coverage score over
+\num{50} episodes generated with held-out seeds, together with the compute time consumed.
 
-The reported results correspond to the three completed convolutional variants, since the
-two transformer-based ones are still running. The baseline trained from scratch reaches a
-score of \num{0.864}, against \num{0.668} for the frozen variant and \num{0.648} for
-the fine-tuned one, drops of \SI{23}{\percent} and \SI{25}{\percent} whose confidence
-intervals exclude zero. Pretraining does not
-pay off in cost either: each baseline epoch takes \SI{1.5}{\minute}, against
-\SI{5.3}{\minute} and \SI{14.7}{\minute} for the pretrained variants, and the three runs
-add up to almost \num{200} hours of graphics processing. That overhead is attributed to
-the input resolution rather than to the number of trainable parameters, which barely
-varies across variants.
+The baseline trained from scratch reaches \num{0.864}. The four pretrained variants score
+\num{0.668}, \num{0.648}, \num{0.622}, and \num{0.535}. V0 outperforms all of them after
+the ten pairwise tests are corrected with Holm's procedure. By contrast, no difference
+among the pretrained variants exceeds the family-wise \SI{5}{\percent} threshold. Each V0
+epoch takes \SI{1.6}{\minute}, compared with \SI{2.3}{\minute} to \SI{14.7}{\minute} for
+the other variants. The five runs total \SI{237.1}{\hour}.
 
-The study concludes that, on Push-T and with few demonstrations, supervised pretraining on
-natural images degrades performance and makes training more expensive. The advantage of
-the baseline must be ascribed to the encoder together with its preprocessing pipeline,
-since both vary jointly.
+The study concludes that, on Push-T and with few demonstrations, none of the evaluated
+pretrained visual blocks improves the baseline in performance or cost. This advantage must
+be ascribed to the encoder together with its preprocessing pipeline, since both vary
+jointly.
 
 \vspace{1em}
 \noindent\textbf{Keywords:} imitation learning, diffusion models, visual encoder, transfer

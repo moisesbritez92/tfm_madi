@@ -3,7 +3,7 @@
 Estado y decisiones de la redaccion en LaTeX. El README.md documenta el uso; este
 fichero documenta el *porque* y lo que hay pendiente.
 
-Ultima actualizacion: 25 de agosto de 2026.
+Ultima actualizacion: 26 de agosto de 2026.
 
 ## Que es esto
 
@@ -131,8 +131,9 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
     **(a) el presupuesto de epocas no fue uniforme** — 500 en V0 y V1, 300 en V2 y V3,
     200 en V4 —, asi que V3 y V4 solo tienen 4 evaluaciones frente a las 10 de V0 y V1,
     y V3 quedo detenido en la epoca 154 de sus 300. **(b) el orden entre las cuatro
-    variantes no ganadoras no es estadisticamente distinguible**: V1-V2 p = 0,82,
-    V1-V3 p = 0,46 y V3-V4 p = 0,14, mientras que V0 supera a las cuatro con p < 0,001.
+    variantes no ganadoras no es estadisticamente distinguible tras corregir la familia de
+    contrastes**. V1-V4 alcanza p = 0,0084 sin corregir, pero queda en p de Holm = 0,0501;
+    V0 supera a las cuatro con valores de Holm iguales o inferiores a 0,0030.
     La conclusion se refuerza: lo que separa a V0 no es la familia de codificador sino su
     entrenamiento conjunto con la politica.
     La exportacion dejo de ser manual. `../diffuser/scripts/exportar_logs_wsl.sh` vuelca
@@ -140,6 +141,15 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
     campo `end`, que no existe dentro del JSON); `scripts/resumen_entrenamiento.py`
     reconstruye el CSV de tiempos por epoca y la entrada de `resumen.json`. El parser se
     valido contra V1: reproduce sus 500 epocas y sus 157.702 s exactos.
+
+14. **26 de agosto de 2026: memoria cerrada con V0-V4.** Se regeneraron las figuras de
+    puntuacion y perdidas, se ampliaron los contrastes a los diez pares y se aplico la
+    correccion secuencial de Holm. Resultados seleccionados: 0,864 / 0,668 / 0,648 / 0,622 /
+    0,535 para V0-V4. La tabla temporal incorpora las cinco ejecuciones y corrige V0 con
+    sus 500 epocas cronometradas: 1,6 min por epoca y 13,0 h de bucle, sin estimacion. Los
+    totales pasan a 1.621 epocas, 141,3 h de bucle y 237,1 h transcurridas. El presupuesto
+    se recalculo con 60 kWh y asciende a 18.686,55 euros. Resumen, abstract, resultados y
+    conclusiones ya no presentan V3 y V4 como ejecuciones pendientes.
 
 ## Origen de la bibliografia
 
@@ -213,36 +223,29 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
       visual original y DINOv3-Diffusion Policy.
 - [x] Redactar la metodologia, incluidos el entorno de ejecucion (Tabla 5), los
       componentes de la pila de software (Tabla 6) y el coste temporal (Tabla 7).
-- [x] Redactar conclusiones, resumen y abstract (25 de agosto de 2026), con las cifras de
-      V0, V1 y V2.
-- [x] Redactar resultados (otro agente) y presupuesto (25 de agosto de 2026). Cifras
-      comunes a los cuatro capitulos: 0,8645 / 0,6676 / 0,6477; epocas 500 / 500 / **266**;
-      1,5 / 5,3 / 14,7 min por epoca; 17,4 / 96,5 / 84,9 h de tiempo total.
+- [x] Redactar conclusiones, resumen y abstract con las cifras finales de V0-V4.
+- [x] Redactar resultados y presupuesto. Cifras finales V0-V4: 0,864 / 0,668 / 0,648 /
+      0,622 / 0,535; epocas 500 / 500 / 266 / 155 / 200; 1,6 / 5,3 / 14,7 / 2,3 / 4,0
+      min por epoca; 237,1 h de tiempo total.
 - [ ] Confirmar con el director los supuestos economicos del presupuesto, que son
       estimaciones y no datos: 450 h del autor repartidas por fases, 40 h de direccion,
       30 y 60 \euro/h de coste horario, 1.800 \euro de precio del portatil, siete meses de
       imputacion (marzo-septiembre de 2026) y 15 % de costes indirectos. Si cambia alguno,
-      recalcular la Tabla 13; el total actual es 18.685,51 \euro.
-- [ ] Revisar conclusiones, resumen y abstract ahora que V3 y V4 existen: hay un
-      `[PENDIENTE: resultados de V3 y V4]` al final del apartado 5.1, y tanto el resumen
-      como el abstract dicen que solo se completaron las tres variantes convolucionales.
-      Usar 0,622 (V3) y 0,535 (V4), y decir que ninguna de las cuatro variantes con
-      codificador preentrenado se distingue de las otras tres con significacion.
-- [ ] Completar la Tabla 7 (`sec:coste`) con V3 y V4: **5 h 52 min de bucle y 10,9 h
+      recalcular la Tabla 14; el total actual es 18.686,55 \euro.
+- [x] Revisar conclusiones, resumen y abstract con V3 y V4, incluidos los diez contrastes
+      por pares y la correccion de Holm.
+- [x] Completar la Tabla 7 (`sec:coste`) con V3 y V4: **5 h 52 min de bucle y 10,9 h
       totales en V3** (155 epocas cronometradas, 2 min 16 s por epoca) y **13 h 20 min de
       bucle y 27,4 h totales en V4** (200 epocas, 4 min 0 s por epoca). Ojo: son los
       unicos dos runs con cronometro completo junto a V1, no llevan daga.
-- [ ] Rehacer el `[PENDIENTE]` del apartado sobre el presupuesto de epocas: la
+- [x] Rehacer el apartado sobre el presupuesto de epocas: la
       metodologia dice 500 como maximo, pero V2 y V3 se lanzaron con 300 y V4 con 200.
-- [ ] **Decidir si se rehace la fila de V0 en la Tabla 7.** Al validar
+- [x] **Rehacer la fila de V0 en la Tabla 7.** Al validar
       `scripts/resumen_entrenamiento.py` aparecio que el log de V0 si conserva las
       **500 epocas cronometradas, no 89**: la extraccion manual de agosto se dejo 411 por
-      un patron demasiado estricto. El total medido son **46.793 s = 13,0 h de bucle**,
-      frente a las 12,4 h que hoy figuran extrapoladas y marcadas con daga. La diferencia
-      es del 4,6 %, asi que ninguna conclusion cambia, pero la daga de V0 sobraria y el
-      total del bucle subiria. El CSV de V0 **no se ha tocado** para no mover cifras que
-      ya estan citadas en cuatro capitulos; para rehacerlo basta
-      `python memoria/scripts/resumen_entrenamiento.py v0`.
+      un patron demasiado estricto. El total medido es **46.793 s = 13,0 h de bucle** y
+      la fila ya no lleva daga. El parser conserva ahora los metadatos manuales de los runs
+      antiguos cuando no existen los ficheros auxiliares de las exportaciones nuevas.
 - [x] Versiones exactas de Hydra y Zarr en el entorno de WSL, consultadas en la maquina de
       entrenamiento el 25 de agosto de 2026: **hydra-core 1.2.0 y zarr 2.12.0**, ya en la
       Tabla 6 y en `../CLAUDE.md`. Faltaban porque ni `CLAUDE.md` ni
@@ -251,14 +254,15 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
       describe el entorno de inferencia en Windows (torch 2.6, hydra 1.3.2, zarr 2.18.7),
       no el de entrenamiento (torch 1.12.1).
 - [ ] Verificar los dos campos marcados `% verificar` en `bib/referencias.bib`.
-- [ ] Anadir a `bib/referencias.bib` las obras de los codificadores visuales (ResNet,
-      ImageNet, DINOv2, CLIP, ViT) y resolver el `[PENDIENTE: referencia]` de
-      `secciones/00-introduccion.tex`, apartado 1.2.
+- [x] Anadir a `bib/referencias.bib` las obras de los codificadores visuales (ResNet,
+      ImageNet, DINOv2, CLIP y ViT) y citarlas en el texto.
 - [x] Autor y ano de la monografia propia sobre Diffusion Policy: Moises Britez, 2026,
       registrados en `bib/bibliografia.bib`.
 - [x] Resultados de V3 (DINOv2) y V4 (CLIP): entrenados y volcados el 26 de agosto de
       2026. Ver la decision 13.
 - [ ] Decidir si el encabezado se mantiene con filete y cursiva o se simplifica.
+- [ ] Sustituir el texto provisional de agradecimientos y los dos anexos de plantilla, o
+      retirar esas paginas si no formaran parte de la entrega.
 - [ ] **Del informe de evaluacion, lo que necesita GPU o acceso a WSL** (ver
       `../../respuestas_evaluador.md`): evaluar los tres puntos de control sobre semillas
       disjuntas 200000-200049, para convertir la puntuacion de seleccion en prueba

@@ -1,23 +1,18 @@
 \chapter{Resultados}
 \label{cap:resultados}
 
-Este cap\'itulo presenta los resultados disponibles del experimento y los relaciona con
-las hip\'otesis formuladas en el \cref{sec:planteamiento}. El an\'alisis comienza con la
+Este cap\'itulo presenta los resultados de las cinco variantes y los relaciona con las
+hip\'otesis formuladas en el \cref{sec:planteamiento}. El an\'alisis comienza con la
 cobertura de las ejecuciones, contin\'ua con la evoluci\'on del rendimiento y de las
 p\'erdidas, y concluye con una comparaci\'on cualitativa y las limitaciones de la evidencia.
-
-Los registros analizados corresponden a V0, V1 y V2. Las ejecuciones de V3 y V4 no
-forman parte del corte de datos disponible, de modo que las conclusiones sobre rendimiento
-se restringen a las tres variantes basadas en ResNet-18. Esta ausencia impide cerrar la
-comparaci\'on entre redes convolucionales y transformadores de visi\'on.
 
 \section{Cobertura de las ejecuciones}
 \label{sec:cobertura-resultados}
 
 La \cref{tab:resultados} resume la cobertura de los registros y el mejor valor de la
-m\'etrica principal. V0 y V1 agotaron el presupuesto de \num{500} \'epocas, mientras que
-V2 complet\'o \num{266} y se detuvo durante la siguiente. Por ello, V2 dispone de seis
-evaluaciones, frente a las diez de las dos primeras variantes.
+m\'etrica principal. V0 y V1 agotaron \num{500} \'epocas, V2 complet\'o \num{266}, V3
+registr\'o \num{155} y V4 agot\'o su presupuesto de \num{200}. Los dos transformadores
+solo disponen de cuatro evaluaciones, frente a las diez de V0 y V1.
 
 \begin{table}[htbp]
   \centering
@@ -35,23 +30,24 @@ evaluaciones, frente a las diez de las dos primeras variantes.
       {[\num{0.564};\,\num{0.771}]} & \num{150} \\
     V2 & Ajuste fino & \num{266} & \num{6}  & \num{0.648} $\pm$ \num{0.057} &
       {[\num{0.536};\,\num{0.759}]} & \num{150} \\
-    V3 & Congelado   & \multicolumn{5}{c}{sin resultados disponibles} \\
-    V4 & Congelado   & \multicolumn{5}{c}{sin resultados disponibles} \\
+    V3 & Congelado   & \num{155} & \num{4}  & \num{0.622} $\pm$ \num{0.053} &
+      {[\num{0.518};\,\num{0.727}]} & \num{100} \\
+    V4 & Congelado   & \num{200} & \num{4}  & \num{0.535} $\pm$ \num{0.059} &
+      {[\num{0.419};\,\num{0.651}]} & \num{100} \\
     \bottomrule
   \end{tabular}
   \notatabla{La puntuaci\'on se acompa\~na de su error est\'andar sobre los \num{50}
     episodios evaluados. En V2 se excluye la \'epoca de \'indice \num{266}, interrumpida
-    tras cinco lotes y sin validaci\'on.}
+    tras cinco lotes y sin validaci\'on. V3 se detuvo en el \'indice \num{154}.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
 El valor reportado es el m\'aximo de una serie de evaluaciones y, por tanto, un estimador
-optimista. La media de las tres \'ultimas evaluaciones ofrece una lectura complementaria y
-menos sesgada: \num{0.862} en V0, \num{0.547} en V1 y \num{0.585} en V2. La estabilidad de
-V0 contrasta con el retroceso de las dos variantes preentrenadas, cuyo m\'aximo pertenece
-a una fase temprana del entrenamiento. Conviene a\~nadir que el sesgo crece con el
-n\'umero de evaluaciones, diez en V0 y V1 frente a seis en V2, de modo que la asimetr\'ia
-juega en contra de la ventaja de la l\'inea base y no a su favor.
+optimista. La media de las tres \'ultimas ofrece una lectura menos sesgada: \num{0.862} en
+V0, \num{0.547} en V1, \num{0.585} en V2, \num{0.572} en V3 y \num{0.483} en V4. V0
+permanece estable, mientras que las cuatro variantes preentrenadas retroceden despu\'es de
+su m\'aximo. El sesgo del m\'aximo puede favorecer a V0 y V1 porque acumulan m\'as
+evaluaciones; la media final mantiene, no obstante, la ventaja de V0.
 
 V2 se reanud\'o desde un punto de control intermedio. El registro conserva tanto cinco
 \'epocas de la rama abandonada como sus equivalentes tras la reanudaci\'on, con pasos
@@ -70,7 +66,7 @@ las estrellas identifican el punto de control seleccionado para cada variante.
 \begin{figure}[htbp]
   \centering
   \includegraphics[width=0.92\textwidth]{img/evolucion_puntuacion_prueba.pdf}
-  \caption{Evoluci\'on de la puntuaci\'on media de evaluaci\'on de V0, V1 y V2.}
+  \caption{Evoluci\'on de la puntuaci\'on media de evaluaci\'on de las cinco variantes.}
   \label{fig:evolucion-score}
   \fuente{elaboraci\'on propia}
 \end{figure}
@@ -92,41 +88,50 @@ V2 presenta una convergencia m\'as lenta. Su puntuaci\'on permanece alrededor de
 \num{0.5590}. Este comportamiento motiva la detenci\'on anticipada, puesto que prolongar
 la ejecuci\'on no hab\'ia recuperado el m\'aximo tras \num{100} \'epocas.
 
-La comparaci\'on de los mejores puntos de control sit\'ua V0 por encima de V1 y V2 con
-m\'argenes absolutos de \num{0.197} y \num{0.217}, respectivamente. V1 supera a V2 por
-\num{0.020}. Los tres m\'argenes deben leerse frente a la dispersi\'on entre episodios, que
-la \cref{tab:contrastes} recoge en forma de intervalo de confianza sobre la diferencia
-pareada y de contraste de Wilcoxon.
+V3 progresa de \num{0.1177} a \num{0.6224} entre las \'epocas \num{0} y \num{100}. La
+evaluaci\'on de la \'epoca \num{150} desciende a \num{0.5792}, y la ejecuci\'on se detiene
+cuatro \'epocas despu\'es. V4 alcanza \num{0.5351} en la \'epoca \num{100} y cae a
+\num{0.4353} en la \num{150}, antes de completar las \num{200} \'epocas asignadas.
+
+La comparaci\'on de los mejores puntos de control sit\'ua V0 por encima de las dem\'as
+variantes. Los m\'argenes abarcan desde \num{0.197} frente a V1 hasta \num{0.329} frente a
+V4. La \cref{tab:contrastes} relaciona las diez diferencias con su dispersi\'on entre
+episodios y con el contraste de Wilcoxon.
 
 \begin{table}[htbp]
   \centering
   \caption{Diferencias pareadas entre los puntos de control seleccionados.}
   \label{tab:contrastes}
   \small
-  \begin{tabular}{lccc}
+  \scriptsize
+  \begin{tabular}{lcccc}
     \toprule
-    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} & Wilcoxon \\
+    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} & $p$ & $p_{\mathrm{Holm}}$ \\
     \midrule
-    V0 frente a V1 & \num{0.197} $\pm$ \num{0.054} & {[\num{0.091};\,\num{0.303}]} &
-      $W = \num{148}$; $p = \num{0.0004}$ \\
-    V0 frente a V2 & \num{0.217} $\pm$ \num{0.059} & {[\num{0.102};\,\num{0.332}]} &
-      $W = \num{121}$; $p = \num{0.0001}$ \\
-    V1 frente a V2 & \num{0.020} $\pm$ \num{0.058} & {[\num{-0.093};\,\num{0.133}]} &
-      $W = \num{454}$; $p = \num{0.82}$ \\
+    V0 frente a V1 & \num{0.197} & {[\num{0.091};\,\num{0.303}]} & \num{0.0004} & \num{0.0030} \\
+    V0 frente a V2 & \num{0.217} & {[\num{0.102};\,\num{0.332}]} & \num{0.0001} & \num{0.0009} \\
+    V0 frente a V3 & \num{0.242} & {[\num{0.122};\,\num{0.362}]} & \num{0.0003} & \num{0.0026} \\
+    V0 frente a V4 & \num{0.329} & {[\num{0.208};\,\num{0.451}]} & \num{0.000003} & \num{0.000030} \\
+    V1 frente a V2 & \num{0.020} & {[\num{-0.093};\,\num{0.133}]} & \num{0.82} & \num{1.00} \\
+    V1 frente a V3 & \num{0.045} & {[\num{-0.089};\,\num{0.179}]} & \num{0.46} & \num{1.00} \\
+    V1 frente a V4 & \num{0.132} & {[\num{0.018};\,\num{0.247}]} & \num{0.0084} & \num{0.0501} \\
+    V2 frente a V3 & \num{0.025} & {[\num{-0.101};\,\num{0.152}]} & \num{0.54} & \num{1.00} \\
+    V2 frente a V4 & \num{0.113} & {[\num{-0.034};\,\num{0.259}]} & \num{0.10} & \num{0.5154} \\
+    V3 frente a V4 & \num{0.087} & {[\num{-0.027};\,\num{0.201}]} & \num{0.14} & \num{0.5532} \\
     \bottomrule
   \end{tabular}
-  \notatabla{Diferencias calculadas sobre los \num{50} episodios comunes a las dos
-    variantes. La prueba de los rangos con signo emplea la aproximaci\'on normal, puesto
-    que existen diferencias nulas.}
+  \notatabla{Diferencias calculadas sobre los \num{50} episodios comunes. La prueba de
+    Wilcoxon emplea la aproximaci\'on normal y los diez valores $p$ se ajustan mediante el
+    procedimiento de Holm. Los intervalos no incorporan este ajuste.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Las dos primeras diferencias excluyen el valor cero de su intervalo, de modo que no se
-explican por la variabilidad de las condiciones iniciales. La tercera lo incluye y su
-contraste no alcanza significaci\'on, por lo que congelaci\'on y ajuste fino resultan
-indistinguibles en esta ejecuci\'on. Estos intervalos describen la dispersi\'on entre
-episodios y no la variabilidad entre semillas de entrenamiento, cuesti\'on que se retoma
-en el \cref{sec:limitaciones}.
+Las cuatro diferencias entre V0 y las variantes preentrenadas excluyen el cero y conservan
+significaci\'on tras el ajuste de Holm. Entre las variantes preentrenadas, solo V1 frente a
+V4 alcanza significaci\'on sin corregir, con $p = \num{0.0084}$. El ajuste eleva ese valor
+a \num{0.0501}, por lo que ning\'un contraste interno supera el umbral familiar del
+\SI{5}{\percent}. Estos resultados no cuantifican la variabilidad entre semillas de
+entrenamiento, cuesti\'on que se retoma en el \cref{sec:limitaciones}.
 
 \section{Ajuste y generalizaci\'on}
 \label{sec:ajuste-resultados}
@@ -144,7 +149,7 @@ cambios de menor magnitud al final del entrenamiento.
   \fuente{elaboraci\'on propia}
 \end{figure}
 
-Las tres variantes reducen de forma sostenida la p\'erdida de entrenamiento. Sin embargo,
+Las cinco variantes reducen de forma sostenida la p\'erdida de entrenamiento. Sin embargo,
 la p\'erdida de validaci\'on vuelve a crecer despu\'es de las primeras \'epocas. El patr\'on
 es especialmente claro en V1: entre las \'epocas \num{150} y \num{450}, la p\'erdida de
 entrenamiento baja de \num{0.0145} a \num{0.00166}, mientras que la de validaci\'on sube
@@ -157,29 +162,35 @@ compatibles con sobreajuste. V0 tambi\'en incrementa su p\'erdida de validaci\'o
 puntuaci\'on permanece estable; por tanto, la p\'erdida de predicci\'on del ruido no act\'ua
 como sustituto directo del rendimiento en bucle cerrado.
 
+V3 y V4 reproducen esa divergencia. Entre las \'epocas \num{100} y \num{150}, la p\'erdida
+de entrenamiento de V3 baja de \num{0.0218} a \num{0.0155}, mientras la de validaci\'on
+sube de \num{0.0681} a \num{0.0865}. En V4, las mismas magnitudes pasan de \num{0.0143} a
+\num{0.00741} y de \num{0.110} a \num{0.171}. Ambas puntuaciones disminuyen a la vez.
+
 El error cuadr\'atico medio de la acci\'on refuerza esa distinci\'on. En los puntos de
-control seleccionados vale \num{116.17} para V0, \num{147.31} para V1 y \num{42.86} para
-V2. Aunque V2 obtiene el menor error, no alcanza la mejor puntuaci\'on de la tarea. La
-precisi\'on sobre acciones del conjunto de datos y la capacidad de corregir la trayectoria
-durante un episodio miden, por tanto, propiedades diferentes.
+control seleccionados vale \num{116.17} para V0, \num{147.31} para V1, \num{42.86} para
+V2, \num{314.78} para V3 y \num{94.93} para V4. V2 obtiene el menor error, pero no la
+mejor puntuaci\'on. La precisi\'on sobre acciones registradas y el control en bucle cerrado
+miden, por tanto, propiedades diferentes.
 
 \section{Coste computacional}
 \label{sec:coste-resultados}
 
-Los tiempos recogidos en la \cref{tab:coste} muestran una diferencia amplia entre las
-tres variantes. El bucle de V0 requiere aproximadamente \SI{1.5}{\minute} por \'epoca,
-frente a \SI{5.3}{\minute} en V1 y \SI{14.7}{\minute} en V2. Respecto a la l\'inea base,
-estos valores multiplican el coste por factores de \num{3.5} y \num{9.8}.
+Los tiempos recogidos en la \cref{tab:coste} muestran diferencias amplias. El bucle de V0
+requiere \SI{1.6}{\minute} por \'epoca, frente a \SI{5.3}{\minute} en V1,
+\SI{14.7}{\minute} en V2, \SI{2.3}{\minute} en V3 y \SI{4.0}{\minute} en V4. Estos valores
+multiplican el coste de la l\'inea base por factores entre \num{1.5} y \num{9.5}.
 
-El incremento de V1 coincide con el redimensionado de la entrada desde \num{96} hasta
-\num{224} p\'ixeles, aun cuando sus pesos visuales permanecen congelados. V2 a\~nade la
-retropropagaci\'on a trav\'es del codificador y presenta el mayor coste por \'epoca.
+V2 a\~nade la retropropagaci\'on a trav\'es del codificador y presenta el mayor coste por
+\'epoca. V4 duplica las actualizaciones debido a su lote de \num{32} muestras. V3 muestra,
+sin embargo, que operar a \num{224} p\'ixeles no determina por s\'i solo el tiempo: su
+codificador congelado queda m\'as cerca de V0 que de V1.
 
 Conviene no confundir ese coste unitario con el tiempo total. V2 acumula \SI{84.9}{\hour}
-frente a las \SI{96.5}{\hour} de V1 pese a ser la variante m\'as cara por \'epoca, y la
-raz\'on es \'unicamente que se detuvo en la \'epoca \num{266}. Esta lectura es descriptiva: V0 conserva tiempos de una fracci\'on de sus \'epocas y V2 solo de
-la sesi\'on reanudada, por lo que los registros no constituyen un banco de pruebas temporal
-controlado.
+frente a las \SI{96.5}{\hour} de V1 pese a ser la variante m\'as cara por \'epoca, porque
+se detuvo antes. V3 solo suma \SI{10.9}{\hour} por la misma raz\'on. La comparaci\'on v\'alida
+entre variantes es el tiempo por \'epoca; el total de \SI{237.1}{\hour} describe el
+experimento ejecutado con presupuestos distintos.
 
 \section{Comprobaci\'on cualitativa}
 \label{sec:resultados-cualitativos}
@@ -226,10 +237,9 @@ rendimiento medio.
 \label{sec:contraste-hipotesis}
 
 La primera hip\'otesis planteaba que el preentrenamiento aportar\'ia representaciones m\'as
-\'utiles que el entrenamiento desde cero. Los resultados disponibles no la respaldan:
-V0 supera en al menos \num{0.197} puntos a las dos variantes inicializadas con ImageNet,
-diferencia cuyo intervalo de confianza excluye el cero.
-Esta conclusi\'on se limita a ResNet-18 y al r\'egimen experimental utilizado.
+\'utiles que el entrenamiento desde cero. Los resultados no la respaldan: V0 supera entre
+\num{0.197} y \num{0.329} puntos a las cuatro variantes preentrenadas. Todas las
+diferencias conservan significaci\'on tras el ajuste de Holm.
 
 La segunda hip\'otesis propon\'ia una ventaja del ajuste fino sobre la congelaci\'on. Tampoco
 queda respaldada, ya que V1 obtiene \num{0.668} y V2 \num{0.648}. La diferencia de
@@ -238,19 +248,21 @@ queda respaldada, ya que V1 obtiene \num{0.668} y V2 \num{0.648}. La diferencia 
 superioridad de la congelaci\'on: lo que descarta la evidencia es una mejora observable del
 ajuste fino en esta ejecuci\'on.
 
-La tercera hip\'otesis comparaba los transformadores de visi\'on con las redes
-convolucionales. No puede contrastarse sin los resultados de V3 y V4. En consecuencia, el
-experimento disponible responde a la influencia de la inicializaci\'on y de la estrategia
-de entrenamiento dentro de ResNet-18, pero no a la comparaci\'on entre familias
-arquitect\'onicas.
+La tercera hip\'otesis propon\'ia que los transformadores alcanzar\'ian un rendimiento
+comparable al de las redes convolucionales con mayor coste de inferencia. V3 y V4 quedan
+por debajo de V0, pero no se distinguen de V1 y V2 tras la correcci\'on familiar. Por tanto,
+los datos no muestran una ventaja de rendimiento propia de la arquitectura ViT. La parte
+relativa a inferencia no puede contrastarse porque no se midi\'o su latencia bajo un
+protocolo com\'un.
 
 \section{Limitaciones}
 \label{sec:limitaciones}
 
-La primera limitaci\'on es la ausencia de resultados para V3 y V4. El estudio comparativo
-queda incompleto hasta incorporar sus curvas, mejores puntos de control y medidas de
-coste. Cualquier conclusi\'on general sobre codificadores visuales debe posponerse hasta
-disponer de esos datos.
+La primera limitaci\'on es la desigualdad del presupuesto de \'epocas. V0 y V1 acumulan
+diez evaluaciones, V2 seis, y V3 y V4 solo cuatro. V3 se interrumpi\'o tras \num{155}
+\'epocas de las \num{300} previstas, de modo que no puede descartarse una recuperaci\'on
+posterior. La comparaci\'on corresponde a los mejores puntos observados dentro de esos
+presupuestos, no a curvas con igual horizonte.
 
 La segunda limitaci\'on es el uso de una sola semilla de entrenamiento. Los intervalos y
 los contrastes de la \cref{tab:contrastes} cuantifican la dispersi\'on debida a las
@@ -270,7 +282,7 @@ del empleado en la selecci\'on, medida que no se ha ejecutado y que se propone e
 \cref{sec:trabajo-futuro}.
 
 Por \'ultimo, la evaluaci\'on cada \num{50} \'epocas ofrece una visi\'on discreta de la
-trayectoria y puede omitir m\'aximos intermedios. V2 a\~nade una reanudaci\'on y una parada
-antes del presupuesto m\'aximo, mientras que los tiempos disponibles no cubren de forma
-homog\'enea todas las ejecuciones. Estas restricciones aconsejan interpretar las cifras
-como evidencia descriptiva del experimento realizado.
+trayectoria y puede omitir m\'aximos intermedios. V2 a\~nade una reanudaci\'on, y solo su
+tiempo acumulado requiere extrapolaci\'on parcial. Estas restricciones aconsejan
+interpretar las cifras como evidencia del experimento realizado, no como una ordenaci\'on
+universal de los codificadores.

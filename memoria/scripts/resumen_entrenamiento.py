@@ -49,7 +49,7 @@ def epoch_seconds(variant, seed):
 def write_csv(variant, seed, elapsed):
     path = LOG_DIR / f"{variant}_seed{seed}_epocas.csv"
     with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
+        writer = csv.writer(handle, lineterminator="\n")
         writer.writerow(["epoch", "tipo", "segundos"])
         for epoch in sorted(elapsed):
             writer.writerow([epoch, "entrenamiento", float(elapsed[epoch])])
@@ -187,6 +187,11 @@ def main():
 
     for variant in args.variants:
         csv_path, entry = summarise(variant, args.seed)
+        previous = summary.get(variant, {})
+        entry = {
+            key: previous.get(key) if value is None else value
+            for key, value in entry.items()
+        }
         summary[variant] = entry
         print(f"{csv_path.name}: {entry['train_epochs_timed']} epocas cronometradas")
         print(report(variant, entry))

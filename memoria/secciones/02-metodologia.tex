@@ -11,10 +11,11 @@ coste temporal de los experimentos.
 \section{Planteamiento experimental}
 \label{sec:planteamiento}
 
-El estudio adopta un dise\~no comparativo controlado con una \'unica variable manipulada.
-Esa variable es el codificador visual de la pol\'itica, entendido como la combinaci\'on de
-una arquitectura de red y una estrategia de entrenamiento de sus pesos. El resto del
-sistema permanece id\'entico en todas las condiciones.
+El estudio adopta un dise\~no comparativo centrado en una variable de inter\'es. Esa variable
+es el bloque visual de la pol\'itica, entendido como el codificador, sus pesos y su cadena de
+preprocesado. La arquitectura generativa, los datos y la evaluaci\'on permanecen constantes;
+el presupuesto y el tama\~no de lote presentan las desviaciones descritas en el
+\cref{sec:protocolo}.
 
 De este planteamiento se derivan tres hip\'otesis de trabajo. La primera sostiene que un
 codificador preentrenado sobre un corpus amplio de im\'agenes aporta representaciones
@@ -26,18 +27,18 @@ basados en transformador de visi\'on (\textit{Vision Transformer}, ViT) alcanzan
 rendimiento comparable al de las redes convolucionales, pero con un coste de inferencia
 superior.
 
-Para que la comparaci\'on resulte interpretable, se mantienen constantes seis factores: la
+Para que la comparaci\'on resulte interpretable, se mantienen constantes cinco factores: la
 red generativa y sus hiperpar\'ametros, el conjunto de datos y su partici\'on, la semilla de
-entrenamiento, el presupuesto m\'aximo de \'epocas y su criterio de parada, el protocolo de
-evaluaci\'on y la dimensi\'on del vector de condicionamiento a la salida del codificador.
+entrenamiento, el protocolo de evaluaci\'on y la dimensi\'on del vector de condicionamiento
+a la salida del codificador.
 Esta \'ultima restricci\'on resulta esencial: todas las variantes entregan un vector de
 \num{512} componentes, de modo que la red generativa recibe siempre una entrada de la misma
 dimensi\'on.
 
 Sin embargo, el dise\~no presenta una limitaci\'on asumida de forma expl\'icita. Cada
-variante se entrena con una \'unica semilla, por lo que las diferencias observadas no
-admiten contraste estad\'istico. Esta decisi\'on responde al coste computacional, ya que un
-entrenamiento ocupa entre \num{17} y \num{96} horas de la \'unica unidad de procesamiento
+variante se entrena con una \'unica semilla, por lo que no se cuantifica la variabilidad
+entre ejecuciones de entrenamiento. Esta decisi\'on responde al coste computacional, ya que
+una ejecuci\'on ocupa entre \num{11} y \num{96} horas de la \'unica unidad de procesamiento
 gr\'afico (\textit{Graphics Processing Unit}, GPU) disponible, seg\'un se detalla en el
 \cref{sec:coste}.
 
@@ -141,11 +142,11 @@ los pesos.
 \section{Variantes del codificador visual}
 \label{sec:variantes}
 
-Se definen cinco variantes, identificadas de V0 a V4, que difieren \'unicamente en el
-codificador visual y en el tratamiento de sus pesos. La \cref{tab:variantes} resume su
-configuraci\'on. Las tres primeras comparten arquitectura convolucional y aislan el efecto
-de la estrategia de entrenamiento; las dos \'ultimas introducen transformadores de
-visi\'on preentrenados con objetivos distintos.
+Se definen cinco variantes, identificadas de V0 a V4, que modifican el bloque visual y el
+tratamiento de sus pesos. La \cref{tab:variantes} resume su configuraci\'on. Las tres
+primeras comparten arquitectura convolucional y permiten contrastar estrategias de
+entrenamiento; las dos \'ultimas introducen transformadores de visi\'on preentrenados con
+objetivos distintos.
 
 \begin{table}[htbp]
   \centering
@@ -216,17 +217,16 @@ preentrenado. Los codificadores preentrenados se cargan mediante la biblioteca
 \section{Protocolo de entrenamiento}
 \label{sec:protocolo}
 
-Todas las variantes comparten los hiperpar\'ametros recogidos en la
-\cref{tab:hiperparametros}, heredados de la configuraci\'on oficial del m\'etodo. El
-presupuesto m\'aximo se fij\'o en \num{500} \'epocas, frente a las \num{3000} del
-art\'iculo original, por limitaciones de c\'omputo. Cada entrenamiento se detiene antes de
-agotar ese presupuesto cuando deja de mejorar, criterio que se precisa m\'as adelante en
-este mismo apartado. En consecuencia, las variantes completan entre \num{200} y \num{500}
-\'epocas.
+Las variantes comparten los hiperpar\'ametros recogidos en la
+\cref{tab:hiperparametros}, salvo las dos excepciones indicadas en ella. El presupuesto se
+redujo durante la campa\~na conforme aumentaba el coste observado: \num{500} \'epocas para
+V0 y V1, \num{300} para V2 y V3, y \num{200} para V4. Estos valores quedan muy por debajo
+de las \num{3000} \'epocas del art\'iculo original. Dentro de cada presupuesto se aplica el
+criterio de parada que se precisa m\'as adelante.
 
 \begin{table}[htbp]
   \centering
-  \caption{Hiperpar\'ametros comunes a las cinco variantes.}
+  \caption{Hiperpar\'ametros de entrenamiento de las cinco variantes.}
   \label{tab:hiperparametros}
   \small
   \begin{tabular}{ll}
@@ -243,17 +243,18 @@ este mismo apartado. En consecuencia, las variantes completan entre \num{200} y 
     Pasos de calentamiento                 & \num{500} \\
     Media m\'ovil exponencial de los pesos & Activada \\
     Tama\~no de lote                       & \num{64} (\num{32} en V4) \\
-    Presupuesto m\'aximo de \'epocas       & \num{500}, con parada anticipada \\
+    Presupuesto m\'aximo de \'epocas       & \num{500} (V0--V1); \num{300} (V2--V3);
+                                               \num{200} (V4) \\
     Semilla                                & \num{42} \\
     \bottomrule
   \end{tabular}
   \fuente{elaboraci\'on propia}
 \end{table}
 
-El tama\~no de lote de V4 se redujo a la mitad porque CLIP ViT-B/16 no cabe en los ocho
-gigabytes de memoria gr\'afica con lotes de \num{64} muestras. Se trata de la \'unica
-desviaci\'on respecto a la configuraci\'on com\'un y afecta al n\'umero de actualizaciones
-por \'epoca, extremo que se retoma al interpretar los resultados.
+Adem\'as del presupuesto, el tama\~no de lote de V4 se redujo a la mitad porque CLIP
+ViT-B/16 no cabe en los ocho gigabytes de memoria gr\'afica con lotes de \num{64} muestras.
+Esta desviaci\'on duplica el n\'umero de actualizaciones por \'epoca respecto a las dem\'as
+variantes, extremo que se retoma al interpretar los resultados.
 
 Cada entrenamiento se lanza mediante un script de control que fija los par\'ametros de
 ejecuci\'on, verifica la memoria disponible e impide que se ejecuten dos procesos de forma
@@ -276,18 +277,17 @@ aplica antes de la \'epoca \num{200}, para no interrumpir una variante de conver
 lenta. El criterio no altera el modelo seleccionado, puesto que este se elige entre los
 puntos de control ya guardados.
 
-Este criterio no precedi\'o al experimento, sino que se adopt\'o durante su ejecuci\'on, y
-la memoria lo describe as\'i por exactitud. Las dos primeras variantes lanzadas, V0 y V1,
-agotaron el presupuesto de \num{500} \'epocas porque entonces no exist\'ia regla alguna de
-parada. La formulaci\'on anterior se fij\'o al observar sus curvas y el coste de las
-\'epocas improductivas que recoge el \cref{sec:coste}, y solo se aplic\'o a V2, detenida
-en la \'epoca \num{266}. La decisi\'on se tom\'o adem\'as por inspecci\'on visual, no de
-forma autom\'atica.
+Este criterio no precedi\'o al experimento, sino que se adopt\'o durante su ejecuci\'on. Las
+dos primeras variantes, V0 y V1, agotaron \num{500} \'epocas porque entonces no exist\'ia
+regla de parada. La formulaci\'on anterior se fij\'o al observar sus curvas y se aplic\'o a
+V2, detenida tras \num{266} \'epocas completas. V3 se interrumpi\'o manualmente en la
+\'epoca de \'indice \num{154}, antes del m\'inimo de \num{200}, mientras que V4 agot\'o sus
+\num{200} \'epocas. Las decisiones se tomaron por inspecci\'on, no de forma autom\'atica.
 
-Esa asimetr\'ia afecta a la comparabilidad del coste, no a la del rendimiento, puesto que
-el mejor punto de control de cada variante procede de una regi\'on de la curva ya
-explorada. El \cref{sec:coste} cuantifica el coste que habr\'ian tenido las tres
-ejecuciones bajo el criterio aplicado de forma uniforme.
+Esta asimetr\'ia afecta al coste y a la selecci\'on del modelo. V3 y V4 solo disponen de
+cuatro evaluaciones, frente a las diez de V0 y V1, por lo que tuvieron menos oportunidades
+de alcanzar un m\'aximo tard\'io. El \cref{sec:coste} reconstruye el contrafactual bajo el
+criterio aplicado de forma uniforme, dentro del presupuesto asignado a cada variante.
 
 \section{Protocolo de evaluaci\'on}
 \label{sec:evaluacion}
@@ -352,6 +352,11 @@ Wilcoxon, aplicada sobre los pares de episodios comunes a dos variantes. Ambas m
 caracterizan la variabilidad debida a las condiciones iniciales del simulador. No
 sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
 repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
+
+Al comparar las cinco variantes se realizan diez contrastes por pares. Sus valores $p$ se
+ajustan mediante el procedimiento secuencial de Holm, que controla el error familiar sin
+suponer independencia entre contrastes. La significaci\'on se determina sobre los valores
+ajustados con un umbral de \num{0.05}.
 
 El coste computacional se caracteriza mediante cuatro indicadores. El primero es el
 n\'umero de par\'ametros totales y entrenables de cada variante, recogido en la
@@ -477,15 +482,15 @@ simulador y el guardado de puntos de control.
   \small
   \begin{tabular}{lcccc}
     \toprule
-    Variante & \'Epocas completas & Bucle por \'epoca & Bucle acumulado & Tiempo total \\
+    Variante & \'Epocas registradas & Bucle por \'epoca & Bucle acumulado & Tiempo total \\
     \midrule
-    V0 & \num{500} & \SI{1.5}{\minute}  & \SI{12.4}{\hour}$^{\dagger}$ & \SI{17.4}{\hour} \\
+    V0 & \num{500} & \SI{1.6}{\minute}  & \SI{13.0}{\hour}             & \SI{17.4}{\hour} \\
     V1 & \num{500} & \SI{5.3}{\minute}  & \SI{43.8}{\hour}             & \SI{96.5}{\hour} \\
     V2 & \num{266} & \SI{14.7}{\minute} & \SI{65.3}{\hour}$^{\dagger}$ & \SI{84.9}{\hour}$^{\dagger}$ \\
-    V3 & \multicolumn{4}{c}{en ejecuci\'on} \\
-    V4 & \multicolumn{4}{c}{en ejecuci\'on} \\
+    V3 & \num{155} & \SI{2.3}{\minute}  & \SI{5.9}{\hour}              & \SI{10.9}{\hour} \\
+    V4 & \num{200} & \SI{4.0}{\minute}  & \SI{13.3}{\hour}             & \SI{27.4}{\hour} \\
     \midrule
-    Total (V0--V2) & \num{1266} & & \SI{121.6}{\hour} & \SI{198.8}{\hour} \\
+    Total & \num{1621} & & \SI{141.3}{\hour} & \SI{237.1}{\hour} \\
     \bottomrule
   \end{tabular}
   \notatabla{$^{\dagger}$ Valor estimado a partir del tiempo medio por \'epoca de las
@@ -493,13 +498,11 @@ simulador y el guardado de puntos de control.
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Las tres variantes completadas suman casi \num{200} horas de c\'omputo, muy por encima de
-las \num{75} horas que cabr\'ia proyectar a partir de la primera ejecuci\'on. La
-discrepancia procede de dos factores. En primer lugar, el coste por \'epoca crece un orden
-de magnitud entre V0 y V2, ya que las variantes preentrenadas operan sobre im\'agenes de
-\num{224} p\'ixeles en lugar de \num{96}. En segundo lugar, la validaci\'on y las
-evaluaciones en el simulador llegan a duplicar el tiempo del bucle de optimizaci\'on,
-puesto que la simulaci\'on de los episodios se ejecuta en el procesador y no en la GPU.
+Las cinco variantes suman \SI{237.1}{\hour} de c\'omputo, muy por encima de las \num{75}
+horas que cabr\'ia proyectar a partir de la primera ejecuci\'on. La discrepancia procede de
+dos factores. En primer lugar, el coste por \'epoca crece casi un orden de magnitud entre
+V0 y V2. En segundo lugar, la validaci\'on y las evaluaciones en el simulador ampl\'ian el
+tiempo del bucle de optimizaci\'on, puesto que los episodios se ejecutan en el procesador.
 
 Las dos \'ultimas columnas no admiten, sin embargo, una lectura directa como medida de
 coste relativo. V2 acumula menos tiempo total que V1 pese a ser casi tres veces m\'as cara
@@ -507,27 +510,23 @@ por \'epoca, simplemente porque se detuvo antes. La comparaci\'on entre variante
 apoyarse, por tanto, en el tiempo por \'epoca, mientras que el tiempo total mide lo que ha
 consumido el experimento tal como se ejecut\'o.
 
-Tres aclaraciones acotan la lectura de la tabla. En primer lugar, V0 y V2 conservan el
-cron\'ometro de una parte de sus \'epocas, no de todas, de modo que sus tiempos acumulados
-se extrapolan a partir de la media por \'epoca; el s\'imbolo $\dagger$ marca esos valores.
-En segundo lugar, V2 se ejecut\'o en dos sesiones separadas por una interrupci\'on de dos
-d\'ias, cuya duraci\'on se descuenta del tiempo total por no corresponder a c\'omputo
-efectivo. En tercer lugar, la columna de \'epocas recoge las completadas: V2 registra una
-\'epoca adicional que qued\'o interrumpida y que no se contabiliza aqu\'i ni en el
-\cref{cap:resultados}.
+Tres aclaraciones acotan la lectura de la tabla. En primer lugar, solo V2 conserva el
+cron\'ometro de una parte de sus \'epocas, de modo que su tiempo acumulado se extrapola a
+partir de la media; el s\'imbolo $\dagger$ marca los valores estimados. En segundo lugar,
+V2 se ejecut\'o en dos sesiones separadas por una interrupci\'on de dos d\'ias, que se
+descuenta del tiempo total. En tercer lugar, V3 se detuvo tras registrar \num{155} \'epocas
+de un presupuesto de \num{300}, mientras que V4 complet\'o las \num{200} asignadas.
 
 Este coste explica dos decisiones del dise\~no experimental. La primera es el uso de una
 \'unica semilla por variante, ya que replicar las cinco condiciones tres veces exigir\'ia
-del orden de \num{1000} horas de la misma GPU. La segunda es la adopci\'on del criterio de
+del orden de \num{700} horas de la misma GPU. La segunda es la adopci\'on del criterio de
 parada anticipada del \cref{sec:protocolo}: V1 dedic\'o unas \num{70} horas a \'epocas
 posteriores a su mejor punto de control, sin obtener ninguna mejora.
 
-Puesto que ese criterio solo lleg\'o a aplicarse a V2, la tabla mide el experimento tal
-como se ejecut\'o y no el protocolo declarado. La diferencia se reconstruye a partir de los
-registros de evaluaci\'on. Bajo el criterio, V0 se habr\'ia detenido en la \'epoca
-\num{300} y V1 en la \num{250}, de modo que el bucle de optimizaci\'on habr\'ia sumado unas
-\SI{91}{\hour} en lugar de \SI{121.6}{\hour} y el tiempo total unas \SI{139}{\hour} en
-lugar de \SI{198.8}{\hour}, esto es, un ahorro pr\'oximo al \SI{30}{\percent}. El punto de
+La tabla mide el experimento tal como se ejecut\'o y no un protocolo fijado de antemano.
+Bajo el criterio uniforme, V0 se habr\'ia detenido en la \'epoca \num{300} y V1 en la
+\num{250}. Las cinco ejecuciones habr\'ian sumado \SI{111.4}{\hour} de bucle y
+\SI{177.3}{\hour} totales, frente a \SI{141.3}{\hour} y \SI{237.1}{\hour}. El punto de
 control seleccionado solo cambiar\'ia en V0, que conservar\'ia el de la \'epoca \num{200}
 con \num{0.8643} en lugar del de la \num{350} con \num{0.8645}. Ninguna conclusi\'on del
 \cref{cap:resultados} depende de esa diferencia.

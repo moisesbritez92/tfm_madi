@@ -8,6 +8,7 @@ can be characterised without running the simulator again.
 
 import csv
 import gzip
+import itertools
 import json
 import math
 import statistics
@@ -116,21 +117,13 @@ def main():
         )
 
     with (OUT_DIR / "dispersion_puntuaciones.csv").open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
+        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
 
     print()
     comparisons = []
-    pairs = (
-        ("v0", "v1"),
-        ("v0", "v2"),
-        ("v1", "v2"),
-        ("v0", "v3"),
-        ("v0", "v4"),
-        ("v1", "v3"),
-        ("v3", "v4"),
-    )
+    pairs = itertools.combinations(VARIANTS, 2)
     for first, second in pairs:
         a = evaluations_by_variant[first][SELECTED[first][0]]
         b = evaluations_by_variant[second][SELECTED[second][0]]
@@ -158,8 +151,19 @@ def main():
             f"pares no nulos {non_zero} · W = {statistic:.0f} · p = {pvalue:.4g}"
         )
 
+    # Holm's step-down correction controls the family-wise error rate across
+    # the ten pairwise comparisons without assuming independent tests.
+    ordered = sorted(range(len(comparisons)), key=lambda i: comparisons[i]["p"])
+    previous = 0.0
+    for rank, index in enumerate(ordered):
+        adjusted = min(1.0, (len(comparisons) - rank) * comparisons[index]["p"])
+        previous = max(previous, adjusted)
+        comparisons[index]["p_holm"] = round(previous, 6)
+
     with (OUT_DIR / "wilcoxon_puntuaciones.csv").open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(comparisons[0]))
+        writer = csv.DictWriter(
+            handle, fieldnames=list(comparisons[0]), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(comparisons)
 

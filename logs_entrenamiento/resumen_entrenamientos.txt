@@ -1,6 +1,6 @@
 ==============================================================================
 RESUMEN DE ENTRENAMIENTOS - EXPERIMENTO ENCODERS (PushT, seed 42)
-Generado: 2026-08-24 18:39:41
+Actualizado: 2026-08-26
 ==============================================================================
 
 --- V0: pusht_v0_resnet18_scratch ---
@@ -9,9 +9,9 @@ Generado: 2026-08-24 18:39:41
   Fin (logs.json.txt): 2026-05-23 03:27:08.521878
   Epocas registradas : 500 (indice maximo 499)
   Global steps       : 83999
-  Epocas cronometradas (tqdm): 89
-  Tiempo acumulado entrenamiento: 2h 12m 45s
-  Tiempo medio por epoca        : 1m 29s
+  Epocas cronometradas (tqdm): 500
+  Tiempo acumulado entrenamiento: 12h 59m 53s
+  Tiempo medio por epoca        : 1m 33s
   Ultimo train_loss  : 0.00454
   Ultimo val_loss    : 0.16470
   Rollouts evaluados : 10
@@ -88,8 +88,7 @@ Generado: 2026-08-24 18:39:41
 NOTAS
 -----
 - Tiempos de entrenamiento extraidos de las barras tqdm del log crudo
-  (frames completados N/N). En v0 solo se conservaron 89/500 epocas con
-  timestamp completo en el log (buffering); su tiempo acumulado real es mayor.
+  (frames completados N/N). El parser corregido recupera las 500 epocas de v0.
   El rango de fechas inicio->fin incluye validaciones, rollouts y pausas.
 - v2 se ejecuto en dos sesiones: 19/08/2026 15:00 (epocas 0-69 aprox,
   interrumpida) y reanudada (resume=true) el 21/08/2026 15:11 hasta epoch 266;

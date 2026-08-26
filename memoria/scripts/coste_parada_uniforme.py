@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cost of the three runs had the early-stopping criterion been applied uniformly.
+"""Cost of the five runs had the early-stopping criterion been applied uniformly.
 
 The criterion described in the methodology stops a run when the evaluation score
 fails to beat its running maximum twice in a row, never before epoch 200. It was
@@ -26,7 +26,7 @@ REPORTED = {
     "v0": (500, 17.4),
     "v1": (500, 96.5),
     "v2": (266, 84.9),
-    "v3": (154, 10.9),
+    "v3": (155, 10.9),
     "v4": (200, 27.4),
 }
 
@@ -64,8 +64,8 @@ def loop_hours(variant, until_epoch):
     timed = [(int(r["epoch"]), float(r["segundos"])) for r in rows]
     mean_seconds = statistics.fmean(s for _, s in timed)
     counted = [s for e, s in timed if e <= until_epoch]
-    # V0 and V2 kept the stopwatch for part of their epochs only: the missing ones
-    # are extrapolated from the mean, as in the reported table.
+    # V2 kept the stopwatch for part of its epochs only: missing values are
+    # extrapolated from the mean, as in the reported table.
     missing = (until_epoch + 1) - len(counted)
     return (sum(counted) + max(missing, 0) * mean_seconds) / 3600, len(counted)
 
