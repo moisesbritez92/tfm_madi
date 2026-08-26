@@ -1,0 +1,7 @@
+{
+  "variant": "v3",
+  "seed": 42,
+  "run_dir": "data/outputs/encoder_exp/v3_seed42",
+  "logs_json_mtime": "2026-08-26 13:57:38.091721",
+  "exported_at": "2026-08-26 14:44:16"
+}

@@ -15,13 +15,15 @@ import matplotlib.pyplot as plt
 
 
 ROOT = Path(__file__).resolve().parents[2]
-RAW_DIR = ROOT / "logs_entrenamiento_2026-08-24" / "raw"
+RAW_DIR = ROOT / "logs_entrenamiento" / "raw"
 IMG_DIR = ROOT / "memoria" / "img"
 
 VARIANTS = {
     "v0": ("V0: ResNet-18 desde cero", "#0072B2"),
     "v1": ("V1: ResNet-18 congelada", "#D55E00"),
     "v2": ("V2: ResNet-18 con ajuste fino", "#009E73"),
+    "v3": ("V3: DINOv2 ViT-S/14 congelada", "#CC79A7"),
+    "v4": ("V4: CLIP ViT-B/16 congelada", "#56B4E9"),
 }
 
 
@@ -160,6 +162,8 @@ def validate(records_by_variant):
         "v0": (10, 350, 0.8645003451686891, 499),
         "v1": (10, 150, 0.6675816882533911, 499),
         "v2": (6, 150, 0.6477134479849783, 265),
+        "v3": (4, 100, 0.6224012451194982, 153),
+        "v4": (4, 100, 0.5351329876277153, 199),
     }
     for variant, (count, best_epoch, best_score, last_complete) in expected.items():
         evaluations = [

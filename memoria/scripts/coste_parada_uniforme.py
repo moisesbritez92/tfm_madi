@@ -15,14 +15,20 @@ import statistics
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LOG_DIR = ROOT / "logs_entrenamiento_2026-08-24"
+LOG_DIR = ROOT / "logs_entrenamiento"
 
-VARIANTS = ("v0", "v1", "v2")
+VARIANTS = ("v0", "v1", "v2", "v3", "v4")
 PATIENCE = 2
 MIN_EPOCH = 200
 
 # Epochs completed and total wall-clock hours actually reported in the memoir.
-REPORTED = {"v0": (500, 17.4), "v1": (500, 96.5), "v2": (266, 84.9)}
+REPORTED = {
+    "v0": (500, 17.4),
+    "v1": (500, 96.5),
+    "v2": (266, 84.9),
+    "v3": (154, 10.9),
+    "v4": (200, 27.4),
+}
 
 
 def evaluation_scores(variant):
@@ -86,8 +92,9 @@ def main():
             f"     bucle {hours:.1f} h ({timed} epocas cronometradas) · "
             f"tiempo total estimado {wall:.1f} h frente a {reported_hours} h\n"
         )
+    reported_wall = sum(hours for _, hours in REPORTED.values())
     print(f"Total bajo criterio uniforme: bucle {total_loop:.1f} h · "
-          f"total {total_wall:.1f} h (frente a 121,6 h y 198,8 h)")
+          f"total {total_wall:.1f} h (frente a {reported_wall:.1f} h realmente empleadas)")
 
 
 if __name__ == "__main__":

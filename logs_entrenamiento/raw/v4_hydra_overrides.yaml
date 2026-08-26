@@ -1,0 +1,9 @@
+- training.num_epochs=200
+- training.seed=42
+- training.resume=false
+- dataloader.num_workers=2
+- dataloader.persistent_workers=false
+- val_dataloader.num_workers=0
+- task.env_runner.n_envs=8
+- logging.mode=disabled
+- training.checkpoint_every=10
