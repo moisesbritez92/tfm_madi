@@ -250,10 +250,15 @@ def main():
         runner_cfg.n_test_vis = 0  # no video: it costs time and adds nothing here
         runner_cfg.test_start_seed = args.test_start_seed
         runner_cfg.n_envs = args.n_envs
-    assert args.n_test % args.n_envs == 0, (
-        "el ultimo grupo se rellenaria repitiendo condiciones; usa un n_test "
-        "multiplo de n_envs"
-    )
+    if args.etiqueta == "prueba":
+        # The runner pads the last chunk by repeating the first condition and
+        # then discards the padding, so the metric survives a remainder. What
+        # does not survive it is the alignment of the common random numbers, so
+        # the preregistered pass uses an exact multiple.
+        assert args.n_test % args.n_envs == 0, (
+            "el ultimo grupo se rellenaria repitiendo condiciones y el ruido "
+            "comun dejaria de alinearse; usa un n_test multiplo de n_envs"
+        )
 
     estado = sincronizar_ruido(politica, args.base_seed)
     runner = hydra.utils.instantiate(runner_cfg, output_dir=str(salida))

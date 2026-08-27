@@ -1,0 +1,2 @@
+# Los .sh se ejecutan desde WSL: un CRLF los rompe.
+*.sh text eol=lf

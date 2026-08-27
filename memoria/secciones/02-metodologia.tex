@@ -440,21 +440,9 @@ El nombre de la m\'etrica principal requiere una precisi\'on. Las \num{50} condi
 generan con semillas reservadas y no intervienen en el ajuste de los pesos, pero se
 eval\'uan cada \num{50} \'epocas y determinan qu\'e punto de control se conserva. Cumplen,
 por tanto, la funci\'on de un conjunto de selecci\'on y no la de una evaluaci\'on final
-independiente. El t\'ermino \textit{prueba} se reserva en esta memoria para una medida
-sobre condiciones ajenas a la selecci\'on, que este trabajo no realiza; el sesgo que se
-deriva de ello se analiza en el \cref{sec:limitaciones}.
-
-La dispersi\'on entre episodios permite acompa\~nar cada diferencia observada de un
-intervalo de confianza y contrastarla mediante la prueba de los rangos con signo de
-Wilcoxon, aplicada sobre los pares de episodios comunes a dos variantes. Ambas medidas
-caracterizan la variabilidad debida a las condiciones iniciales del simulador. No
-sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
-repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
-
-Al comparar las cinco variantes se realizan diez contrastes por pares. Sus valores $p$ se
-ajustan mediante el procedimiento secuencial de Holm, que controla el error familiar sin
-suponer independencia entre contrastes. La significaci\'on se determina sobre los valores
-ajustados con un umbral de \num{0.05}.
+independiente. El t\'ermino \textit{prueba} se reserva para la medida sobre el bloque
+disjunto que describe el \cref{sec:seleccion-prueba}, donde se detallan tambi\'en el
+estimando, las unidades experimentales y el tratamiento estad\'istico de las diferencias.
 
 El coste computacional se caracteriza mediante cuatro indicadores. El primero es el
 n\'umero de par\'ametros totales y entrenables de cada variante, recogido en la
@@ -488,6 +476,131 @@ memoria en el entorno de WSL en el que se entren\'o, puesto que el asignador de 
 PyTorch cambi\'o entre ambas versiones y una cifra tomada en Windows no describir\'ia las
 ejecuciones recogidas en la \cref{tab:coste}. Dentro de cada indicador, las cinco variantes
 comparten entorno.
+
+\section{Selecci\'on del punto de control y prueba final}
+\label{sec:seleccion-prueba}
+
+Los conjuntos de condiciones iniciales cumplen dos funciones distintas que conviene no
+confundir. El primero elige qu\'e punto de control representa a cada variante; el segundo
+mide su rendimiento sin haber intervenido en esa elecci\'on. La
+\cref{fig:flujo-evaluacion} resume el recorrido completo, desde los episodios de
+demostraci\'on hasta la tabla de resultados finales.
+
+\begin{figure}[htbp]
+  \centering
+  \begin{tikzpicture}[
+      font=\footnotesize,
+      caja/.style={draw, rounded corners=2pt, align=center, inner sep=4pt,
+                   minimum height=13mm, text width=26mm},
+      datos/.style={caja, fill=black!4},
+      final/.style={caja, line width=0.9pt, fill=black!8},
+      ancho/.style={final, text width=30mm},
+      flecha/.style={-{Latex[length=2mm]}, thick},
+      aporte/.style={flecha, densely dashed},
+    ]
+    \node[datos] (train) {\num{90} episodios\\ajuste de pesos};
+    \node[datos, right=9mm of train] (ckpt) {\num{3} puntos de control\\guardados};
+    \node[datos, right=9mm of ckpt] (elegido) {Punto de control\\congelado};
+    \node[ancho, right=9mm of elegido] (tabla) {Resultados finales\\IC, Wilcoxon y Holm};
+
+    \node[datos, below=7mm of train] (val)
+      {\num{4} episodios\\p\'erdida de validaci\'on};
+    \node[datos, below=7mm of elegido] (seleccion)
+      {Selecci\'on\\\num{50} semillas\\\num{100000}--\num{100049}};
+    \node[final, below=7mm of tabla] (prueba)
+      {\textbf{Prueba}\\\num{200} semillas\\\num{200000}--\num{200199}};
+
+    \draw[flecha] (train) -- (ckpt);
+    \draw[flecha] (ckpt) -- (elegido);
+    \draw[flecha] (elegido) -- (tabla);
+    \draw[flecha] (seleccion) -- (elegido);
+    \draw[flecha] (prueba) -- (tabla);
+    \draw[aporte] (val) -- node[right=1pt, pos=0.45] {diagn\'ostico} (train);
+  \end{tikzpicture}
+  \caption[Flujo de ajuste, validaci\'on, selecci\'on y prueba.]{Flujo de ajuste,
+    validaci\'on, selecci\'on y prueba. Las \num{50} semillas de selecci\'on solo alcanzan
+    la tabla final a trav\'es del punto de control que congelan. Los \num{112} episodios
+    restantes del conjunto de datos no intervienen en ninguna etapa.}
+  \label{fig:flujo-evaluacion}
+  \fuente{elaboraci\'on propia}
+\end{figure}
+
+\divisionmenor{Estimando y unidades experimentales}
+
+El estimando primario es la puntuaci\'on media de cobertura de un punto de control fijo
+sobre el generador de condiciones iniciales de Push-T. Se estima con las \num{200}
+condiciones del bloque de prueba, muestreadas de ese generador mediante semillas
+consecutivas. La variable de resultado secundaria es la tasa de \'exito, es decir la fracci\'on de
+condiciones cuya puntuaci\'on alcanza el umbral.
+
+El estudio maneja tres unidades distintas y solo replica una de ellas. El episodio de
+demostraci\'on construye las ventanas de entrenamiento; la condici\'on inicial eval\'ua un
+punto de control ya fijado; la ejecuci\'on completa de entrenamiento permitir\'ia comparar
+estrategias. Existen \num{90}, \num{200} y \num{1} unidades por variante en esos tres
+niveles. Por tanto, la unidad de replicaci\'on de este trabajo es la condici\'on inicial:
+las cifras estiman el rendimiento de cinco artefactos concretos, no el rendimiento
+esperado de volver a entrenar cada estrategia. Esa restricci\'on se mantiene en las
+conclusiones y se recoge en el \cref{sec:limitaciones}.
+
+\divisionmenor{Bloque de prueba disjunto}
+
+La prueba final emplea las semillas de entorno \num{200000} a \num{200199}. El bloque es
+disjunto de las semillas \num{0} a \num{205} que generaron las demostraciones y de las
+\num{50} de selecci\'on, condici\'on que el programa de evaluaci\'on comprueba antes de
+ejecutar nada. El desplazamiento a \num{200000}, en lugar de continuar la serie de
+selecci\'on, evita cualquier ambig\"uedad al leer las tablas.
+
+Se eval\'ua una sola vez cada uno de los cinco puntos de control ya seleccionados, con los
+pesos de la media m\'ovil exponencial y la misma configuraci\'on del simulador que durante
+el entrenamiento. Ninguna decisi\'on posterior a esa medida modifica qu\'e punto de control
+representa a cada variante. El protocolo, incluidas las semillas, el tama\~no de muestra,
+las variables de resultado y el an\'alisis, se fij\'o por escrito y se registr\'o en el repositorio antes
+de ejecutar la evaluaci\'on.
+
+Conviene declarar el l\'imite de este procedimiento. Durante el entrenamiento solo se
+conservaron los tres mejores puntos de control de cada variante seg\'un la puntuaci\'on de
+selecci\'on, de modo que el conjunto de candidatos ya viene filtrado por esa m\'etrica. El
+bloque disjunto acota el sesgo de selecci\'on, pero no lo elimina por completo.
+
+\divisionmenor{Ruido de difusi\'on sincronizado}
+
+La pol\'itica parte de ruido y a\~nade ruido en cada uno de los \num{100} pasos de
+difusi\'on, seg\'un la \cref{eq:muestreo}. Dos variantes evaluadas en la misma condici\'on
+inicial no formar\'ian un par comparable si cada una recibiera una realizaci\'on distinta
+de ese ruido. Para evitarlo se aplica la t\'ecnica de los n\'umeros aleatorios comunes: el
+generador se siembra antes de cada llamada a la pol\'itica en funci\'on de la posici\'on
+del ciclo de control, con una semilla base com\'un a las cinco variantes.
+
+El esquema produce ruido id\'entico entre variantes porque todas comparten la forma del
+tensor de ruido, el n\'umero de tandas y el n\'umero de llamadas por tanda. En modo
+evaluaci\'on, adem\'as, el recorte aleatorio de V0 pasa a ser un recorte central, de modo
+que el codificador no consume n\'umeros aleatorios. Cada condici\'on se resuelve con una
+sola trayectoria de difusi\'on, compartida por las cinco variantes, y el estimando queda
+definido en consecuencia.
+
+\divisionmenor{Especificaci\'on estad\'istica}
+
+Las diferencias se calculan por pares, emparejando cada variante con las dem\'as sobre la
+misma condici\'on inicial. Cada diferencia media se acompa\~na de un intervalo de confianza
+del \SI{95}{\percent} obtenido por \textit{bootstrap} BCa con \num{10000} remuestreos de
+los pares y semilla fija. Este m\'etodo se elige porque no supone normalidad de las
+diferencias y corrige el sesgo y la asimetr\'ia de la distribuci\'on remuestreada.
+
+Los contrastes emplean la prueba de los rangos con signo de Wilcoxon. Los pares nulos se
+descartan seg\'un el criterio del propio Wilcoxon. Con \num{200} pares la distribuci\'on
+exacta no resulta aplicable, de modo que se usa la aproximaci\'on normal con correcci\'on
+de continuidad; el m\'etodo empleado se registra en cada fila de la tabla de contrastes.
+
+La familia de hip\'otesis la forman las diez comparaciones por pares de la variable de resultado principal.
+Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
+error familiar sin suponer independencia entre contrastes, y la significaci\'on se
+determina sobre los valores ajustados con un umbral de \num{0.05}. Los intervalos de
+confianza no incorporan ese ajuste y se presentan como descriptivos.
+
+Estas medidas caracterizan la variabilidad debida a las condiciones iniciales y, gracias a
+la sincronizaci\'on del ruido, no la mezclan con la del muestreo de difusi\'on. No
+sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
+repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
 
 \section{Entorno de ejecuci\'on y reproducibilidad}
 \label{sec:entorno}
