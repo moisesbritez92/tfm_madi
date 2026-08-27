@@ -932,23 +932,23 @@ huella SHA-256 de cada punto de control evaluado y la del conjunto de demostraci
     evaluados.}
   \label{tab:identificadores}
   \scriptsize
-  \begin{tabular}{llp{0.44\textwidth}}
+  \begin{tabular}{lp{0.30\textwidth}p{0.47\textwidth}}
     \toprule
     Variante & Pesos de partida & SHA-256 del punto de control evaluado \\
     \midrule
     V0 & \texttt{torchvision:resnet18}, \texttt{weights=None} &
-      \texttt{5310551ee71075d9efcf956c34670809741d84e06808809551e7675674e8ce63} \\
-    V1 & \texttt{timm:resnet18.a1\_in1k} &
-      \texttt{bb5012c206c2631ff8960592060eb0409244c9b9319172bd28ed720b0e7c175b} \\
-    V2 & \texttt{torchvision:ResNet18\_Weights.IMAGENET1K\_V1} &
-      \texttt{36deb633c82033d81ed6b7fb1b16dcbfd0bf42c1dc7fb20b5dfe784fd357eff5} \\
-    V3 & \texttt{timm:vit\_small\_patch14\_dinov2} &
-      \texttt{1403e6ba251ac818f3ce1d7a8faf50048517b32c87f3efdf43f751c74f1a412c} \\
-    V4 & \texttt{timm:vit\_base\_patch16\_clip\_224} &
-      \texttt{2fcd5857bcbb1417e9e6f159b091b8bffda948e0bb64ab28791502c679bca8b0} \\
+      \texttt{\seqsplit{5310551ee71075d9efcf956c34670809741d84e06808809551e7675674e8ce63}} \\
+    V1 & \texttt{\seqsplit{timm:resnet18.a1\_in1k}} &
+      \texttt{\seqsplit{bb5012c206c2631ff8960592060eb0409244c9b9319172bd28ed720b0e7c175b}} \\
+    V2 & \texttt{\seqsplit{torchvision:ResNet18\_Weights.IMAGENET1K\_V1}} &
+      \texttt{\seqsplit{36deb633c82033d81ed6b7fb1b16dcbfd0bf42c1dc7fb20b5dfe784fd357eff5}} \\
+    V3 & \texttt{\seqsplit{timm:vit\_small\_patch14\_dinov2}} &
+      \texttt{\seqsplit{1403e6ba251ac818f3ce1d7a8faf50048517b32c87f3efdf43f751c74f1a412c}} \\
+    V4 & \texttt{\seqsplit{timm:vit\_base\_patch16\_clip\_224}} &
+      \texttt{\seqsplit{2fcd5857bcbb1417e9e6f159b091b8bffda948e0bb64ab28791502c679bca8b0}} \\
     \midrule
     \multicolumn{2}{l}{Conjunto de demostraciones (\'arbol \texttt{zarr})} &
-      \texttt{c235ab79adceeada3de959baae1bbd37ab8d49fbc4612779bad837ba275e36a4} \\
+      \texttt{\seqsplit{c235ab79adceeada3de959baae1bbd37ab8d49fbc4612779bad837ba275e36a4}} \\
     \bottomrule
   \end{tabular}
   \notatabla{Los puntos de control corresponden a las \'epocas \num{350}, \num{150},
