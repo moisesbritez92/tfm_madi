@@ -8,3 +8,6 @@
 *.out
 *.synctex.gz
 con.*
+*.fls
+*.fdb_latexmk
+
