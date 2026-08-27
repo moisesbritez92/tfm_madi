@@ -1,0 +1,95 @@
+{
+  "ruta": "/home/moise/tfm/diffusion_policy/data/pusht/pusht_cchi_v7_replay.zarr",
+  "n_episodios": 206,
+  "arrays": {
+    "action": {
+      "forma": [
+        25650,
+        2
+      ],
+      "dtype": "float32",
+      "chunks": [
+        161,
+        2
+      ],
+      "nan": 0,
+      "inf": 0,
+      "min": 12.0,
+      "max": 511.0
+    },
+    "img": {
+      "forma": [
+        25650,
+        96,
+        96,
+        3
+      ],
+      "dtype": "float32",
+      "chunks": [
+        161,
+        96,
+        96,
+        3
+      ],
+      "nan": 0,
+      "inf": 0,
+      "min": 65.0,
+      "max": 255.0
+    },
+    "keypoint": {
+      "forma": [
+        25650,
+        9,
+        2
+      ],
+      "dtype": "float32",
+      "chunks": [
+        161,
+        9,
+        2
+      ],
+      "nan": 0,
+      "inf": 0,
+      "min": 12.201386,
+      "max": 521.067932
+    },
+    "n_contacts": {
+      "forma": [
+        25650,
+        1
+      ],
+      "dtype": "float32",
+      "chunks": [
+        161,
+        1
+      ],
+      "nan": 0,
+      "inf": 0,
+      "min": 0.0,
+      "max": 2.0
+    },
+    "state": {
+      "forma": [
+        25650,
+        5
+      ],
+      "dtype": "float32",
+      "chunks": [
+        161,
+        5
+      ],
+      "nan": 0,
+      "inf": 0,
+      "min": 0.000216,
+      "max": 510.957886
+    }
+  },
+  "n_transiciones": 25650,
+  "episode_ends_creciente": true,
+  "longitud_min": 49,
+  "longitud_max": 246,
+  "longitudes_coherentes": true,
+  "estados_duplicados": 0,
+  "sha256_arbol": "c235ab79adceeada3de959baae1bbd37ab8d49fbc4612779bad837ba275e36a4",
+  "bytes_en_disco": 31010783
+}

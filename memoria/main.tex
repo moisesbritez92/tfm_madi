@@ -6,14 +6,12 @@
 \documentclass[11pt,a4paper,twoside,openright]{report}
 
 \usepackage{tecnun-tfm}
-\usepackage{multibib}
-\newcites{con}{Bibliograf\'ia}   % segunda lista: obras consultadas no citadas
 
 % --- Datos de la memoria -----------------------------------------------------
 \tfmtipo{Proyecto Fin de M\'aster}
 \tfmmaster{AN\'ALISIS DE DATOS EN INGENIER\'IA}
-\tfmtitulo{Influencia del codificador visual y su estrategia de entrenamiento
-           en Diffusion Policy para manipulaci\'on rob\'otica: estudio en Push-T}
+\tfmtitulo{Comparaci\'on de codificadores visuales en Diffusion Policy:
+           protocolo con prueba disjunta, rendimiento y coste en Push-T}
 \tfmtitulocorto{Codificadores visuales en Diffusion Policy}
 \tfmautor{Moises Britez}
 \tfmdirector{Diego Borro}                    % dejar vacio si no procede
@@ -56,28 +54,21 @@
 \include{secciones/05-presupuesto}
 
 % ============================ REFERENCIAS ===================================
-% Lista IEEE numerada por orden de aparicion: solo obras citadas en el texto.
+% Lista IEEE unica, numerada por orden de aparicion. Solo obras citadas en el
+% texto: el sistema IEEE exige correspondencia univoca entre cita y entrada.
+% La antigua lista separada "Bibliografia" se retiro; sus dos entradas propias
+% (monografia y repositorio) pasaron a bib/referencias.bib y se citan en el
+% cuerpo, en sec:entorno.
 \cleardoublepage
 \phantomsection
 \addcontentsline{toc}{chapter}{Referencias}
-\renewcommand{\bibname}{Referencias}   % multibib redefine \bibname: reponerlo aqui
+\renewcommand{\bibname}{Referencias}
 \bibliographystyle{bst/IEEEtran}
 \bibliography{bib/referencias}
 
-% ============================ BIBLIOGRAFIA ==================================
-% Obras consultadas que no se citan en el texto. Se listan con \nocitecon.
-\cleardoublepage
-\phantomsection
-\addcontentsline{toc}{chapter}{Bibliograf\'ia}
-\sinetiquetasbib
-\nocitecon{*}
-\bibliographystylecon{bst/IEEEtranS}   % variante ordenada alfabeticamente
-\bibliographycon{bib/bibliografia}
-
-% =============================== ANEXOS =====================================
-%\cleardoublepage
-%\appendix
-
-%\include{secciones/anexos}
+% Sin anexos: el material de apoyo (configuraciones efectivas, registros,
+% guiones de analisis y protocolo) reside en el repositorio del trabajo, que se
+% cita formalmente. Los identificadores, huellas y configuraciones necesarios
+% para reproducir el experimento estan en sec:entorno y sec:protocolo.
 
 \end{document}

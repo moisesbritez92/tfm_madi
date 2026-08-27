@@ -1,6 +1,6 @@
 % !TEX program = pdflatex
 %% =====================================================================
-%%  Defensa de TFM — Influencia del codificador visual en Diffusion Policy
+%%  Defensa de TFM — Comparación de codificadores visuales en Diffusion Policy
 %%  Compilar:  latexmk -pdf beamer.tex
 %%  Todas las cifras proceden de la memoria (memoria/main.tex y secciones/).
 %% =====================================================================
@@ -24,7 +24,7 @@
 \sisetup{detect-all, output-decimal-marker={,}, group-digits=false}
 
 \title{Codificadores visuales en Diffusion Policy}
-\subtitle{Entrenar la ResNet-18 desde cero supera al preentrenamiento de ImageNet en Push-T}
+\subtitle{Protocolo con prueba disjunta, rendimiento y coste: cinco bloques visuales en Push-T}
 \author{Moises Britez}
 \institute{Máster en Análisis de Datos en Ingeniería · Tecnun · Director: Diego Borro}
 \date{Donostia-San Sebastián · septiembre de 2026}
@@ -76,11 +76,12 @@
 % ---------------------------------------------------------------- 3. la charla en una diapositiva
 \begin{frame}{La respuesta corta: el preentrenamiento de ImageNet estorba aquí}
   \begin{enumerate}
-    \item \textbf{Diseño.} Cinco codificadores en la misma política; lo demás, idéntico.
-    \item \textbf{Resultado.} Desde cero \hl{\num{0.864}}; congelado \num{0.668};
-          ajustado \num{0.648}.
-    \item \textbf{Coste.} La línea base, además, \num{3.5} y \num{9.8} veces más barata
-          por época.
+    \item \textbf{Diseño.} Cinco bloques visuales en la misma política; lo demás, idéntico.
+    \item \textbf{Resultado} sobre \num{200} condiciones nunca consultadas: desde cero
+          \hl{\num{0.872}}; ResNet congelada \num{0.649}; ResNet ajustada \num{0.586};
+          DINOv2 \num{0.578}; CLIP \num{0.490}.
+    \item \textbf{Coste.} La línea base, además, entre \num{1.4} y \num{9.2} veces más
+          barata por época.
   \end{enumerate}
   \takeaway{Peor y más caro: no hay compromiso que negociar.}
 \end{frame}
@@ -156,6 +157,10 @@
   \begin{keypoint}
     Esos episodios \hl{seleccionan} el modelo: no son prueba independiente.
   \end{keypoint}
+  \vspace{2mm}
+  Por eso, con los cinco puntos de control ya congelados, se midió \emph{una sola vez}
+  sobre \num{200} condiciones del bloque \numrange{200000}{200199}, bajo un protocolo
+  escrito y registrado antes de ejecutarlo.
 \end{frame}
 
 \section{Resultados}
@@ -169,25 +174,28 @@
 \end{frame}
 
 % ---------------------------------------------------------------- 9. tabla contrastes
-\begin{frame}{Las dos diferencias frente a la línea base excluyen el cero}
+\begin{frame}{Las cuatro diferencias frente a la línea base excluyen el cero}
   \begin{center}
   \begin{tabular}{l S[table-format=1.3] c l}
     \toprule
-    & {Mejor puntuación} & IC \SI{95}{\percent} de la diferencia & Wilcoxon \\
+    & {Puntuación} & IC \SI{95}{\percent} de la diferencia & $p_{\mathrm{Holm}}$ \\
     \midrule
-    \textbf{V0} desde cero & \bfseries 0.864 & {} & {} \\
-    V1 congelado    & 0.668 & [\num{0.091};\,\num{0.303}] & $p=\num{0.0004}$ \\
-    V2 ajuste fino  & 0.648 & [\num{0.102};\,\num{0.332}] & $p=\num{0.0001}$ \\
+    \textbf{V0} desde cero & \bfseries 0.872 & {} & {} \\
+    V1 ResNet congelada & 0.649 & [\num{0.170};\,\num{0.279}] & $<\num{1e-11}$ \\
+    V2 ResNet ajustada  & 0.586 & [\num{0.228};\,\num{0.346}] & $<\num{1e-16}$ \\
+    V3 DINOv2 congelada & 0.578 & [\num{0.234};\,\num{0.353}] & $<\num{1e-15}$ \\
+    V4 CLIP congelada   & 0.490 & [\num{0.318};\,\num{0.444}] & $<\num{1e-19}$ \\
     \midrule
-    V1 frente a V2  & \fade{0.020} & \fade{[\num{-0.093};\,\num{0.133}]} &
-      \fade{$p=\num{0.82}$} \\
+    V1 frente a V2  & \fade{0.063} & \fade{[\num{0.001};\,\num{0.124}]} &
+      \fade{\num{0.09}--\num{0.13}} \\
     \bottomrule
   \end{tabular}
   \end{center}
-  \src{Diferencias pareadas sobre los \num{50} episodios comunes. V0: época \num{350};
-    V1 y V2: época \num{150}.}
-  \takeaway{Caídas del \SI{23}{\percent} y del \SI{25}{\percent}. Entre congelar y ajustar,
-    en cambio, no hay diferencia medible.}
+  \src{Diferencias pareadas sobre las \num{200} condiciones del bloque disjunto, con el
+    ruido de difusión sincronizado. Intervalos por \textit{bootstrap} BCa; los diez
+    contrastes se corrigen por Holm.}
+  \takeaway{Caídas de entre el \SI{26}{\percent} y el \SI{44}{\percent}. Entre congelar y
+    ajustar, en cambio, no hay diferencia demostrable.}
 \end{frame}
 
 % ---------------------------------------------------------------- 10. perdidas
@@ -206,16 +214,19 @@
     \toprule
     & {Minutos por época} & {Factor} & {Horas totales} \\
     \midrule
-    \textbf{V0} \fade{(\num{96} px)}  & \bfseries 1.5 & {--} & \bfseries 17.4 \\
-    V1 \fade{(\num{224} px)}          & 5.3  & 3.5 & 96.5 \\
-    V2 \fade{(\num{224} px)}          & 14.7 & 9.8 & 84.9 \\
+    \textbf{V0} \fade{(\num{76} px)}  & \bfseries 1.6 & {--} & \bfseries 17.4 \\
+    V1 \fade{(\num{224} px)}          & 5.3  & 3.3 & 96.5 \\
+    V2 \fade{(\num{224} px)}          & 14.7 & 9.2 & 84.9 \\
+    V3 \fade{(\num{224} px)}          & 2.3  & 1.4 & 10.9 \\
+    V4 \fade{(\num{224} px)}          & 4.0  & 2.5 & 27.4 \\
     \bottomrule
   \end{tabular}
   \end{center}
-  \src{V2 acumula menos horas solo porque se detuvo en la época \num{266}.
-    Total del experimento: \SI{198.8}{\hour} sobre una RTX 3070 Ti de \num{8} GB.}
+  \src{Las horas totales no ordenan variantes: los presupuestos fueron distintos y V2 y V3
+    se detuvieron antes. Total del experimento: \SI{237.1}{\hour} sobre una RTX 3070 Ti de
+    \num{8} GB.}
   \takeaway{V1 entrena un \SI{4}{\percent} menos de parámetros y aun así cuesta tres veces
-    y media más: manda la \hl{resolución de entrada}.}
+    más: manda la \hl{resolución de entrada}.}
 \end{frame}
 
 \section{Qué se puede afirmar}
@@ -225,36 +236,44 @@
   \begin{itemize}
     \item Figuras geométricas sobre fondo uniforme: ni textura ni categorías.
     \item La tarea la decide la posición relativa de dos formas.
-    \item V0 guarda esa geometría con \emph{spatial softmax}; V1 y V2 dan un descriptor
-          global.
+    \item V0 resuelve sobre \num{76} px reales; las preentrenadas interpolan la misma
+          imagen hasta \num{224} px, sin añadir información.
   \end{itemize}
-  \src{Coherente con R3M (Nair \emph{et al.}, 2022) y con DINOv3 (Egbe \emph{et al.}, 2025).}
+  \src{Coherente con R3M (Nair \emph{et al.}, 2022) y con DINOv3 (Egbe \emph{et al.}, 2025).
+    Es una explicación plausible, no un mecanismo medido.}
 \end{frame}
 
 % ---------------------------------------------------------------- 13. limitaciones
 \begin{frame}{Dónde falla este estudio}
   \begin{itemize}
-    \item Entre V0 y V1--V2 cambian \hl{cuatro factores a la vez}: inicialización,
-          resolución, recorte y agregación espacial.
-    \item Una sola semilla: los intervalos cubren episodios, no réplicas.
-    \item Sin V3 ni V4, convolucionales frente a ViT sigue abierto.
+    \item \hl{Una sola semilla de entrenamiento}: la unidad sobre la que se infiere es el
+          artefacto, no la estrategia. Las \num{200} condiciones replican la evaluación,
+          no el entrenamiento.
+    \item Entre V0 y V1--V2 cambian \hl{varios factores a la vez}: pesos iniciales,
+          resolución con recorte y normalización interna de la red.
+    \item V1 y V2 ni siquiera parten del mismo archivo de pesos:
+          \texttt{timm:resnet18.a1\_in1k} frente a \texttt{torchvision:IMAGENET1K\_V1}.
+    \item Presupuestos desiguales y regla de parada adoptada \emph{después} de ver V0
+          y V1.
   \end{itemize}
-  \takeaway{Se compara el bloque codificador\,+\,preprocesado, no la inicialización
-    aislada.}
+  \takeaway{Se comparan cinco artefactos concretos y su bloque visual completo, no
+    estrategias de entrenamiento.}
 \end{frame}
 
 % ---------------------------------------------------------------- 14. cierre
 \begin{frame}{Para llevarse a casa}
   \begin{enumerate}
-    \item Con \num{90} demostraciones de Push-T, la ResNet-18 desde cero ganó por
-          \num{0.197} y \num{0.217} puntos.
-    \item Ajustar los pesos preentrenados no aportó ventaja sobre congelarlos
-          ($p=\num{0.82}$).
-    \item Siguiente paso: cerrar V3 y V4; entrenar desde cero a \num{224} px.
+    \item Con \num{90} demostraciones de Push-T, y sobre \num{200} condiciones nunca
+          consultadas, la ResNet-18 desde cero ganó por entre \num{0.223} y \num{0.382}
+          puntos, y además es la más barata por época.
+    \item Ajustar los pesos preentrenados no aportó ventaja sobre congelarlos, y ese
+          contraste no aísla la estrategia: los pesos de partida difieren.
+    \item Siguiente paso, por orden: \hl{replicar con varias semillas de entrenamiento};
+          después, entrenar desde cero a \num{224} px para separar los factores.
   \end{enumerate}
   \vfill
   {\color{tsMute}\small Bifurcación propia de \texttt{diffusion\_policy} ·
-    \num{1266} épocas ejecutadas}
+    \num{1621} épocas ejecutadas · \SI{237.1}{\hour} de GPU}
 \end{frame}
 
 % ================================================================== respaldo
@@ -298,10 +317,14 @@
     V0 & 0.864 & 0.862 & 116.17 \\
     V1 & 0.668 & 0.547 & 147.31 \\
     V2 & 0.648 & 0.585 & 42.86 \\
+    V3 & 0.622 & 0.572 & 314.78 \\
+    V4 & 0.535 & 0.483 & 94.93 \\
     \bottomrule
   \end{tabular}
-  \src{V2 logra el menor error sobre acciones del conjunto de datos y aun así no gana la
-    tarea: precisión en cadena abierta y control en bucle cerrado no miden lo mismo.}
+  \src{Cifras del \hl{conjunto de selección}, no de la prueba final: el máximo de una
+    serie de evaluaciones es un estimador optimista. V2 logra el menor error sobre
+    acciones del conjunto de datos y aun así no gana la tarea: precisión en cadena abierta
+    y control en bucle cerrado no miden lo mismo.}
 \end{frame}
 
 \begin{frame}[noframenumbering]{Hiperparámetros comunes}

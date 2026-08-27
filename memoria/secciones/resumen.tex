@@ -8,32 +8,38 @@ modificado sobre todo el bloque generativo, mientras que la elecci\'on del codif
 su estrategia de entrenamiento sigue sin resolverse cuando solo se dispone de un conjunto
 reducido de demostraciones.
 
-Este trabajo eval\'ua la influencia del codificador visual y de su estrategia de
-entrenamiento sobre el rendimiento de una \textit{Diffusion Policy} en la tarea Push-T. Con
-ese fin se implementan cinco variantes del codificador dentro de la misma pol\'itica: una
-ResNet-18 entrenada desde cero, la misma red preentrenada sobre ImageNet en versiones
-congelada y con ajuste fino, y dos transformadores de visi\'on congelados, DINOv2 ViT-S/14
-y CLIP ViT-B/16. Todas entregan un vector de \num{512} componentes y comparten red
-generativa, datos y protocolo de evaluaci\'on. El ajuste emplea \num{90} de las \num{206}
-demostraciones teleoperadas disponibles, seg\'un el criterio de la implementaci\'on de
-referencia, y presupuestos de \num{200} a \num{500} \'epocas, con parada anticipada. Un
-conjunto de \num{50} episodios generados con semillas reservadas selecciona el punto de
-control de cada variante. El rendimiento se mide despu\'es una sola vez sobre \num{200}
-episodios de un bloque de semillas disjunto, bajo un protocolo fijado de antemano, junto
-con el tiempo de c\'omputo consumido.
+Este trabajo compara cinco bloques visuales integrados como codificador de observaciones
+de una misma \textit{Diffusion Policy} en la tarea Push-T: una ResNet-18 entrenada desde
+cero, la misma red preentrenada sobre ImageNet en versiones congelada y con ajuste fino, y
+dos transformadores de visi\'on congelados, DINOv2 ViT-S/14 y CLIP ViT-B/16. Todos
+entregan un vector de \num{512} componentes y comparten red generativa, datos y protocolo
+de evaluaci\'on. El ajuste emplea \num{90} de las \num{206} demostraciones teleoperadas
+disponibles, seg\'un el criterio de la implementaci\'on de referencia, y presupuestos de
+\num{200} a \num{500} \'epocas, con parada anticipada. Un conjunto de \num{50} episodios
+generados con semillas reservadas selecciona el punto de control de cada variante. El
+rendimiento se mide despu\'es una sola vez sobre \num{200} episodios de un bloque de
+semillas disjunto, bajo un protocolo preregistrado, junto con el tiempo de c\'omputo
+consumido. Cada bloque visual se entrena una \'unica vez, premisa de dise\~no adoptada
+para cubrir cinco configuraciones con el presupuesto disponible; en consecuencia, la
+unidad sobre la que se infiere es el artefacto entrenado y no la estrategia de
+entrenamiento.
 
 Sobre ese bloque independiente, la l\'inea base entrenada desde cero alcanza \num{0.872}.
 Las cuatro variantes preentrenadas obtienen \num{0.649}, \num{0.586}, \num{0.578} y
 \num{0.490}. V0 supera a todas con significaci\'on tras corregir los diez contrastes por
-pares mediante el procedimiento de Holm. En cambio, solo una diferencia entre variantes
-preentrenadas supera el umbral familiar del \SI{5}{\percent}. Cada \'epoca de V0 ocupa
+pares mediante el procedimiento de Holm, y ese resultado no depende de qu\'e prueba se
+emplee. Entre las variantes preentrenadas, en cambio, solo la peor se distingue de las
+dem\'as, y el orden entre las tres restantes queda sin resolver. Cada \'epoca de V0 ocupa
 \SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las
 dem\'as. Las cinco ejecuciones suman \SI{237.1}{\hour}.
 
-Se concluye que, en Push-T y con pocas demostraciones, ninguno de los bloques
-preentrenados evaluados mejora el rendimiento ni el coste de la l\'inea base. Esta ventaja
-debe atribuirse al codificador junto con su preprocesado, puesto que ambos var\'ian de forma
-conjunta.
+Se concluye que, entre los cinco artefactos evaluados y sobre las condiciones ensayadas,
+ninguno de los bloques preentrenados mejora el rendimiento ni el coste por \'epoca de la
+l\'inea base. La ventaja debe atribuirse al bloque visual completo (pesos iniciales,
+resoluci\'on, recorte y agregaci\'on espacial), que var\'ia de forma conjunta, y no al
+preentrenamiento aislado. Con una \'unica ejecuci\'on de entrenamiento por variante, el
+resultado no autoriza a extrapolar el comportamiento esperado de esas estrategias al
+volver a entrenarlas.
 
 \vspace{1em}
 \noindent\textbf{Palabras clave:} aprendizaje por imitaci\'on, modelos de difusi\'on,

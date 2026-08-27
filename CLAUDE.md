@@ -144,8 +144,32 @@ tiempo total no sirve para comparar variantes**: hay que usar los minutos por é
 
 Fase 1 = 1 seed (42) × 5 variantes, **completada el 26 de agosto de 2026**. Todas las
 métricas anteriores agregan los 50 entornos de test con seeds 100000–100049; la seed 42
-es la del entrenamiento. Fase 2 = seeds 43 y 44 sobre las 3 variantes seleccionadas.
-Referencia de duración: V0 tardó ~17 h; V1, ~96 h.
+es la del entrenamiento. Referencia de duración: V0 tardó ~17 h; V1, ~96 h.
+
+**Esas cifras son del conjunto de selección y están sesgadas al alza: no son el
+resultado.** El 27 de agosto de 2026 los cinco checkpoints congelados se evaluaron una
+sola vez sobre el bloque disjunto `200000-200199` (n = 200), con protocolo preregistrado
+en `memoria/preregistro_prueba_final.md` (commit `8bc22e7`). **Resultado final: V0 0,872 ·
+V1 0,649 · V2 0,586 · V3 0,578 · V4 0,490.** La ordenación no cambia y la ventaja de V0
+crece. Usar estas cifras, no las de la tabla, en cualquier texto que reporte resultados.
+
+**Fase 2 (seeds 43 y 44) queda fuera de alcance**, por decisión del 27 de agosto de 2026:
+no se lanza más cómputo y pasa a trabajo futuro. La consecuencia es inferencial y hay que
+respetarla en toda la redacción: con una ejecución por variante, **la unidad sobre la que
+se infiere es el artefacto entrenado, no la estrategia de entrenamiento**.
+
+### Dos correcciones factuales (verificadas el 27/08/2026, no repetir los errores)
+
+1. **Ninguna variante usa `spatial softmax`.** La config `pusht_image` pasa por
+   `MultiImageObsEncoder` + `model_getter.get_resnet`, que hace `fc = Identity`: es
+   promediado global en V0, V1 y V2, y componente de clase en V3 y V4. El *spatial
+   softmax* del artículo pertenece al codificador de robomimic. Lo que sí distingue a V0
+   es `use_group_norm: True` (por eso su checkpoint no tiene `num_batches_tracked`).
+2. **V1 y V2 no parten del mismo archivo de pesos.** V1 usa
+   `timm.create_model("resnet18", pretrained=True)` → **`resnet18.a1_in1k`**; V2 usa
+   `torchvision` con `weights: IMAGENET1K_V1`. Verificado tensor a tensor contra el
+   checkpoint congelado de V1: **120/120 idénticos con timm, 0/120 con torchvision**. El
+   contraste V1–V2 **no** aísla congelación frente a ajuste fino.
 
 ## Dónde están los resultados
 

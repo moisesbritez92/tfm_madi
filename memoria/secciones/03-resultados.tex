@@ -2,7 +2,7 @@
 \label{cap:resultados}
 
 Este cap\'itulo presenta los resultados de las cinco variantes y los relaciona con las
-hip\'otesis formuladas en el \cref{sec:planteamiento}. El an\'alisis comienza con la
+expectativas previas formuladas en el \cref{sec:planteamiento}. El an\'alisis comienza con la
 cobertura de las ejecuciones, contin\'ua con la evoluci\'on del rendimiento y de las
 p\'erdidas, y concluye con una comparaci\'on cualitativa y las limitaciones de la evidencia.
 
@@ -39,7 +39,8 @@ solo disponen de cuatro evaluaciones, frente a las diez de V0 y V1.
   \end{tabular}
   \notatabla{La puntuaci\'on se acompa\~na de su error est\'andar sobre los \num{50}
     episodios evaluados. En V2 se excluye la \'epoca de \'indice \num{266}, interrumpida
-    tras cinco lotes y sin validaci\'on. V3 se detuvo en el \'indice \num{154}.}
+    tras cinco lotes y sin validaci\'on. V3 complet\'o \num{155} \'epocas, es decir hasta
+    la de \'indice \num{154}, de un presupuesto de \num{300}.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
@@ -171,27 +172,38 @@ trabajo.
     variante.}
   \label{tab:prueba-final}
   \small
-  \begin{tabular}{llccrc}
+  \scriptsize
+  \begin{tabular}{llcccc c}
     \toprule
-    Variante & Estrategia & Puntuaci\'on & IC \SI{95}{\percent} & \'Exito &
-      Selecci\'on \\
+    Variante & Estrategia & Puntuaci\'on & IC \SI{95}{\percent} BCa & \'Exito &
+      IC \SI{95}{\percent} Wilson & Selecci\'on \\
     \midrule
     V0 & Desde cero  & \num{0.872} $\pm$ \num{0.018} &
-      {[\num{0.838};\,\num{0.906}]} & \num{101}/\num{200} & \num{0.864} \\
+      {[\num{0.833};\,\num{0.903}]} & \num{101}/\num{200} &
+      {[\num{0.436};\,\num{0.574}]} & \num{0.864} \\
     V1 & Congelado   & \num{0.649} $\pm$ \num{0.026} &
-      {[\num{0.597};\,\num{0.700}]} & \num{37}/\num{200}  & \num{0.668} \\
+      {[\num{0.596};\,\num{0.699}]} & \num{37}/\num{200}  &
+      {[\num{0.137};\,\num{0.245}]} & \num{0.668} \\
     V2 & Ajuste fino & \num{0.586} $\pm$ \num{0.029} &
-      {[\num{0.529};\,\num{0.642}]} & \num{32}/\num{200}  & \num{0.648} \\
+      {[\num{0.528};\,\num{0.640}]} & \num{32}/\num{200}  &
+      {[\num{0.116};\,\num{0.217}]} & \num{0.648} \\
     V3 & Congelado   & \num{0.578} $\pm$ \num{0.028} &
-      {[\num{0.523};\,\num{0.633}]} & \num{32}/\num{200}  & \num{0.622} \\
+      {[\num{0.522};\,\num{0.631}]} & \num{32}/\num{200}  &
+      {[\num{0.116};\,\num{0.217}]} & \num{0.622} \\
     V4 & Congelado   & \num{0.490} $\pm$ \num{0.029} &
-      {[\num{0.434};\,\num{0.547}]} & \num{16}/\num{200}  & \num{0.535} \\
+      {[\num{0.434};\,\num{0.547}]} & \num{16}/\num{200}  &
+      {[\num{0.050};\,\num{0.126}]} & \num{0.535} \\
     \bottomrule
   \end{tabular}
   \notatabla{La puntuaci\'on se acompa\~na de su error est\'andar sobre las \num{200}
-    condiciones. La columna de \'exito cuenta las condiciones que alcanzan el umbral de
-    cobertura. La \'ultima columna reproduce la puntuaci\'on de selecci\'on de la
-    \cref{tab:resultados} para facilitar la comparaci\'on.}
+    condiciones. Su intervalo procede de un \textit{bootstrap} BCa de \num{10000}
+    remuestreos con semilla \num{42}, el mismo m\'etodo que emplean los intervalos de las
+    diferencias de la \cref{tab:contrastes}. La columna de \'exito cuenta las condiciones
+    que alcanzan el umbral de cobertura, y su intervalo es el de Wilson para una
+    proporci\'on binomial. La tasa de \'exito es un resultado secundario y descriptivo: no
+    entra en la familia de contrastes corregida. La \'ultima columna reproduce la
+    puntuaci\'on de selecci\'on de la \cref{tab:resultados} para facilitar la
+    comparaci\'on.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
@@ -222,47 +234,75 @@ La \cref{tab:contrastes} recoge los diez contrastes por pares sobre ese mismo bl
   \scriptsize
   \begin{tabular}{lcccc}
     \toprule
-    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} BCa & $p$ &
-      $p_{\mathrm{Holm}}$ \\
+    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} BCa &
+      $p_{\mathrm{Holm}}$ perm. & $p_{\mathrm{Holm}}$ Wilcoxon \\
     \midrule
-    V0 frente a V1 & \num{0.223} & {[\num{0.170};\,\num{0.279}]} & \num{2.5e-13} & \num{1.8e-12} \\
-    V0 frente a V2 & \num{0.286} & {[\num{0.228};\,\num{0.346}]} & \num{1.9e-18} & \num{1.7e-17} \\
-    V0 frente a V3 & \num{0.294} & {[\num{0.234};\,\num{0.353}]} & \num{2.8e-17} & \num{2.2e-16} \\
-    V0 frente a V4 & \num{0.382} & {[\num{0.318};\,\num{0.444}]} & \num{2.6e-21} & \num{2.6e-20} \\
-    V1 frente a V2 & \num{0.063} & {[\num{0.001};\,\num{0.124}]} & \num{0.066} & \num{0.132} \\
-    V1 frente a V3 & \num{0.070} & {[\num{0.006};\,\num{0.132}]} & \num{0.017} & \num{0.052} \\
-    V1 frente a V4 & \num{0.159} & {[\num{0.092};\,\num{0.224}]} & \num{6.0e-06} & \num{3.6e-05} \\
-    V2 frente a V3 & \num{0.007} & {[\num{-0.052};\,\num{0.066}]} & \num{0.68} & \num{0.68} \\
-    V2 frente a V4 & \num{0.095} & {[\num{0.027};\,\num{0.161}]} & \num{0.013} & \num{0.052} \\
-    V3 frente a V4 & \num{0.088} & {[\num{0.021};\,\num{0.154}]} & \num{0.010} & \num{0.051} \\
+    V0 frente a V1 & \num{0.223} & {[\num{0.170};\,\num{0.279}]} & \num{1e-3} & \num{1.8e-12} \\
+    V0 frente a V2 & \num{0.286} & {[\num{0.228};\,\num{0.346}]} & \num{1e-3} & \num{1.7e-17} \\
+    V0 frente a V3 & \num{0.294} & {[\num{0.234};\,\num{0.353}]} & \num{1e-3} & \num{2.2e-16} \\
+    V0 frente a V4 & \num{0.382} & {[\num{0.318};\,\num{0.444}]} & \num{1e-3} & \num{2.6e-20} \\
+    V1 frente a V2 & \num{0.063} & {[\num{0.001};\,\num{0.124}]} & \num{0.093} & \num{0.132} \\
+    V1 frente a V3 & \num{0.070} & {[\num{0.006};\,\num{0.132}]} & \num{0.093} & \num{0.052} \\
+    V1 frente a V4 & \num{0.159} & {[\num{0.092};\,\num{0.224}]} & \num{1e-3} & \num{3.6e-05} \\
+    V2 frente a V3 & \num{0.007} & {[\num{-0.052};\,\num{0.066}]} & \num{0.80} & \num{0.68} \\
+    V2 frente a V4 & \num{0.095} & {[\num{0.027};\,\num{0.161}]} & \num{0.040} & \num{0.052} \\
+    V3 frente a V4 & \num{0.088} & {[\num{0.021};\,\num{0.154}]} & \num{0.040} & \num{0.051} \\
     \bottomrule
   \end{tabular}
   \notatabla{Diferencias sobre las \num{200} condiciones comunes, con el ruido de
     difusi\'on sincronizado entre variantes. Los intervalos proceden de un
     \textit{bootstrap} BCa de \num{10000} remuestreos y no incorporan el ajuste de
-    multiplicidad. La prueba de Wilcoxon emplea la aproximaci\'on normal con correcci\'on
-    de continuidad, y los diez valores $p$ se ajustan mediante el procedimiento de Holm.}
+    multiplicidad. La pen\'ultima columna recoge la prueba de permutaci\'on por inversi\'on
+    de signo sobre la diferencia media, con \num{10000} permutaciones; su valor $p$ menor
+    alcanzable es \num{1e-4}, de modo que \num{1e-3} indica el m\'inimo tras la
+    correcci\'on y no un valor estimado. La \'ultima columna recoge la prueba de Wilcoxon
+    preregistrada, con aproximaci\'on normal y correcci\'on de continuidad. Ambas familias
+    de diez valores $p$ se ajustan por separado mediante el procedimiento de Holm.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
+La tabla recoge dos contrastes y conviene explicar por qu\'e. El preregistro fij\'o la
+prueba de los rangos con signo de Wilcoxon, que opera sobre los rangos de las diferencias
+pareadas y no sobre su media. Como el estimando primario declarado es una diferencia de
+medias, esa prueba no apunta exactamente a la cantidad que se reporta. La prueba de
+permutaci\'on por inversi\'on de signo s\'i lo hace: su estad\'istico es la propia media
+de las diferencias, y su hip\'otesis nula es la simetr\'ia de esas diferencias en torno a
+cero. Se a\~nade por ese motivo y se declara de forma expresa como \textbf{an\'alisis post
+hoc}, no preregistrado; el contraste preregistrado se conserva junto a ella y ninguno
+sustituye al otro.
+
 Las cuatro diferencias entre V0 y las variantes preentrenadas son muy superiores al umbral
-familiar, con valores ajustados entre \num{1.8e-12} y \num{2.6e-20}. La conclusi\'on
-principal del trabajo se sostiene, por tanto, sobre una medida que no particip\'o en la
-elecci\'on de los puntos de control.
+familiar con ambos contrastes. Wilcoxon las sit\'ua entre \num{1.8e-12} y \num{2.6e-20};
+la permutaci\'on alcanza su valor $p$ m\'inimo, \num{1e-4} con \num{10000} permutaciones,
+que tras la correcci\'on de Holm queda en \num{1e-3}. Los intervalos BCa, entre
+\num{0.170} y \num{0.444}, excluyen el cero con holgura. La conclusi\'on principal del
+trabajo se sostiene, por tanto, sobre una medida que no particip\'o en la elecci\'on de
+los puntos de control y no depende de qu\'e contraste se elija.
 
-Entre las cuatro variantes preentrenadas, en cambio, solo V1 frente a V4 supera el umbral
-tras la correcci\'on, con $p_{\mathrm{Holm}} = \num{3.6e-05}$. Tres contrastes quedan justo
-por encima de \num{0.05}, entre \num{0.051} y \num{0.052}, y los dos restantes ni se
-aproximan. El aumento del tama\~no muestral ha estrechado los intervalos sin resolver ese
-orden interno, lo que sugiere que las diferencias entre variantes preentrenadas, de
-existir, son peque\~nas frente a la dispersi\'on entre condiciones iniciales.
+Entre las cuatro variantes preentrenadas el cuadro es distinto y merece cautela. V4 queda
+por debajo de las otras tres con ambos contrastes o con uno solo: V1 frente a V4 supera el
+umbral con holgura en los dos ($p_{\mathrm{Holm}} = \num{3.6e-05}$ y \num{1e-3}), mientras
+que V2 frente a V4 y V3 frente a V4 lo superan con la prueba de permutaci\'on
+($p_{\mathrm{Holm}} = \num{0.040}$) y se quedan justo por encima con Wilcoxon
+(\num{0.052} y \num{0.051}). Las tres comparaciones restantes, V1 frente a V2, V1 frente a
+V3 y V2 frente a V3, no alcanzan el umbral con ninguno de los dos.
 
-Merece atenci\'on el contraste entre congelaci\'on y ajuste fino, la \'unica comparaci\'on
-del estudio que a\'isla un solo factor. Sobre el conjunto de selecci\'on la diferencia era
-de \num{0.020} con $p = \num{0.82}$; sobre el bloque de prueba asciende a \num{0.063} con
-$p = \num{0.066}$, y su intervalo apenas excluye el cero por el extremo inferior. La
-evidencia apunta ahora en contra del ajuste fino con m\'as claridad que antes, si bien no
-alcanza significaci\'on tras corregir la familia de diez contrastes.
+De ah\'i se sigue una lectura prudente. Que dos contrastes discrepen a uno y otro lado de
+\num{0.05} en los mismos pares significa que esas diferencias no son robustas a la
+elecci\'on del procedimiento, y no que est\'en establecidas. La afirmaci\'on que este
+trabajo sostiene es la m\'as d\'ebil de las dos posibles: V4 tiende a situarse por debajo
+del resto, mientras que el orden entre V1, V2 y V3 no queda resuelto. Tampoco se afirma lo
+contrario: la ausencia de significaci\'on no demuestra equivalencia, puesto que el
+dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello.
+
+Merece atenci\'on aparte el contraste entre V1 y V2, congelaci\'on frente a ajuste fino.
+Sobre el conjunto de selecci\'on la diferencia era de \num{0.020} con $p = \num{0.82}$;
+sobre el bloque de prueba asciende a \num{0.063}, con $p_{\mathrm{Holm}}$ de \num{0.132} y
+\num{0.093}. La evidencia apunta en contra del ajuste fino con m\'as claridad que antes,
+sin alcanzar significaci\'on. Y hay una segunda raz\'on, ajena a la estad\'istica, para no
+leer esa diferencia como el efecto de la estrategia de adaptaci\'on: seg\'un se documenta
+en el \cref{sec:variantes}, V1 y V2 no parten del mismo archivo de pesos preentrenados, de
+modo que el contraste combina la estrategia con el origen de la inicializaci\'on.
 
 Estos resultados no cuantifican la variabilidad entre semillas de entrenamiento, cuesti\'on
 que se retoma en el \cref{sec:limitaciones}.
@@ -501,30 +541,38 @@ Adem\'as, la puntuaci\'on mostrada es el m\'aximo temporal, no el valor del esta
 Su funci\'on es ilustrar el comportamiento que origina la m\'etrica, no estimar el
 rendimiento medio.
 
-\section{Contraste de las hip\'otesis}
+\section{Contraste de las expectativas previas}
 \label{sec:contraste-hipotesis}
 
 El contraste se realiza sobre el bloque de prueba disjunto, no sobre el conjunto de
 selecci\'on. Las cifras que siguen proceden, por tanto, de la \cref{tab:prueba-final} y de
-la \cref{tab:contrastes}.
+la \cref{tab:contrastes}. Conviene recordar el nivel al que se formulan: las tres
+expectativas del \cref{sec:planteamiento} se enuncian sobre las configuraciones completas
+efectivamente entrenadas, y su confrontaci\'on con los datos describe lo ocurrido con
+esos cinco artefactos, no lo que cabr\'ia esperar al repetir el entrenamiento.
 
-La primera hip\'otesis planteaba que el preentrenamiento aportar\'ia representaciones m\'as
-\'utiles que el entrenamiento desde cero. Los resultados no la respaldan: V0 supera entre
-\num{0.223} y \num{0.382} puntos a las cuatro variantes preentrenadas. Las cuatro
-diferencias conservan significaci\'on tras el ajuste de Holm por amplio margen.
+La expectativa E1 anticipaba que las configuraciones con codificador preentrenado
+superar\'ian a la entrenada desde cero. Los resultados apuntan en sentido contrario: V0
+supera entre \num{0.223} y \num{0.382} puntos a las cuatro, y las cuatro diferencias
+conservan significaci\'on tras el ajuste de Holm por amplio margen y con ambos contrastes.
+Es el resultado negativo m\'as claro del trabajo.
 
-La segunda hip\'otesis propon\'ia una ventaja del ajuste fino sobre la congelaci\'on. Tampoco
-queda respaldada, ya que V1 obtiene \num{0.649} y V2 \num{0.586}. La diferencia de
-\num{0.063} favorece a la congelaci\'on y su intervalo, {[\num{0.001};\,\num{0.124}]},
-excluye el cero por poco, pero el valor ajustado, $p_{\mathrm{Holm}} = \num{0.132}$, no
-alcanza el umbral familiar. En consecuencia, la evidencia descarta una mejora del ajuste
-fino, sin llegar a establecer la superioridad de la congelaci\'on.
+La expectativa E2 anticipaba una ventaja del ajuste fino sobre la congelaci\'on entre las
+dos configuraciones que comparten arquitectura. Tampoco se cumple, ya que V1 obtiene
+\num{0.649} y V2 \num{0.586}. La diferencia de \num{0.063} favorece a la congelaci\'on y
+su intervalo, {[\num{0.001};\,\num{0.124}]}, excluye el cero por poco, pero los valores
+ajustados, \num{0.132} y \num{0.093}, no alcanzan el umbral familiar. Adem\'as, y como se
+razona en el \cref{sec:prueba-final}, ese contraste no aisla la estrategia de
+adaptaci\'on, porque las dos configuraciones no parten del mismo archivo de pesos. La
+lectura sostenible es que el ajuste fino no mejor\'o a la congelaci\'on en este
+experimento, sin que ello establezca nada sobre la estrategia en general.
 
-La tercera hip\'otesis propon\'ia que los transformadores alcanzar\'ian un rendimiento
-comparable al de las redes convolucionales con mayor coste de inferencia. V3 y V4 quedan
-por debajo de V0 y no se distinguen de V1 ni de V2 tras la correcci\'on familiar, con la
-\'unica excepci\'on de V1 frente a V4. Por tanto, los datos no muestran una ventaja de
-rendimiento propia de la arquitectura ViT.
+La expectativa E3 anticipaba un coste de inferencia superior en los transformadores y
+dejaba abierto el orden interno entre las cuatro configuraciones preentrenadas. Sobre el
+rendimiento, V3 y V4 quedan por debajo de V0 y el orden entre las preentrenadas solo se
+resuelve en parte: V4 se sit\'ua por debajo de las otras tres, mientras que V1, V2 y V3 no
+se distinguen entre s\'i con ninguno de los dos contrastes. Los datos no muestran, por
+tanto, una ventaja de rendimiento propia de la arquitectura ViT.
 
 Su segunda parte, la relativa al coste, se cumple en el codificador y no en la pol\'itica.
 La \cref{tab:latencia} sit\'ua el codificador de V3 y V4 entre tres y seis veces por encima
@@ -561,6 +609,28 @@ de modo que el candidato evaluado procede de un conjunto ya filtrado por la m\'e
 contaminada. El procedimiento acota el sesgo de selecci\'on y elimina el sesgo del
 m\'aximo, pero no garantiza que el punto de control congelado sea el mejor que la variante
 podr\'ia haber ofrecido.
+
+La cuarta ata\~ne a la estocasticidad de la inferencia. Una \textit{Diffusion Policy} parte
+de ruido y a\~nade ruido en cada uno de sus \num{100} pasos, de modo que su resultado
+depende tanto de la condici\'on inicial como de la realizaci\'on concreta de ese ruido. El
+protocolo resuelve cada condici\'on con una \'unica trayectoria de difusi\'on, comun a las
+cinco variantes. Esa sincronizaci\'on es deliberada y beneficiosa para el contraste
+pareado, porque elimina de la diferencia una fuente de variaci\'on ajena a lo que se
+compara, pero tiene una contrapartida que debe declararse: el estimando queda condicionado
+a esa realizaci\'on del ruido, y los intervalos de la \cref{tab:prueba-final} no cubren la
+variabilidad que aparecer\'ia al repetir la inferencia con otras semillas. Las
+comparaciones de diferencia peque\~na, en particular las que enfrentan a V1, V2 y V3, son
+las m\'as sensibles a esta limitaci\'on.
+
+La quinta afecta al diagn\'ostico de sobreajuste. La p\'erdida de validaci\'on se estima
+sobre cuatro episodios, es decir \num{404} ventanas que no son independientes entre s\'i,
+puesto que las de un mismo episodio comparten trayectoria. Ese tama\~no basta para vigilar
+la marcha del ajuste, pero no para sostener una afirmaci\'on cuantitativa sobre
+generalizaci\'on. En consecuencia, las curvas de validaci\'on de la
+\cref{fig:evolucion-perdidas} se emplean aqu\'i como diagn\'ostico exploratorio, y el
+argumento sobre el sobreajuste se apoya de forma principal en las curvas de evaluaci\'on
+en bucle cerrado de la \cref{fig:evolucion-score}, que descansan sobre \num{50}
+condiciones independientes.
 
 Por \'ultimo, la evaluaci\'on cada \num{50} \'epocas ofrece una visi\'on discreta de la
 trayectoria y puede omitir m\'aximos intermedios. V2 a\~nade una reanudaci\'on, y solo su

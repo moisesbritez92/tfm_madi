@@ -13,8 +13,8 @@ de cinco codificadores visuales como `obs_encoder` de una Diffusion Policy sobre
 checkpoints, en WSL. Esta carpeta contiene solo el documento.
 
 - Autor: Moises Britez · Director: Diego Borro
-- Titulo actual: «Influencia del codificador visual y su estrategia de entrenamiento en
-  Diffusion Policy para manipulacion robotica: estudio en Push-T»
+- Titulo actual: «Comparacion de codificadores visuales en Diffusion Policy: protocolo
+  con prueba disjunta, rendimiento y coste en Push-T» (decision 19)
 - Entrega prevista: septiembre de 2026
 
 ## Decisiones tomadas
@@ -29,7 +29,8 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
    oficiales (decision 6).
 3. **Citas en IEEE** con bibtex clasico e `IEEEtran.bst` v1.14 descargado de CTAN a
    `bst/`. No se usa biblatex.
-4. **Dos listas de obras**, con `multibib`:
+4. ~~**Dos listas de obras**, con `multibib`~~ — **revertida el 27/08/2026, decision 19.**
+   Ahora hay una sola lista IEEE y no hay anexos. Se conserva el registro del porque:
    - *Referencias* = obras citadas, numeradas `[n]` por orden de aparicion
      (`bib/referencias.bib`, `IEEEtran.bst`).
    - *Bibliografia* = obras consultadas no citadas, **sin numero** y ordenadas
@@ -303,6 +304,78 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
       apostrofo**, de modo que `\'o` se convierte en `'o` y rompe el LaTeX en silencio. Los
       ficheros `.tex` se editan con la herramienta de edicion, no con `sed`/heredoc.
 
+19. **27 de agosto de 2026: realineamiento tras la reevaluacion.** El informe
+    `../evaluacion_tfm_reevaluacion.md` da 73/100 bruto con techo de **69/100**, y el
+    techo **no lo activa un fallo de ejecucion** sino el desajuste entre el alcance
+    prometido (estrategias de entrenamiento) y la evidencia disponible (una ejecucion por
+    variante). La palanca es realinear el alcance, no computar mas. Se ejecuto el plan de
+    `../plan-realineamientoMemoriaTfm.prompt.md`.
+    - **Titulo nuevo:** «Comparacion de codificadores visuales en Diffusion Policy:
+      protocolo con prueba disjunta, rendimiento y coste en Push-T». El anterior prometia
+      inferencia sobre *estrategias*.
+    - **El estimando declarado son cinco artefactos concretos**, no estrategias. Objetivo
+      general reescrito, cuatro objetivos especificos (el cuarto es *acotar la validez*),
+      y las «hipotesis» pasan a **expectativas previas E1-E3** enunciadas sobre
+      configuraciones completas. La tercera ya no afirma comparabilidad: deja abierto el
+      orden interno, porque no hay margen de equivalencia ni TOST.
+    - **Una sola semilla deja de ser limitacion y pasa a premisa de diseno declarada**,
+      justificada con las 237,1 h ya consumidas frente a las ~700 h que exigirian tres
+      semillas. Aparece en 1.4, en 3.1 y al abrir el capitulo 5.
+    - **Dos errores factuales encontrados al verificar A4, ambos corregidos.** Son el
+      hallazgo mas importante de la sesion:
+      1. **Ninguna variante usa `spatial softmax`.** La config `pusht_image` pasa por
+         `MultiImageObsEncoder` + `model_getter.get_resnet`, que hace `fc = Identity`:
+         es promediado global. El punto de control de V0 no tiene ningun modulo softmax.
+         Lo que si distingue a V0 es `use_group_norm: True` (sin `num_batches_tracked` en
+         el ckpt). El *spatial softmax* del articulo pertenece al codificador de robomimic,
+         no a esta configuracion. Los cuatro factores confundidos son ahora: pesos
+         iniciales, resolucion con recorte, capa de normalizacion (grupos/lotes) y, frente
+         a V1, congelacion.
+      2. **V1 y V2 no parten del mismo archivo de pesos.** V1 usa
+         `timm.create_model("resnet18", pretrained=True)`, que resuelve a
+         **`resnet18.a1_in1k`** (receta A1 de *ResNet strikes back*); V2 usa
+         `torchvision` con `weights: IMAGENET1K_V1`. Verificado tensor a tensor sobre el
+         ckpt congelado de V1: **120/120 identicos con timm, 0/120 con torchvision**
+         (max|dif| = 3,7e5). Se retiro la afirmacion «el contraste V1-V2 aisla la
+         estrategia» de metodologia, resultados y conclusiones.
+    - **Prueba de permutacion sobre la diferencia media (M6).**
+      `scripts/analisis_prueba_final_v2.py`, declarado **post hoc** en 3.8 y en 4.3.
+      Wilcoxon contrasta rangos, no la media que la memoria reporta. Resultado que cambia
+      la lectura: V0 sigue ganando con ambos, pero **V2-V4 y V3-V4 cruzan 0,05 con
+      permutacion (Holm 0,040) y no con Wilcoxon (0,052 y 0,051)**. La memoria adopta la
+      lectura conservadora: **V4 queda por debajo, el orden entre V1, V2 y V3 no se
+      resuelve**. No se cambio el contraste principal por el mas favorable.
+    - **IC declarados (B2) y Wilson (B3).** La Tabla 11 llevaba «media ± EE» rotulado como
+      intervalo; ahora es BCa de 10.000 remuestreos, el mismo metodo que las diferencias.
+      La tasa de exito lleva IC de Wilson y se declara secundaria y descriptiva, fuera de
+      toda familia corregida.
+    - **Ecuaciones DDPM corregidas (M7).** La ecuacion 3 decia `A^0 + eps`. Ahora:
+      `A^k = sqrt(a_barra_k) A^0 + sqrt(1-a_barra_k) eps`, y el muestreo define alpha,
+      gamma y sigma en funcion de beta_k, alpha_k y a_barra_k. Se documenta el plan
+      **coseno al cuadrado** (`squaredcos_cap_v2`, s = 0,008, beta acotado en 0,999):
+      ojo, **`beta_start` y `beta_end` de la config no se usan** con ese plan.
+    - **Controles de integridad del zarr (m6).** `../diffuser/scripts/integridad_zarr.py`,
+      corre en WSL, abre en lectura y recorre `img` por bloques. Todo limpio: 0 NaN, 0 Inf,
+      0 estados duplicados, longitudes 49-246, `img` en [65, 255] float32.
+      SHA-256 del arbol: `c235ab79...275e36a4`; 31,0 MB en disco.
+    - **Sin anexos y una sola lista bibliografica**, por decision del usuario en esta
+      sesion: todo el material de apoyo vive en el repo de GitHub, que ahora **se cita
+      formalmente** (`britez2026repo`), igual que la monografia (`britez2026guia`). Se
+      retiraron `secciones/anexos.tex`, `bib/bibliografia.bib`, el paquete `multibib` de
+      `main.tex` y el `bibtex con` de `compilar.sh`. **Esto revierte la decision 4.**
+      El material que iba a ser el anexo se traslado al cuerpo, que es donde el informe lo
+      exige: `tab:identificadores` y la preespecificacion en 3.9, `tab:config-efectiva` en
+      3.5, `tab:preprocesado` en 3.4 y `tab:integridad` en 3.2. De paso desaparecen las dos
+      referencias `??`, que apuntaban al anexo comentado.
+    - **Tabla `tab:alcance`** al cierre de las conclusiones: tres columnas con lo
+      demostrado para los cinco artefactos, lo no demostrado para las estrategias y lo no
+      demostrado fuera del simulador. Responde a las preguntas 7 y 10 del tribunal.
+    - Trabajo futuro reescrito con **nueve lineas y diseno concreto**, encabezado por la
+      replicacion con varias semillas. Beamer actualizado con las cifras de la prueba
+      final. Agradecimientos redactados: **conviene que el usuario los personalice**.
+    - Compila limpio: 71 paginas, 1 aviso (parche `footnote` de microtype, inocuo),
+      cero `??`, 32 referencias sin avisos de BibTeX.
+
 ## Origen de la bibliografia
 
 `bib/referencias.bib` se construyo a partir del cuaderno de NotebookLM **«Diffusion Policy
@@ -415,20 +488,38 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [x] Resultados de V3 (DINOv2) y V4 (CLIP): entrenados y volcados el 26 de agosto de
       2026. Ver la decision 13.
 - [ ] Decidir si el encabezado se mantiene con filete y cursiva o se simplifica.
-- [ ] Sustituir el texto provisional de agradecimientos y los dos anexos de plantilla, o
-      retirar esas paginas si no formaran parte de la entrega.
+- [x] **Agradecimientos y anexos de plantilla.** Resuelto el 27 de agosto de 2026: los
+      anexos se retiraron por completo (el material vive en el repo, que ahora se cita) y
+      los agradecimientos se redactaron. Ver la decision 19.
+- [ ] **Revisar y personalizar los agradecimientos.** Se redactaron a partir de la nota
+      previa («universidad, amigos, familia, profesores, ANDE»). Son sobrios y correctos,
+      pero el texto es del agente, no del autor: conviene reescribirlos.
 - [x] **Prueba final sobre semillas disjuntas.** Hecha el 27 de agosto de 2026 sobre las
       **cinco** variantes y **200** semillas (`200000-200199`), no las tres y 50 que se
       habian previsto. Ver la decision 18.
-- [ ] **Ablaciones de los cuatro factores confundidos** (M3 del segundo informe): los dos
-      runs que separan inicializacion y preprocesado, ~85 h a 224 px y ~17 h a 96 px sin
-      recorte. Siguen pendientes y necesitan GPU.
-- [ ] **Actualizar `beamer/beamer.tex`**, que repite las cifras del conjunto de seleccion
-      (0,864 / 0,668 / 0,648 / 0,622 / 0,535). Las de la defensa son ahora las de la
-      prueba final.
-- [ ] **Resolver las dos referencias `??`** (N1 del informe): ambas apuntan a
-      `anx:primero`, del anexo que `main.tex` tiene comentado. O se reactiva el anexo o se
-      retiran las dos remisiones.
+- [ ] **Ablaciones de los factores confundidos**: los runs que separan inicializacion,
+      preprocesado y normalizacion interna, ~85 h a 224 px y ~17 h a 96 px sin recorte,
+      mas uno con normalizacion por lotes. Siguen pendientes y necesitan GPU. Ojo: el
+      cuarto factor **no es la agregacion espacial**, que es promediado global en las
+      cinco variantes; ver el error 1 de la decision 19.
+- [x] **Actualizar `beamer/beamer.tex`.** Hecho el 27 de agosto de 2026: subtitulo,
+      resumen, tabla de contrastes, tabla de coste, limitaciones y cierre pasan a las
+      cifras de la prueba final (0,872 / 0,649 / 0,586 / 0,578 / 0,490) y se retira el
+      *spatial softmax*. **Quedan por revisar** las diapositivas de respaldo y la figura
+      de perdidas, que aun describen solo V0-V2.
+- [x] **Resolver las dos referencias `??`.** Hechas el 27 de agosto de 2026: apuntaban al
+      anexo comentado y el anexo se retiro, de modo que se reapuntaron a
+      `tab:identificadores` (3.9) y `tab:config-efectiva` (3.5). El PDF ya no contiene
+      ningun `??`.
+- [ ] **Replicar con las semillas 43 y 44** (M1, la limitacion que activa el techo de
+      69/100). Es la unica via para inferir sobre estrategias y no sobre artefactos.
+      Necesita GPU: ~700 h para las cinco variantes, o menos si se reduce la matriz.
+      Declarado como primera linea de trabajo futuro.
+- [ ] **Replicas de ruido de inferencia** (M5): repetir el bloque de 200 condiciones con
+      varias semillas de difusion, ~2,5 h por replica de las cinco variantes. Descartado
+      en esta ronda por la decision de no lanzar mas computo.
+- [ ] **Rehacer V1 desde los pesos de `torchvision`** para que su contraste con V2 aisle
+      de verdad la estrategia de adaptacion (~96 h). Ver el error 2 de la decision 19.
 - [x] **M5 del informe: caracterizacion del `zarr`** con distribucion de longitudes y
       puntuaciones y el reparto train/val/descartados explicito (P2.8). Resuelto el 26 de
       agosto de 2026 sin computo de GPU. Ver la decision 17.

@@ -2,10 +2,18 @@
 \label{cap:conclusiones}
 
 Este cap\'itulo interpreta los resultados del \cref{cap:resultados} a la luz de los
-objetivos y las hip\'otesis enunciados en los cap\'itulos anteriores. En primer lugar,
+objetivos y las expectativas enunciados en los cap\'itulos anteriores. En primer lugar,
 formula una conclusi\'on por cada objetivo espec\'ifico y precisa qu\'e permiten afirmar
-los datos. A continuaci\'on, expone las l\'ineas de continuaci\'on abiertas por el
-estudio.
+los datos. A continuaci\'on delimita de forma expl\'icita el alcance de cada afirmaci\'on.
+Por \'ultimo, expone las l\'ineas de continuaci\'on abiertas por el estudio.
+
+Una advertencia recorre todo el cap\'itulo y conviene enunciarla antes que ninguna
+conclusi\'on. Cada configuraci\'on se entren\'o una sola vez, seg\'un la premisa de
+dise\~no del \cref{sec:alcance}. Todas las afirmaciones que siguen se refieren, por tanto,
+a cinco artefactos concretos evaluados sobre un generador de condiciones iniciales, y no
+al rendimiento esperado de repetir cada estrategia de entrenamiento. Donde el texto dice
+que una variante supera a otra debe leerse que este punto de control super\'o a aquel en
+las condiciones ensayadas.
 
 Las cinco variantes disponen de resultados, aunque sus presupuestos de entrenamiento no
 son uniformes. Esta diferencia limita la comparaci\'on temporal y se incorpora a la
@@ -25,18 +33,19 @@ bloque visual con esas dos salvedades.
 
 Asimismo, se han evaluado las cinco configuraciones previstas. V3 se interrumpi\'o tras
 \num{155} \'epocas de un presupuesto de \num{300}; las dem\'as finalizaron por parada
-anticipada o por agotamiento del presupuesto asignado. El estudio responde as\'i a las dos
-preguntas del \cref{sec:problema}, con las limitaciones causales descritas m\'as adelante.
+anticipada o por agotamiento del presupuesto asignado. El estudio responde as\'i a la
+pregunta del \cref{sec:problema}, con las limitaciones causales descritas m\'as adelante.
 
 \divisionmenor{Sobre el rendimiento de las variantes}
 
-La conclusi\'on principal contradice la hip\'otesis de partida: ning\'un bloque visual
-preentrenado mejora el rendimiento en Push-T. Sobre el bloque de prueba disjunto, ajeno a
-la selecci\'on del punto de control, la l\'inea base alcanza \num{0.872}, frente a
-\num{0.649} en V1, \num{0.586} en V2, \num{0.578} en V3 y \num{0.490} en V4. Las
-diferencias respecto a V0 abarcan entre \num{0.223} y \num{0.382} puntos y las cuatro
-conservan significaci\'on tras corregir los diez contrastes mediante el procedimiento de
-Holm, con valores ajustados inferiores a \num{2e-12}.
+La conclusi\'on principal contradice la expectativa E1: ninguno de los cuatro bloques
+visuales preentrenados evaluados mejora el rendimiento de la l\'inea base en Push-T. Sobre
+el bloque de prueba disjunto, ajeno a la selecci\'on del punto de control, la l\'inea base
+alcanza \num{0.872}, frente a \num{0.649} en V1, \num{0.586} en V2, \num{0.578} en V3 y
+\num{0.490} en V4. Las diferencias respecto a V0 abarcan entre \num{0.223} y \num{0.382}
+puntos, sus intervalos excluyen el cero con holgura y las cuatro conservan significaci\'on
+tras corregir los diez contrastes mediante el procedimiento de Holm, con ambos
+procedimientos de contraste. Es el resultado mejor sostenido del trabajo.
 
 Conviene subrayar de d\'onde procede esa evidencia. Las mismas \num{50} condiciones que
 eligieron cada punto de control habr\'ian producido una estimaci\'on optimista, de modo que
@@ -45,21 +54,31 @@ protocolo fijado por escrito antes de ejecutarla. La ordenaci\'on no cambi\'o y 
 de V0 creci\'o, puesto que fue la \'unica variante que no perdi\'o puntuaci\'on al pasar al
 bloque disjunto.
 
-Asimismo, la segunda hip\'otesis tampoco se sostiene. El ajuste fino del codificador
-preentrenado no supera a su congelaci\'on, puesto que V2 se queda \num{0.063} por debajo de
-V1. Esa diferencia favorece a la congelaci\'on y su intervalo excluye el cero por escaso
-margen, pero no alcanza significaci\'on tras la correcci\'on familiar
-($p_{\mathrm{Holm}} = \num{0.132}$). Por tanto, la evidencia descarta una mejora del ajuste
-fino sin llegar a demostrar la superioridad de la congelaci\'on. La incertidumbre entre
-semillas de entrenamiento, no cuantificada, se suma a esa indeterminaci\'on.
+Asimismo, la expectativa E2 tampoco se cumple. La configuraci\'on que actualiza los pesos
+del codificador no supera a la que los congela, puesto que V2 se queda \num{0.063} por
+debajo de V1. Esa diferencia favorece a la congelaci\'on y su intervalo excluye el cero por
+escaso margen, pero no alcanza significaci\'on tras la correcci\'on familiar, con valores
+ajustados de \num{0.132} y \num{0.093} seg\'un el contraste. Dos cautelas acompa\~nan a
+este resultado y ninguna es menor. La primera, que V1 y V2 no parten del mismo archivo de
+pesos preentrenados, seg\'un se documenta en el \cref{sec:entorno}, de modo que la
+comparaci\'on no aisla la estrategia de adaptaci\'on. La segunda, que la incertidumbre
+entre semillas de entrenamiento no est\'a cuantificada. La afirmaci\'on sostenible se
+limita, por tanto, a estos dos artefactos concretos: el ajuste fino no mejor\'o a la
+congelaci\'on en este experimento.
 
 El ajuste fino s\'i presenta una din\'amica de entrenamiento menos favorable.
 V2 permanece estancada alrededor de \num{0.11} hasta la \'epoca \num{50}, cuando V0 y V1
 ya rebasan \num{0.53}. Adem\'as, sobreajusta antes y con mayor intensidad: en la \'epoca
 \num{250} su p\'erdida de validaci\'on alcanza \num{0.380}, frente a \num{0.120} de V1 y
-\num{0.077} de V0. En conjunto, la actualizaci\'on de los pesos degrada la
-representaci\'on de partida sin construir otra m\'as \'util con las demostraciones
-disponibles.
+\num{0.077} de V0. Una explicaci\'on compatible con ese patr\'on es que la actualizaci\'on
+de los pesos deteriore la representaci\'on de partida sin construir otra m\'as \'util con
+las demostraciones disponibles, pero este trabajo \textbf{no la comprueba}: no se ha
+medido ninguna propiedad de las representaciones, sino \'unicamente p\'erdidas y
+rendimiento en bucle cerrado, y esas mismas curvas admiten otras lecturas, entre ellas el
+sobreajuste del conjunto de la pol\'itica. Queda enunciada como hip\'otesis y el
+\cref{sec:trabajo-futuro} indica c\'omo contrastarla. A ello se suma que V1 y V2 no parten
+del mismo archivo de pesos, seg\'un se documenta en el \cref{sec:variantes}, de modo que la
+comparaci\'on entre ambas no aisla la estrategia de adaptaci\'on.
 
 Los transformadores congelados tampoco revierten el resultado. DINOv2 ViT-S/14 supera a
 CLIP ViT-B/16 por \num{0.088} puntos, si bien la diferencia queda en el l\'imite tras la
@@ -78,16 +97,20 @@ codificador entrenado de extremo a extremo en Push-T \cite{nair2022r3m},
 \cite{chi2025diffusion}, y el estudio con DINOv3 concluye que la transferencia depende de
 la tarea y de la estrategia de adaptaci\'on \cite{egbe2025dinov3dp}.
 
-La atribuci\'on causal exige una precisi\'on. V0 difiere de V1 y V2 en cuatro factores: la
-inicializaci\'on, la resoluci\'on de entrada, el recorte aleatorio y la agregaci\'on espacial.
-Frente a V3 y V4 cambia, adem\'as, la arquitectura. V0 conserva la localizaci\'on mediante
-un \textit{spatial softmax} \cite{levine2016visuomotor}, mientras que las variantes
-preentrenadas entregan un descriptor global. En una tarea definida por posiciones
-relativas, esta diferencia puede ser tan relevante como la inicializaci\'on.
+La atribuci\'on causal exige una precisi\'on. V0 difiere de V2 en tres factores que
+var\'ian de forma conjunta: los pesos iniciales, la resoluci\'on efectiva de entrada junto
+con el recorte aleatorio y la capa de normalizaci\'on interna, por grupos en V0 y por
+lotes en las dem\'as. Frente a V1 se a\~nade un cuarto factor, la congelaci\'on del
+codificador, y frente a V3 y V4 cambia adem\'as la arquitectura. La resoluci\'on merece
+atenci\'on propia: V0 resuelve la tarea sobre un tensor de \num{76}$\times$\num{76}
+p\'ixeles, mientras que las cuatro variantes preentrenadas interpolan la misma imagen de
+\num{96}$\times$\num{96} hasta \num{224}$\times$\num{224}, sin a\~nadir informaci\'on. En
+una tarea definida por posiciones relativas, ese cambio de escala y el aumento de datos
+por recorte pueden pesar tanto como la inicializaci\'on.
 
-Las conclusiones anteriores se refieren, por tanto, al codificador junto con su cadena de
-preprocesado, entendidos como un bloque, y no a la inicializaci\'on aislada. Separar los
-cuatro efectos requiere entrenamientos adicionales, descritos en el
+Las conclusiones anteriores se refieren, por tanto, al bloque visual completo (pesos,
+preprocesado y configuraci\'on interna de la red), y no a la inicializaci\'on aislada.
+Separar los efectos requiere entrenamientos adicionales, descritos en el
 \cref{sec:trabajo-futuro}.
 
 \divisionmenor{Sobre el coste computacional}
@@ -116,64 +139,161 @@ pero la llamada completa var\'ia solo un \SI{1.5}{\percent}, porque los \num{100
 difusi\'on dominan el tiempo. Ninguna variante alcanza el control en tiempo real sobre este
 equipo, y la v\'ia para conseguirlo pasa por el muestreo y no por el bloque visual.
 
-La segunda es que el ajuste fino, y no el preentrenamiento, es lo que agota la memoria. V2
-reserva \num{10.293} gibibytes sobre una tarjeta de \num{8} y solo se completa gracias al
-respaldo en memoria del sistema, lo que explica su coste por \'epoca. Las cuatro variantes
-restantes se mantienen entre el \SI{78}{\percent} y el \SI{90}{\percent} de la capacidad.
-En inferencia ninguna supera el \SI{23}{\percent}: la restricci\'on de memoria de este
-trabajo pertenece al entrenamiento, no al despliegue.
+La segunda es que la retropropagaci\'on a trav\'es del codificador, y no el hecho de estar
+preentrenado, es lo que agota la memoria. V2 reserva \num{10.293} gibibytes sobre una
+tarjeta de \num{8} y solo se completa gracias al respaldo en memoria del sistema, lo que
+explica su coste por \'epoca frente a V1, con la que comparte todo salvo esa
+retropropagaci\'on. Las cuatro variantes restantes se mantienen entre el \SI{78}{\percent}
+y el \SI{90}{\percent} de la capacidad. Conviene acotar el alcance: V2 es la \'unica
+configuraci\'on con ajuste fino del estudio, de modo que la observaci\'on descansa sobre un
+solo par y no sobre un dise\~no que var\'ie esa decisi\'on en cada arquitectura. En
+inferencia ninguna variante supera el \SI{23}{\percent}: la restricci\'on de memoria de
+este trabajo pertenece al entrenamiento, no al despliegue.
 
 \divisionmenor{Respuesta al objetivo general}
 
-En conjunto, la respuesta al objetivo general es inequ\'ivoca para la configuraci\'on
-estudiada. Con \num{90} demostraciones de Push-T, la ResNet-18 entrenada de extremo a
-extremo a resoluci\'on nativa domina en rendimiento y coste a las cuatro alternativas
-preentrenadas. Ni DINOv2 \cite{oquab2024dinov2} ni CLIP \cite{radford2021clip} alteran esa
-conclusi\'on. La ventaja corresponde al bloque visual completo y no permite atribuir el
-efecto exclusivamente al preentrenamiento.
+En conjunto, la respuesta al objetivo general es clara dentro de la configuraci\'on
+estudiada. Con \num{90} demostraciones de Push-T, el artefacto obtenido al entrenar la
+ResNet-18 de extremo a extremo a resoluci\'on nativa domina en rendimiento y en coste por
+\'epoca a los cuatro artefactos preentrenados. Ni DINOv2 \cite{oquab2024dinov2} ni CLIP
+\cite{radford2021clip} alteran ese resultado. La ventaja corresponde al bloque visual
+completo y no permite atribuir el efecto exclusivamente al preentrenamiento.
+
+El cuarto objetivo espec\'ifico pide acotar la validez de esa respuesta, y esa delimitaci\'on
+es parte del resultado y no un descargo. La \cref{tab:alcance} separa lo que el trabajo
+demuestra de lo que no, en los tres niveles pertinentes.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Alcance de las conclusiones: qu\'e queda demostrado y qu\'e no.}
+  \label{tab:alcance}
+  \scriptsize
+  \begin{tabular}{p{0.31\textwidth}p{0.31\textwidth}p{0.31\textwidth}}
+    \toprule
+    Demostrado para los cinco artefactos &
+    No demostrado para las estrategias &
+    No demostrado fuera del simulador \\
+    \midrule
+    El punto de control de V0 supera a los otros cuatro sobre \num{200} condiciones
+      disjuntas, con diferencias de \num{0.223} a \num{0.382} y significaci\'on familiar
+      con ambos contrastes. &
+    Que entrenar desde cero sea, en expectativa, superior a congelar o ajustar un
+      codificador preentrenado. Har\'ia falta replicar cada configuraci\'on con varias
+      semillas de entrenamiento. &
+    Que el resultado se traslade a otra tarea, a im\'agenes reales o a un robot f\'isico.
+      No se ha ejecutado ning\'un experimento fuera de Push-T. \\
+    \addlinespace
+    Que ese resultado no procede del conjunto que eligi\'o los puntos de control: el bloque
+      de prueba se consult\'o una sola vez, con protocolo preregistrado. &
+    Que el preentrenamiento, la resoluci\'on, el recorte o la agregaci\'on sean por
+      separado la causa de la diferencia. Var\'ian de forma conjunta. &
+    Que la ordenaci\'on se conserve con otro muestreador de difusi\'on, otro n\'umero de
+      pasos u otro equipo. \\
+    \addlinespace
+    Que V4 se sit\'ua por debajo de V1, V2 y V3, y que el orden entre estas tres no queda
+      resuelto. &
+    Que congelar sea superior a ajustar: V1 y V2 ni siquiera parten del mismo archivo de
+      pesos. &
+    Que el resultado sea robusto a otra realizaci\'on del ruido de inferencia: solo se
+      evalu\'o una trayectoria por condici\'on. \\
+    \addlinespace
+    Que V0 es la m\'as barata por \'epoca y que el codificador apenas influye en la
+      latencia de la pol\'itica completa. &
+    Que el ajuste fino degrade la representaci\'on de partida. No se ha medido ninguna
+      propiedad de las representaciones. &
+    Que ninguna variante alcance tiempo real: se comprueba en este equipo y con estos
+      \num{100} pasos, no en general. \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
 
 \section{Trabajo futuro}
 \label{sec:trabajo-futuro}
 
-Del estudio se derivan seis l\'ineas de continuaci\'on, ordenadas por su capacidad para
-afianzar o corregir las conclusiones anteriores.
+Del estudio se derivan nueve l\'ineas de continuaci\'on, ordenadas por su capacidad para
+afianzar o corregir las conclusiones anteriores. Las tres primeras atacan directamente los
+l\'imites inferenciales declarados en el \cref{sec:alcance}; las restantes refuerzan el
+protocolo.
 
-En primer lugar, aislar los cuatro factores confundidos entre la l\'inea base y las
-variantes preentrenadas. Un entrenamiento adicional de ResNet-18 desde cero a \num{224}
-p\'ixeles y sin recorte aleatorio separa el efecto de la inicializaci\'on del efecto del
-preprocesado. Su coste por \'epoca coincide con el de V2, del orden de
-\SI{15}{\minute}, puesto que el codificador se actualiza en ambos casos y la resoluci\'on
-de entrada es la misma; bajo el criterio de parada, el total se sit\'ua en torno a las
-\SI{85}{\hour}. Una segunda ejecuci\'on desde cero a \num{96} p\'ixeles y sin recorte
-aleatorio aislar\'ia el efecto del aumento de datos por unas \SI{17}{\hour}, coste
-equivalente al de V0.
+En primer lugar, y como l\'inea prioritaria, \textbf{replicar cada configuraci\'on con
+varias semillas de entrenamiento}. Es la \'unica forma de elevar la unidad de inferencia
+del artefacto entrenado a la configuraci\'on, y sin ella ninguna afirmaci\'on de este
+trabajo puede formularse sobre estrategias. El dise\~no m\'inimo son tres semillas por
+variante, es decir quince ejecuciones, con el mismo protocolo y sin ninguna decisi\'on
+tomada por inspecci\'on. El an\'alisis correspondiente es jer\'arquico: un nivel para la
+variabilidad entre ejecuciones y otro para la variabilidad entre condiciones iniciales,
+con la media por ejecuci\'on como unidad del contraste entre variantes. A partir de las
+\SI{237.1}{\hour} de la \cref{tab:coste}, el coste se estima en unas \SI{700}{\hour} de
+GPU. Si el presupuesto no lo permitiera, es preferible replicar tres variantes con tres
+semillas que cinco variantes con una.
 
-En segundo lugar, repetir las variantes seleccionadas con las semillas \num{43} y \num{44}.
-Los contrastes del \cref{cap:resultados} cubren la dispersi\'on entre condiciones iniciales,
-pero no la variabilidad entre ejecuciones de entrenamiento; solo la r\'eplica permite
-estimarla, limitaci\'on declarada desde el \cref{sec:alcance} y cuantificada en el
-\cref{sec:coste}.
+En segundo lugar, \textbf{uniformar el presupuesto y automatizar la parada}. El protocolo
+de este trabajo fij\'o presupuestos distintos y adopt\'o el criterio de parada despu\'es de
+observar las dos primeras ejecuciones, seg\'un se declara en el \cref{sec:protocolo}. Un
+dise\~no preespecificado debe fijar de antemano un presupuesto com\'un expresado en
+\emph{actualizaciones} y no en \'epocas, una regla de parada evaluada de forma
+autom\'atica y con id\'entica paciencia en todas las variantes, y un guardado de puntos de
+control a intervalos fijos e independientes de la puntuaci\'on. As\'i, todas las variantes
+reciben el mismo n\'umero de oportunidades de converger y de ser seleccionadas.
 
-En tercer lugar, ampliar el conjunto de puntos de control candidatos. La prueba del
+En tercer lugar, aislar los factores confundidos entre la l\'inea base y las variantes
+preentrenadas mediante una \textbf{ablaci\'on factorial}. Un entrenamiento adicional de
+ResNet-18 desde cero a \num{224} p\'ixeles y sin recorte aleatorio separa el efecto de la
+inicializaci\'on del efecto del preprocesado. Su coste por \'epoca coincide con el de V2,
+del orden de \SI{15}{\minute}, puesto que el codificador se actualiza en ambos casos y la
+resoluci\'on de entrada es la misma; bajo el criterio de parada, el total se sit\'ua en
+torno a las \SI{85}{\hour}. Una segunda ejecuci\'on desde cero a \num{96} p\'ixeles y sin
+recorte aleatorio aislar\'ia el efecto del aumento de datos por unas \SI{17}{\hour}, coste
+equivalente al de V0. Una tercera, con normalizaci\'on por lotes en lugar de por grupos,
+cerrar\'ia el \'ultimo factor. En la misma familia de ablaciones cabe examinar la
+agregaci\'on espacial: las cinco variantes entregan un descriptor global, obtenido por
+promediado en las convolucionales y por el componente de clase en los transformadores, y
+un \textit{spatial softmax}, que conserva la localizaci\'on de las activaciones
+\cite{levine2016visuomotor}, podr\'ia resultar m\'as adecuado en una tarea definida por
+posiciones relativas.
+
+En cuarto lugar, \textbf{resolver la identidad de los pesos de partida entre V1 y V2}. Tal
+como se documenta en el \cref{sec:variantes}, ambas cargan ResNet-18 preentrenadas sobre
+ImageNet-1k procedentes de bibliotecas y recetas distintas, de modo que su contraste no
+aisla la estrategia de adaptaci\'on. El experimento correcto inicializa las dos desde el
+mismo archivo de pesos y duplica el estado antes de congelar una copia; su coste es el de
+repetir V1, unas \SI{96}{\hour}, ya que V2 podr\'ia reaprovecharse si se adopta la
+procedencia de \texttt{torchvision}.
+
+En quinto lugar, ampliar el conjunto de puntos de control candidatos. La prueba del
 \cref{sec:prueba-final} mide sin sesgo el punto de control congelado de cada variante,
 pero ese candidato procede de los tres que el entrenamiento guard\'o seg\'un la
 puntuaci\'on de selecci\'on. Guardar los puntos de control a intervalos fijos, con
 independencia de su puntuaci\'on, y elegir despu\'es sobre un bloque de selecci\'on tambi\'en
-disjunto cerrar\'ia el \'unico resquicio que el protocolo actual deja abierto.
+disjunto cerrar\'ia ese resquicio del protocolo actual.
 
-En cuarto lugar, repetir la comparaci\'on con los \num{202} episodios disponibles para
+En sexto lugar, \textbf{replicar la inferencia con varias semillas de ruido}. La prueba
+final resuelve cada condici\'on inicial con una \'unica trayectoria de difusi\'on, comun a
+las cinco variantes, de modo que el estimando queda condicionado a esa realizaci\'on del
+ruido y los intervalos no cubren la variabilidad propia del muestreo estoc\'astico. El
+dise\~no que la estimar\'ia repite el bloque de \num{200} condiciones con, por ejemplo,
+cinco semillas de ruido, manteniendo los n\'umeros aleatorios comunes \emph{dentro} de
+cada r\'eplica para no perder el emparejamiento, y descompone la varianza en sus dos
+niveles. Su coste es proporcional al de la prueba ya realizada: unas
+\SI{2.5}{\hour} por r\'eplica de las cinco variantes.
+
+En s\'eptimo lugar, ampliar el conjunto de validaci\'on. Los cuatro episodios que fija la
+implementaci\'on de referencia bastan para vigilar la marcha del ajuste, pero no para
+sostener un diagn\'ostico de sobreajuste: sus ventanas son temporalmente dependientes, de
+modo que las \num{404} disponibles equivalen a bastante menos informaci\'on efectiva. Un
+reparto con veinte episodios de validaci\'on, o una validaci\'on cruzada repetida a nivel
+de episodio y sin mezclar ventanas del mismo episodio entre subconjuntos, permitir\'ia
+acompa\~nar la p\'erdida de validaci\'on de su incertidumbre. El coste es despreciable
+frente al del bucle de optimizaci\'on.
+
+En octavo lugar, repetir la comparaci\'on con los \num{202} episodios disponibles para
 ajuste, y no solo con los \num{90} que fija la implementaci\'on de referencia. El descarte
 es aleatorio y representativo, seg\'un se comprueba en el \cref{sec:datos}, de modo que la
 l\'inea mide el efecto del tama\~no del conjunto y no el de su composici\'on. Ese
 experimento resulta especialmente pertinente aqu\'i, puesto que la ventaja del
 preentrenamiento se atribuye habitualmente a la escasez de datos. Su coste por \'epoca
 crecer\'ia en proporci\'on al n\'umero de ventanas, algo m\'as del doble del actual.
-
-En quinto lugar, examinar la agregaci\'on espacial a la salida de los codificadores
-preentrenados. La l\'inea base conserva la localizaci\'on de las activaciones mediante un
-\textit{spatial softmax} \cite{levine2016visuomotor}, mientras que las variantes
-preentrenadas entregan un descriptor global. Cabe evaluar si una agregaci\'on que preserve
-la geometr\'ia recupera parte de la diferencia observada.
 
 Por \'ultimo, extender el protocolo a otras tareas y a un robot f\'isico. Push-T aporta un
 banco de pruebas controlado, pero sus im\'agenes sint\'eticas son precisamente el escenario

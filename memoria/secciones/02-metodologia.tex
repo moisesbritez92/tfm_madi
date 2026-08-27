@@ -17,15 +17,31 @@ preprocesado. La arquitectura generativa, los datos y la evaluaci\'on permanecen
 el presupuesto y el tama\~no de lote presentan las desviaciones descritas en el
 \cref{sec:protocolo}.
 
-De este planteamiento se derivan tres hip\'otesis de trabajo. La primera sostiene que un
-codificador preentrenado sobre un corpus amplio de im\'agenes aporta representaciones
-m\'as \'utiles que uno entrenado desde cero, puesto que el n\'umero de demostraciones
-disponibles es reducido. La segunda sostiene que el ajuste fino del codificador
-preentrenado mejora al codificador congelado, ya que adapta la representaci\'on a la
-distribuci\'on visual sint\'etica de la tarea. La tercera sostiene que los codificadores
-basados en transformador de visi\'on (\textit{Vision Transformer}, ViT) alcanzan un
-rendimiento comparable al de las redes convolucionales, pero con un coste de inferencia
-superior.
+El planteamiento parte de tres \textbf{expectativas previas}, no de hip\'otesis
+estad\'isticas. La distinci\'on es deliberada: una hip\'otesis sobre estrategias de
+entrenamiento exigir\'ia varias ejecuciones por estrategia, y este dise\~no dispone de una
+sola. Las expectativas se enuncian, por tanto, sobre las configuraciones completas que se
+comparan, y su papel es orientar la lectura de los resultados, no ser sometidas a
+contraste formal.
+
+\begin{enumerate}[label=E\arabic*.,leftmargin=*]
+  \item Las configuraciones cuyo codificador parte de pesos preentrenados sobre un corpus
+        amplio de im\'agenes superar\'an a la configuraci\'on entrenada desde cero, puesto
+        que el n\'umero de demostraciones disponibles es reducido.
+  \item Entre las dos configuraciones que comparten arquitectura ResNet-18 preentrenada,
+        la que actualiza los pesos del codificador superar\'a a la que los mantiene
+        congelados, al adaptar la representaci\'on a la distribuci\'on visual sint\'etica
+        de la tarea.
+  \item Las configuraciones basadas en transformador de visi\'on (\textit{Vision
+        Transformer}, ViT) presentar\'an un coste de inferencia del codificador superior
+        al de las convolucionales. El orden interno entre las cuatro configuraciones
+        preentrenadas se deja abierto: el dise\~no no incluye margen de equivalencia ni
+        prueba dirigida a demostrarlo, de modo que ese orden puede quedar sin resolver.
+\end{enumerate}
+
+El \cref{sec:contraste-hipotesis} recupera las tres expectativas y las confronta con la
+evidencia obtenida, indicando en cada caso el nivel al que la afirmaci\'on resulta
+sostenible.
 
 Para que la comparaci\'on resulte interpretable, se mantienen constantes cinco factores: la
 red generativa y sus hiperpar\'ametros, el conjunto de datos y su partici\'on, la semilla de
@@ -35,12 +51,23 @@ Esta \'ultima restricci\'on resulta esencial: todas las variantes entregan un ve
 \num{512} componentes, de modo que la red generativa recibe siempre una entrada de la misma
 dimensi\'on.
 
-Sin embargo, el dise\~no presenta una limitaci\'on asumida de forma expl\'icita. Cada
-variante se entrena con una \'unica semilla, por lo que no se cuantifica la variabilidad
-entre ejecuciones de entrenamiento. Esta decisi\'on responde al coste computacional, ya que
-una ejecuci\'on ocupa entre \num{11} y \num{96} horas de la \'unica unidad de procesamiento
-gr\'afico (\textit{Graphics Processing Unit}, GPU) disponible, seg\'un se detalla en el
-\cref{sec:coste}.
+A esos factores constantes se suma una \textbf{premisa de dise\~no} que conviene enunciar
+antes que ning\'un resultado: cada variante se entrena una sola vez, con la semilla
+\num{42}. La premisa responde al reparto del presupuesto de c\'omputo. Una ejecuci\'on
+ocupa entre \num{11} y \num{96} horas de la \'unica unidad de procesamiento gr\'afico
+(\textit{Graphics Processing Unit}, GPU) disponible y las cinco suman \SI{237.1}{\hour},
+seg\'un el \cref{sec:coste}; con tres semillas por variante el c\'omputo rondar\'ia las
+\SI{700}{\hour}, incompatibles con el calendario del trabajo. Ante la alternativa entre
+cubrir cinco bloques visuales con una semilla o dos bloques con tres semillas, se opt\'o
+por la cobertura.
+
+La consecuencia es directa y determina toda la especificaci\'on estad\'istica del
+\cref{sec:seleccion-prueba}: la unidad experimental sobre la que se infiere es el
+artefacto entrenado, es decir, el punto de control resultante, y no la estrategia de
+entrenamiento que lo produjo. Los contrastes de este trabajo comparan cinco puntos de
+control fijos ante nuevas condiciones iniciales; no cuantifican la variabilidad que
+introducir\'ia volver a entrenar la misma configuraci\'on con otra semilla. Toda lectura
+de los resultados debe respetar ese nivel.
 
 \section{Tarea y conjunto de datos}
 \label{sec:datos}
@@ -101,7 +128,8 @@ episodios.
 \end{table}
 
 El tope de \num{90} episodios procede de la implementaci\'on de referencia y define el
-r\'egimen de pocas demostraciones que motiva las hip\'otesis del \cref{sec:planteamiento}.
+r\'egimen de pocas demostraciones que motiva las expectativas del
+\cref{sec:planteamiento}.
 Ese r\'egimen admite una descripci\'on cuantitativa. Los episodios de entrenamiento aportan
 \num{11356} transiciones, equivalentes a \SI{18.9}{\minute} de teleoperaci\'on de los
 \SI{42.8}{\minute} que contiene el fichero. Con el horizonte de \num{16} instantes, el
@@ -133,20 +161,69 @@ pieza y orientaci\'on inicial de la pieza.
   \fuente{elaboraci\'on propia}
 \end{figure}
 
-El descarte de \num{112} episodios no introduce un sesgo apreciable, ya que responde a un
-sorteo aleatorio uniforme y no a un criterio de calidad. Los episodios de entrenamiento y
-los descartados no se distinguen en longitud, con $p = \num{0.752}$ en la prueba $U$ de
-Mann-Whitney y $p = \num{0.999}$ en la de Kolmogorov-Smirnov, ni en puntuaci\'on del
-demostrador, con $p = \num{0.302}$ y $p = \num{0.418}$. Tampoco se aprecian diferencias
-entre las condiciones iniciales de entrenamiento y las \num{50} de evaluaci\'on: los cinco
-contrastes de Kolmogorov-Smirnov sobre la posici\'on del efector, la posici\'on de la pieza
-y su orientaci\'on arrojan valores $p$ entre \num{0.232} y \num{0.696}. En cambio, el efecto
-de aprovechar tambi\'en los \num{112} episodios descartados no se ha medido y queda
-recogido en el \cref{sec:trabajo-futuro}.
+El argumento que descarta un sesgo de selecci\'on es el procedimiento, no una prueba
+estad\'istica: el reparto responde a un sorteo aleatorio uniforme sobre los \'indices de
+episodio, sin ning\'un criterio de calidad, longitud ni dificultad. Un sorteo uniforme no
+puede introducir sesgo sistem\'atico por construcci\'on.
 
-Conviene precisar que la evaluaci\'on no consume datos del fichero anterior. El rendimiento
-se mide ejecutando la pol\'itica en el simulador sobre condiciones iniciales generadas de
-forma independiente, seg\'un se detalla en el \cref{sec:evaluacion}.
+Las comparaciones entre los dos subconjuntos cumplen aqu\'i un papel distinto y m\'as
+modesto, el de comprobaci\'on descriptiva de que el sorteo se ejecut\'o como se describe.
+Se presentan como tama\~nos de efecto con su incertidumbre, y no como valores $p$, porque
+no rechazar la igualdad no demuestra equivalencia. Los episodios de entrenamiento son, en
+media, \num{2.4} transiciones m\'as largos que los descartados, con un intervalo BCa al
+\SI{95}{\percent} de {[\num{-7.7};\,\num{12.6}]} sobre una longitud media de \num{126}, es
+decir menos del \SI{10}{\percent} de esa media en cualquiera de los dos extremos. En
+puntuaci\'on del demostrador la diferencia es de \num{0.004}, con intervalo
+{[\num{-0.004};\,\num{0.011}]}, un orden de magnitud por debajo de las diferencias entre
+variantes que este trabajo interpreta. El $\delta$ de Cliff, que mide la probabilidad de
+que un episodio de un subconjunto supere a uno del otro, vale \num{0.026} en longitud y
+\num{0.085} en puntuaci\'on, ambos dentro de lo que se considera un efecto despreciable.
+El mismo criterio se aplica a la comparaci\'on entre las condiciones iniciales de
+entrenamiento y las \num{50} de evaluaci\'on, superpuestas en la
+\cref{fig:caracterizacion-dataset}: los estad\'isticos de Kolmogorov-Smirnov sobre la
+posici\'on del efector, la posici\'on de la pieza y su orientaci\'on quedan entre
+\num{0.232} y \num{0.696} en valor $p$, sin que de ello se concluya equivalencia. En
+cambio, el efecto de aprovechar tambi\'en los \num{112} episodios descartados no se ha
+medido y queda recogido en el \cref{sec:trabajo-futuro}.
+
+La procedencia p\'ublica del conjunto no sustituye a la comprobaci\'on del archivo
+concreto que se ha utilizado. La \cref{tab:integridad} recoge los controles de integridad
+aplicados sobre \'el, junto con la huella que lo identifica de forma un\'ivoca.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Controles de integridad del archivo de demostraciones.}
+  \label{tab:integridad}
+  \small
+  \begin{tabular}{lll}
+    \toprule
+    Control & Regla & Resultado \\
+    \midrule
+    Valores ausentes  & Ning\'un \texttt{NaN} en los cinco arreglos & \num{0} \\
+    Valores infinitos & Ning\'un \texttt{Inf} en los cinco arreglos & \num{0} \\
+    Longitud coherente & Todos los arreglos con \num{25650} filas & Cumple \\
+    \'Indices de episodio & Estrictamente crecientes, \num{206} finales & Cumple \\
+    Longitud de episodio & Entre \num{49} y \num{246} transiciones & Cumple \\
+    Rango de la acci\'on & Coordenadas en $[\num{12};\ \num{511}]$ p\'ixeles & Cumple \\
+    Rango del estado & Coordenadas en $[\num{0.0002};\ \num{510.96}]$ & Cumple \\
+    Rango de la imagen & Intensidades en $[\num{65};\ \num{255}]$, \texttt{float32}
+      & Cumple \\
+    Estados duplicados & Filas de \texttt{state} repetidas & \num{0} \\
+    Tama\~no en disco & Suma de los bloques del directorio & \SI{31.0}{\mega\byte} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Los controles se ejecutan sobre el propio archivo \texttt{zarr}, abierto en
+    modo lectura y recorrido por bloques para no cargar en memoria los \SI{2.84}{\giga\byte}
+    del arreglo de im\'agenes. La huella SHA-256 del \'arbol de ficheros, calculada sobre
+    su contenido en orden determinista, es
+    \texttt{c235ab79\dots 275e36a4}; el valor completo figura en la
+    \cref{tab:identificadores}.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Conviene precisar, por \'ultimo, que la evaluaci\'on no consume datos de este fichero. El
+rendimiento se mide ejecutando la pol\'itica en el simulador sobre condiciones iniciales
+generadas de forma independiente, seg\'un se detalla en el \cref{sec:evaluacion}.
 
 \section{Arquitectura de la pol\'itica}
 \label{sec:arquitectura}
@@ -158,38 +235,68 @@ $p(\mathbf{A}_t \mid \mathbf{O}_t)$, donde $\mathbf{O}_t$ agrupa las observacion
 probabil\'istico de difusi\'on con eliminaci\'on de ruido (\textit{Denoising Diffusion
 Probabilistic Model}, DDPM) \cite{ho2020ddpm}.
 
-El entrenamiento a\~nade ruido gaussiano $\epsilon^k$ a una secuencia de acciones real
-$\mathbf{A}^0_t$ y ajusta una red $\epsilon_\theta$ para predecirlo. La funci\'on de
-p\'erdida es el error cuadr\'atico medio sobre el ruido, recogido en la \cref{eq:perdida}.
+El planificador de ruido fija una sucesi\'on $\beta_1,\dots,\beta_K$ y, a partir de ella,
+$\alpha_k = 1-\beta_k$ y $\bar{\alpha}_k = \prod_{j=1}^{k}\alpha_j$. El proceso directo
+perturba una secuencia de acciones real $\mathbf{A}^0_t$ interpolando entre la se\~nal
+limpia y ruido gaussiano $\epsilon\sim\mathcal{N}(0,\mathbf{I})$, con los coeficientes que
+recoge la \cref{eq:proceso-directo} del \cref{cap:estado-del-arte}:
 
 \begin{equation}
-  \mathcal{L} = \mathbb{E}\left[\lVert \epsilon^k -
-    \epsilon_\theta\!\left(\mathbf{O}_t,\, \mathbf{A}^0_t + \epsilon^k,\, k\right)
-    \rVert^2\right]
+  \mathbf{A}^{k}_t = \sqrt{\bar{\alpha}_k}\,\mathbf{A}^0_t
+    + \sqrt{1-\bar{\alpha}_k}\;\epsilon .
+  \label{eq:perturbacion}
+\end{equation}
+
+La red $\epsilon_\theta$ se ajusta para predecir ese ruido a partir del estado perturbado,
+del \'indice de paso y de la observaci\'on. La funci\'on de p\'erdida es el error
+cuadr\'atico medio sobre el ruido, recogido en la \cref{eq:perdida}.
+
+\begin{equation}
+  \mathcal{L} = \mathbb{E}_{k,\,\epsilon}\left[\left\lVert \epsilon -
+    \epsilon_\theta\!\left(\mathbf{O}_t,\;
+      \sqrt{\bar{\alpha}_k}\,\mathbf{A}^0_t + \sqrt{1-\bar{\alpha}_k}\,\epsilon,\; k\right)
+    \right\rVert^2\right]
   \label{eq:perdida}
 \end{equation}
 
-En la \cref{eq:perdida}, el \'indice $k$ identifica el paso de difusi\'on y determina la
-magnitud del ruido inyectado. La observaci\'on $\mathbf{O}_t$ act\'ua como
-condicionamiento, no como variable generada, lo que reduce el coste de inferencia. Por
-tanto, la calidad de la representaci\'on visual condiciona directamente lo que la red
-generativa puede aprender.
+En la \cref{eq:perdida}, el \'indice $k$ se muestrea de forma uniforme en
+$\{1,\dots,K\}$ y determina, a trav\'es de $\bar{\alpha}_k$, la magnitud del ruido
+inyectado. La observaci\'on $\mathbf{O}_t$ act\'ua como condicionamiento, no como variable
+generada, lo que reduce el coste de inferencia. Por tanto, la calidad de la
+representaci\'on visual condiciona directamente lo que la red generativa puede aprender.
 
-Durante la inferencia, la pol\'itica parte de una secuencia de ruido puro y aplica $K$
-pasos de eliminaci\'on de ruido seg\'un la \cref{eq:muestreo}.
+Durante la inferencia, la pol\'itica parte de una secuencia de ruido puro
+$\mathbf{A}^K_t\sim\mathcal{N}(0,\mathbf{I})$ y aplica $K$ transiciones inversas seg\'un la
+\cref{eq:muestreo}.
 
 \begin{equation}
-  \mathbf{A}^{k-1}_t = \alpha\left(\mathbf{A}^{k}_t -
-    \gamma\,\epsilon_\theta\!\left(\mathbf{O}_t,\, \mathbf{A}^{k}_t,\, k\right) +
-    \mathcal{N}\!\left(0, \sigma^2 I\right)\right)
+  \mathbf{A}^{k-1}_t = \frac{1}{\sqrt{\alpha_k}}\left(\mathbf{A}^{k}_t -
+    \frac{\beta_k}{\sqrt{1-\bar{\alpha}_k}}\;
+    \epsilon_\theta\!\left(\mathbf{O}_t,\, \mathbf{A}^{k}_t,\, k\right)\right)
+    + \sigma_k\,\mathbf{z},
+  \qquad \mathbf{z}\sim\mathcal{N}(0,\mathbf{I})
   \label{eq:muestreo}
 \end{equation}
 
-Los coeficientes $\alpha$, $\gamma$ y $\sigma$ de la \cref{eq:muestreo} proceden del
-planificador de ruido. El ruido fresco que se a\~nade en cada paso preserva el car\'acter
-estoc\'astico del muestreo y, con ello, la capacidad de representar varios modos de
-acci\'on. En este trabajo se emplea el planificador DDPM con \num{100} pasos tanto en
-entrenamiento como en inferencia, sin acelerarlo mediante muestreadores impl\'icitos.
+La \cref{eq:muestreo} es la forma concreta que adoptan los coeficientes gen\'ericos
+$\alpha$, $\gamma$ y $\sigma$ del muestreo DDPM: $\alpha = \alpha_k^{-1/2}$,
+$\gamma = \beta_k(1-\bar{\alpha}_k)^{-1/2}$ y, con la varianza fija menor que emplea la
+configuraci\'on de este trabajo,
+$\sigma_k^2 = \tfrac{1-\bar{\alpha}_{k-1}}{1-\bar{\alpha}_k}\,\beta_k$. El t\'ermino
+$\mathbf{z}$ se anula en el \'ultimo paso, $k=1$. El ruido fresco que se a\~nade en los
+dem\'as preserva el car\'acter estoc\'astico del muestreo y, con ello, la capacidad de
+representar varios modos de acci\'on.
+
+El planificador concreto es el DDPM con $K = \num{100}$ pasos, id\'entico en entrenamiento
+y en inferencia, sin acelerarlo mediante muestreadores impl\'icitos. Su sucesi\'on de
+$\beta_k$ sigue el plan de coseno al cuadrado, definido por
+$\bar{\alpha}_k = f(k)/f(0)$ con
+$f(k) = \cos^2\!\left(\tfrac{k/K + s}{1+s}\cdot\tfrac{\pi}{2}\right)$ y
+$s = 0{,}008$, y los $\beta_k$ resultantes se acotan superiormente en $0{,}999$ para
+evitar la singularidad final. La red predice el ruido y no la muestra limpia, y la
+estimaci\'on intermedia de $\mathbf{A}^0_t$ se recorta al intervalo $[-1,1]$ en el que se
+normalizan las acciones. Con este plan, los par\'ametros de inicio y fin de una
+progresi\'on lineal de $\beta$ no intervienen.
 
 Las acciones generadas se aplican bajo un esquema de horizonte deslizante. La pol\'itica
 recibe $T_o = 2$ observaciones, predice $T_p = 16$ acciones y ejecuta \'unicamente las
@@ -206,13 +313,22 @@ par\'ametros y, por tanto, domina el coste de entrenamiento.
 
 Delante de la red generativa opera el codificador de observaciones. Dicho m\'odulo aplica
 las transformaciones de imagen propias de cada arquitectura, extrae un vector de
-caracter\'isticas visuales y lo concatena con el estado del efector. La implementaci\'on de
-referencia utiliza una ResNet-18 \cite{he2016resnet} entrenada desde cero con dos
-modificaciones: sustituye el promediado global por un \textit{spatial softmax}, que
-conserva la localizaci\'on espacial de las activaciones \cite{levine2016visuomotor}, y
-reemplaza la normalizaci\'on por lotes por normalizaci\'on por grupos
+caracter\'isticas visuales y lo concatena con el estado del efector. La configuraci\'on de
+referencia empleada aqu\'i utiliza una ResNet-18 \cite{he2016resnet} entrenada desde cero
+cuya capa de clasificaci\'on se sustituye por la identidad, de modo que la agregaci\'on
+espacial es el promediado global de la propia red. La \'unica modificaci\'on estructural
+consiste en reemplazar la normalizaci\'on por lotes por normalizaci\'on por grupos
 \cite{wu2018groupnorm}, ya que la primera interfiere con la media m\'ovil exponencial de
 los pesos.
+
+Conviene precisarlo porque el art\'iculo original describe adem\'as un \textit{spatial
+softmax} que conserva la localizaci\'on de las activaciones \cite{levine2016visuomotor}.
+Esa variante corresponde al codificador basado en \textit{robomimic} y no a la
+configuraci\'on de Push-T con im\'agenes que este trabajo reproduce, donde el m\'odulo
+codificador aplica \'unicamente redimensionado, recorte y normalizaci\'on antes de la red
+convolucional. Ninguna de las cinco variantes de este estudio emplea, por tanto,
+\textit{spatial softmax}: V0, V1 y V2 agregan por promediado global y V3 y V4 toman el
+componente de clase del transformador.
 
 \section{Variantes del codificador visual}
 \label{sec:variantes}
@@ -259,19 +375,75 @@ Las variantes V1 y V2 parten de una ResNet-18 preentrenada sobre ImageNet-1k
 \cite{deng2009imagenet} y difieren en el tratamiento de sus pesos. En V1 el codificador
 permanece congelado, de modo que act\'ua como extractor fijo de caracter\'isticas; en V2
 sus pesos se actualizan junto con el resto de la pol\'itica. Ambas redimensionan la imagen
-a \num{224} p\'ixeles y aplican la normalizaci\'on est\'andar de ImageNet, condiciones
-bajo las que se obtuvieron los pesos originales.
+a \num{224} p\'ixeles por interpolaci\'on bilineal y aplican la normalizaci\'on est\'andar
+de ImageNet, con id\'enticas constantes de media y desviaci\'on t\'ipica.
 
-El contraste entre V1 y V2 aisla el efecto de la estrategia de entrenamiento, puesto que
-ambas comparten arquitectura, pesos iniciales y cadena de preprocesado. El contraste entre
-V0 y las dos variantes preentrenadas no aisla, en cambio, el efecto de la
-inicializaci\'on, ya que el preprocesado viaja con los pesos. V0 opera a \num{96}
-p\'ixeles, aplica recorte aleatorio y agrega las activaciones mediante \textit{spatial
-softmax}, mientras que V1 y V2 operan a \num{224} p\'ixeles, prescinden del recorte y
-entregan un descriptor global. Cuatro factores var\'ian as\'i de forma conjunta, de modo
-que esa comparaci\'on debe leerse sobre el bloque formado por el codificador y su
-preprocesado. El entrenamiento que los separar\'ia se describe en el
+Sin embargo, \textbf{V1 y V2 no parten del mismo archivo de pesos}, y el contraste entre
+ambas no puede leerse como el efecto aislado de la estrategia de entrenamiento. V1 carga
+el modelo \texttt{resnet18} de \texttt{timm} con su etiqueta por defecto,
+\texttt{resnet18.a1\_in1k}, obtenida con la receta A1 de \textit{ResNet strikes back}
+\cite{wightman2021resnetsb}; V2 carga el modelo \texttt{resnet18} de
+\texttt{torchvision} con la enumeraci\'on \texttt{ResNet18\_Weights.IMAGENET1K\_V1}, que
+corresponde a la receta original de la biblioteca. Ambos son ResNet-18 ajustadas sobre
+ImageNet-1k, pero proceden de procedimientos de entrenamiento distintos. La comprobaci\'on
+es directa: como el codificador de V1 permanece congelado, los \num{120} tensores de su
+punto de control deben coincidir con los pesos de partida. Comparados tensor a tensor,
+coinciden de forma exacta con \texttt{resnet18.a1\_in1k} y no coincide ninguno con
+\texttt{IMAGENET1K\_V1}. El \cref{sec:entorno} recoge el procedimiento, su resultado y los
+identificadores completos de ambos archivos de pesos.
+
+En consecuencia, la diferencia observada entre V1 y V2 combina la estrategia de
+adaptaci\'on con el origen de los pesos, y este trabajo no la atribuye a la primera. Un
+dise\~no que aislara la estrategia deber\'ia inicializar ambas desde el mismo archivo y
+duplicar el estado antes de congelar una de las copias; queda descrito en el
 \cref{sec:trabajo-futuro}.
+
+El contraste entre V0 y las dos variantes preentrenadas tampoco aisla el efecto de la
+inicializaci\'on, ya que el preprocesado y la configuraci\'on interna viajan con los
+pesos. La \cref{tab:preprocesado} detalla la cadena completa de cada variante. Entre V0 y
+V2 var\'ian de forma conjunta tres factores: los pesos iniciales, la resoluci\'on efectiva
+de entrada junto con el recorte aleatorio y la capa de normalizaci\'on interna de la red,
+que en V0 es por grupos y en V1 a V4 por lotes. Entre V0 y V1 se a\~nade un cuarto, el
+entrenamiento conjunto del codificador frente a su congelaci\'on; y frente a V3 y V4
+cambia adem\'as la arquitectura. Por tanto, esas comparaciones deben leerse sobre el
+bloque visual completo y no sobre ninguno de sus factores por separado. Los entrenamientos
+que los separar\'ian se describen en el \cref{sec:trabajo-futuro}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Cadena de preprocesado de la imagen por variante, desde el fotograma
+           renderizado hasta el tensor que recibe la red.}
+  \label{tab:preprocesado}
+  \small
+  \begin{tabular}{llllll}
+    \toprule
+    Variante & Entrada & Redimensionado & Recorte & Normalizaci\'on & Tensor final \\
+    \midrule
+    V0 & \num{96}$\times$\num{96} & --- & \num{76}$\times$\num{76} aleatorio$^{*}$
+       & ImageNet & \num{76}$\times$\num{76} \\
+    V1 & \num{96}$\times$\num{96} & \num{224}$\times$\num{224} bilineal & ---
+       & ImageNet & \num{224}$\times$\num{224} \\
+    V2 & \num{96}$\times$\num{96} & \num{224}$\times$\num{224} bilineal & ---
+       & ImageNet & \num{224}$\times$\num{224} \\
+    V3 & \num{96}$\times$\num{96} & \num{224}$\times$\num{224} bilineal & ---
+       & ImageNet & \num{224}$\times$\num{224} \\
+    V4 & \num{96}$\times$\num{96} & \num{224}$\times$\num{224} bilineal & ---
+       & CLIP & \num{224}$\times$\num{224} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Tres precisiones sobre la \cref{tab:preprocesado}. Primera, el recorte de V0 es aleatorio
+durante el entrenamiento y central en evaluaci\'on, de modo que el tensor mide siempre
+\num{76}$\times$\num{76} y el aumento de datos solo act\'ua en el ajuste; es la \'unica
+variante con aumento. Segunda, la normalizaci\'on ImageNet emplea las mismas constantes en
+las cuatro variantes que la usan, media $(0{,}485;\ 0{,}456;\ 0{,}406)$ y desviaci\'on
+t\'ipica $(0{,}229;\ 0{,}224;\ 0{,}225)$, aunque en V0 y V2 la aplica el m\'odulo
+codificador y en V1 y V3 la aplica el propio envoltorio del modelo preentrenado. Tercera,
+la normalizaci\'on de V4 emplea las constantes de CLIP, media $(0{,}481;\ 0{,}458;\
+0{,}408)$ y desviaci\'on t\'ipica $(0{,}269;\ 0{,}261;\ 0{,}276)$, tal como exigen sus
+pesos.
 
 \divisionmenor{V3 y V4: transformadores de visi\'on preentrenados}
 
@@ -352,8 +524,45 @@ Cada entrenamiento se lanza mediante un script de control que fija los par\'amet
 ejecuci\'on, verifica la memoria disponible e impide que se ejecuten dos procesos de forma
 simult\'anea. Esta salvaguarda responde a un incidente previo, en el que dos procesos
 concurrentes sobre el mismo directorio de salida agotaron la memoria del sistema y
-corrompieron el registro de m\'etricas. El detalle de la configuraci\'on efectiva se
-recoge en el \cref{anx:primero}.
+corrompieron el registro de m\'etricas.
+
+La \cref{tab:config-efectiva} recoge la configuraci\'on que Hydra resolvi\'o
+efectivamente para cada ejecuci\'on, tomada de los ficheros que el propio marco de
+configuraci\'on escribe junto a los resultados. Se listan solo los par\'ametros que
+difieren entre variantes; los comunes se enuncian bajo la tabla.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Configuraci\'on efectiva de las cinco ejecuciones. Solo se muestran los
+    par\'ametros que difieren entre ellas.}
+  \label{tab:config-efectiva}
+  \small
+  \begin{tabular}{lccccc}
+    \toprule
+    Par\'ametro & V0 & V1 & V2 & V3 & V4 \\
+    \midrule
+    Presupuesto de \'epocas   & \num{500} & \num{500} & \num{300} & \num{300} & \num{200} \\
+    \'Epocas completadas      & \num{500} & \num{500} & \num{266} & \num{155} & \num{200} \\
+    Tama\~no de lote          & \num{64} & \num{64} & \num{64} & \num{32} & \num{32} \\
+    Acumulaci\'on de gradiente & \num{1} & \num{1} & \num{1} & \num{2} & \num{2} \\
+    Lote efectivo             & \num{64} & \num{64} & \num{64} & \num{64} & \num{64} \\
+    Actualizaciones por \'epoca & \num{168} & \num{168} & \num{168} & \num{168} & \num{168} \\
+    Codificador congelado     & No & S\'i & No & S\'i & S\'i \\
+    Normalizaci\'on de la red & Grupos & Lotes & Lotes & Capas & Capas \\
+    Guardado cada (\'epocas)  & \num{50} & \num{50} & \num{50} & \num{10} & \num{10} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Par\'ametros comunes a las cinco ejecuciones: semilla \num{42}; optimizador
+    AdamW \cite{loshchilov2019adamw} con tasa de aprendizaje \num{1e-4}, momentos
+    $(0{,}95;\ 0{,}999)$, $\varepsilon = \num{1e-8}$ y decaimiento de pesos \num{1e-6};
+    planificador de tasa de coseno con \num{500} pasos de calentamiento; media m\'ovil
+    exponencial con potencia $0{,}75$ y valor m\'aximo $0{,}9999$; validaci\'on cada
+    \'epoca; evaluaci\'on en el simulador cada \num{50} \'epocas con \num{8} procesos; y
+    conservaci\'on de los tres mejores puntos de control seg\'un la puntuaci\'on de
+    selecci\'on, adem\'as del \'ultimo. Las configuraciones completas y los registros de
+    cada ejecuci\'on residen en el repositorio del trabajo \cite{britez2026repo}.}
+  \fuente{elaboraci\'on propia}
+\end{table}
 
 Durante el entrenamiento se guarda un punto de control cada \num{50} \'epocas y se
 conservan los tres mejores seg\'un la puntuaci\'on de evaluaci\'on. El modelo evaluado en
@@ -372,9 +581,11 @@ puntos de control ya guardados.
 Este criterio no precedi\'o al experimento, sino que se adopt\'o durante su ejecuci\'on. Las
 dos primeras variantes, V0 y V1, agotaron \num{500} \'epocas porque entonces no exist\'ia
 regla de parada. La formulaci\'on anterior se fij\'o al observar sus curvas y se aplic\'o a
-V2, detenida tras \num{266} \'epocas completas. V3 se interrumpi\'o manualmente en la
-\'epoca de \'indice \num{154}, antes del m\'inimo de \num{200}, mientras que V4 agot\'o sus
-\num{200} \'epocas. Las decisiones se tomaron por inspecci\'on, no de forma autom\'atica.
+V2, detenida tras \num{266} \'epocas completas. V3 se interrumpi\'o manualmente tras
+\num{155} \'epocas completas, es decir en la de \'indice \num{154}, antes del m\'inimo de
+\num{200} que la propia regla fijaba, mientras que V4 agot\'o sus \num{200} \'epocas. Los
+\'indices de \'epoca empiezan en cero, de modo que ambas cifras designan el mismo
+instante; en el resto de la memoria se emplea siempre el recuento de \'epocas completas. Las decisiones se tomaron por inspecci\'on, no de forma autom\'atica.
 
 Esta asimetr\'ia afecta al coste y a la selecci\'on del modelo. V3 y V4 solo disponen de
 cuatro evaluaciones, frente a las diez de V0 y V1, por lo que tuvieron menos oportunidades
@@ -586,13 +797,27 @@ del \SI{95}{\percent} obtenido por \textit{bootstrap} BCa con \num{10000} remues
 los pares y semilla fija. Este m\'etodo se elige porque no supone normalidad de las
 diferencias y corrige el sesgo y la asimetr\'ia de la distribuci\'on remuestreada.
 
-Los contrastes emplean la prueba de los rangos con signo de Wilcoxon. Los pares nulos se
-descartan seg\'un el criterio del propio Wilcoxon. Con \num{200} pares la distribuci\'on
-exacta no resulta aplicable, de modo que se usa la aproximaci\'on normal con correcci\'on
-de continuidad; el m\'etodo empleado se registra en cada fila de la tabla de contrastes.
+El contraste preregistrado es la prueba de los rangos con signo de Wilcoxon. Los pares
+nulos se descartan seg\'un el criterio del propio Wilcoxon. Con \num{200} pares la
+distribuci\'on exacta no resulta aplicable, de modo que se usa la aproximaci\'on normal con
+correcci\'on de continuidad; el m\'etodo empleado se registra en cada fila de la tabla de
+contrastes.
+
+A ese contraste se a\~nade una prueba de permutaci\'on sobre la diferencia media, por
+inversi\'on de signo de los pares, con \num{10000} permutaciones y semilla fija. Su
+inclusi\'on responde a una objeci\'on pertinente: el estimando primario declarado es una
+diferencia de medias, y Wilcoxon opera sobre los rangos de las diferencias, no sobre su
+media. La prueba de permutaci\'on toma como estad\'istico la propia media y contrasta la
+simetr\'ia de las diferencias en torno a cero, de modo que apunta a la cantidad que la
+memoria reporta. Se declara sin ambig\"uedad como \textbf{an\'alisis post hoc}: no figuraba
+en el protocolo preregistrado y se a\~nadi\'o despu\'es de observar el bloque de prueba.
+Ambos contrastes se reportan juntos en el \cref{sec:prueba-final} y ninguno sustituye al
+otro; donde discrepan, la memoria adopta la lectura m\'as conservadora.
 
 La familia de hip\'otesis la forman las diez comparaciones por pares de la variable de
-resultado principal. Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
+resultado principal, y cada contraste se corrige sobre su propia familia de diez. La tasa
+de \'exito es una variable secundaria y descriptiva: se acompa\~na de intervalos de Wilson
+y no entra en ninguna familia corregida ni sostiene conclusi\'on alguna por s\'i sola. Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
 error familiar sin suponer independencia entre contrastes, y la significaci\'on se
 determina sobre los valores ajustados con un umbral de \num{0.05}. Los intervalos de
 confianza no incorporan ese ajuste y se presentan como descriptivos.
@@ -688,13 +913,81 @@ El c\'odigo de partida es la implementaci\'on p\'ublica de \textit{Diffusion Pol
 configuraciones. Las modificaciones se concentran en el m\'odulo del codificador de
 observaciones, mientras que la red generativa, el bucle de entrenamiento y el evaluador
 permanecen sin cambios. Por tanto, cualquier diferencia entre variantes es atribuible al
-codificador y no a la infraestructura que lo rodea.
+codificador y no a la infraestructura que lo rodea. El c\'odigo modificado, las
+configuraciones de las cinco variantes, los guiones de an\'alisis y el protocolo de la
+prueba final residen en el repositorio del trabajo \cite{britez2026repo}. El desarrollo
+matem\'atico detallado del m\'etodo se recoge en una monograf\'ia propia previa
+\cite{britez2026guia}.
 
-La reproducibilidad se apoya en tres medidas. En primer lugar, la semilla global se fija
+\divisionmenor{Identificadores exactos de los artefactos}
+
+Reproducir estas variantes exige el identificador preciso de cada archivo de pesos, y no
+solo el nombre de la arquitectura: dos recetas distintas de entrenamiento sobre ImageNet-1k
+producen ResNet-18 diferentes. La \cref{tab:identificadores} los recoge, junto con la
+huella SHA-256 de cada punto de control evaluado y la del conjunto de demostraciones.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Identificadores de los pesos de partida y huellas de los artefactos
+    evaluados.}
+  \label{tab:identificadores}
+  \scriptsize
+  \begin{tabular}{llp{0.44\textwidth}}
+    \toprule
+    Variante & Pesos de partida & SHA-256 del punto de control evaluado \\
+    \midrule
+    V0 & \texttt{torchvision:resnet18}, \texttt{weights=None} &
+      \texttt{5310551ee71075d9efcf956c34670809741d84e06808809551e7675674e8ce63} \\
+    V1 & \texttt{timm:resnet18.a1\_in1k} &
+      \texttt{bb5012c206c2631ff8960592060eb0409244c9b9319172bd28ed720b0e7c175b} \\
+    V2 & \texttt{torchvision:ResNet18\_Weights.IMAGENET1K\_V1} &
+      \texttt{36deb633c82033d81ed6b7fb1b16dcbfd0bf42c1dc7fb20b5dfe784fd357eff5} \\
+    V3 & \texttt{timm:vit\_small\_patch14\_dinov2} &
+      \texttt{1403e6ba251ac818f3ce1d7a8faf50048517b32c87f3efdf43f751c74f1a412c} \\
+    V4 & \texttt{timm:vit\_base\_patch16\_clip\_224} &
+      \texttt{2fcd5857bcbb1417e9e6f159b091b8bffda948e0bb64ab28791502c679bca8b0} \\
+    \midrule
+    \multicolumn{2}{l}{Conjunto de demostraciones (\'arbol \texttt{zarr})} &
+      \texttt{c235ab79adceeada3de959baae1bbd37ab8d49fbc4612779bad837ba275e36a4} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Los puntos de control corresponden a las \'epocas \num{350}, \num{150},
+    \num{150}, \num{100} y \num{100}. En V1, V3 y V4 la configuraci\'on solicita el modelo
+    sin etiqueta expl\'icita y \texttt{timm} resuelve la etiqueta por defecto; para
+    \texttt{resnet18} esa etiqueta es \texttt{a1\_in1k}, de la receta A1 de
+    \textit{ResNet strikes back} \cite{wightman2021resnetsb}, distinta de la receta
+    original de \texttt{torchvision} que emplea V2. La huella del conjunto de
+    demostraciones se calcula sobre el contenido de sus ficheros en orden determinista,
+    puesto que un \texttt{zarr} es un directorio y no un fichero \'unico.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La afirmaci\'on del \cref{sec:variantes} sobre la distinta procedencia de los pesos de V1
+y V2 se comprueba, y no se supone. Como el codificador de V1 permanece congelado durante
+todo el entrenamiento, los \num{120} tensores de su punto de control deben coincidir con
+los pesos de partida. Comparados uno a uno, coinciden con \texttt{resnet18.a1\_in1k} en
+los \num{120} y con diferencia m\'axima nula, mientras que frente a
+\texttt{IMAGENET1K\_V1} no coincide ninguno y la mayor discrepancia supera las
+\num{3.7e5} unidades, magnitud incompatible con un error de redondeo.
+
+\divisionmenor{Preespecificaci\'on del protocolo}
+
+El protocolo de la prueba final del \cref{sec:seleccion-prueba} se fij\'o por escrito antes
+de ejecutarla, y esa anterioridad es verificable. El documento se incorpor\'o al
+repositorio en la revisi\'on \texttt{8bc22e72b15b6ad6987dac37b7ff2aa397af94f1}, fechada el
+\num{27} de agosto de \num{2026} a las \texttt{08:31:36}, con anterioridad a la ejecuci\'on
+de la evaluaci\'on. La marca temporal de esa revisi\'on, y no la declaraci\'on del autor,
+es lo que acredita la preespecificaci\'on.
+
+\divisionmenor{Medidas y l\'imites de la reproducibilidad}
+
+La reproducibilidad se apoya en cuatro medidas. En primer lugar, la semilla global se fija
 en \num{42} para todas las variantes y las condiciones de evaluaci\'on emplean semillas
-reservadas y constantes. En segundo lugar, las versiones exactas de las bibliotecas se
-documentan en el \cref{anx:primero}. En tercer lugar, la configuraci\'on efectiva de cada
-ejecuci\'on se almacena junto a sus resultados.
+reservadas y constantes. En segundo lugar, las versiones exactas de las bibliotecas quedan
+fijadas en la \cref{tab:componentes}. En tercer lugar, la configuraci\'on efectiva que
+Hydra resuelve para cada ejecuci\'on se almacena junto a sus resultados y se conserva en el
+repositorio. En cuarto lugar, los artefactos quedan identificados por su huella en la
+\cref{tab:identificadores}.
 
 No obstante, la reproducibilidad no es exacta. Los algoritmos deterministas de la
 biblioteca de aceleraci\'on no est\'an activados, ya que resultan incompatibles con las
