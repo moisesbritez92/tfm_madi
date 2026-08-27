@@ -16,7 +16,8 @@ solo disponen de cuatro evaluaciones, frente a las diez de V0 y V1.
 
 \begin{table}[htbp]
   \centering
-  \caption{Cobertura de los entrenamientos y mejor puntuaci\'on media de evaluaci\'on.}
+  \caption{Cobertura de los entrenamientos y mejor puntuaci\'on en el conjunto de
+    selecci\'on. Los valores son estimaciones optimistas, no resultados finales.}
   \label{tab:resultados}
   \small
   \begin{tabular}{llrrrcr}
@@ -46,8 +47,60 @@ El valor reportado es el m\'aximo de una serie de evaluaciones y, por tanto, un 
 optimista. La media de las tres \'ultimas ofrece una lectura menos sesgada: \num{0.862} en
 V0, \num{0.547} en V1, \num{0.585} en V2, \num{0.572} en V3 y \num{0.483} en V4. V0
 permanece estable, mientras que las cuatro variantes preentrenadas retroceden despu\'es de
-su m\'aximo. El sesgo del m\'aximo puede favorecer a V0 y V1 porque acumulan m\'as
-evaluaciones; la media final mantiene, no obstante, la ventaja de V0.
+su m\'aximo.
+
+Ese sesgo admite una cuantificaci\'on y no solo una advertencia. Adem\'as, el n\'umero de
+evaluaciones no fue el mismo, de modo que podr\'ia favorecer a las variantes con m\'as
+oportunidades. La \cref{tab:seleccion-sesgo} re\'une tres lecturas que no dependen del
+m\'aximo, calculadas sobre los registros ya existentes y sin simulaci\'on adicional.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Lecturas del conjunto de selecci\'on que no dependen del m\'aximo.}
+  \label{tab:seleccion-sesgo}
+  \small
+  \begin{tabular}{lrcccc}
+    \toprule
+    Variante & $K$ & M\'aximo (\'epoca) & \'Epoca \num{150} & $K = \num{4}$ (\'epoca) &
+      Optimismo \\
+    \midrule
+    V0 & \num{10} & \num{0.864} (\num{350}) & \num{0.828} & \num{0.837} (\num{100}) &
+      \num{0.040} \\
+    V1 & \num{10} & \num{0.668} (\num{150}) & \num{0.668} & \num{0.668} (\num{150}) &
+      \num{0.045} \\
+    V2 & \num{6}  & \num{0.648} (\num{150}) & \num{0.648} & \num{0.648} (\num{150}) &
+      \num{0.007} \\
+    V3 & \num{4}  & \num{0.622} (\num{100}) & \num{0.579} & \num{0.622} (\num{100}) &
+      \num{0.030} \\
+    V4 & \num{4}  & \num{0.535} (\num{100}) & \num{0.435} & \num{0.535} (\num{100}) &
+      \num{0.021} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{$K$ es el n\'umero de evaluaciones disponibles. La columna de la \'epoca
+    \num{150} aplica una regla que no consulta las puntuaciones, puesto que \num{150} es la
+    \'ultima \'epoca evaluada por las cinco variantes. La columna $K = \num{4}$ repite la
+    b\'usqueda del m\'aximo con las cuatro primeras evaluaciones de cada una. El optimismo
+    se estima seleccionando sobre \num{25} episodios y midiendo sobre los \num{25}
+    restantes, promediado en \num{1000} particiones.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Las tres lecturas conservan la ordenaci\'on. A \'epoca com\'un, V0 obtiene \num{0.828}
+frente a \num{0.668}, \num{0.648}, \num{0.579} y \num{0.435}, de modo que su ventaja crece
+en lugar de reducirse. Con las oportunidades igualadas a cuatro evaluaciones, V0 conserva
+\num{0.837} y las cuatro variantes restantes no cambian de punto de control, ya que sus
+m\'aximos aparecen dentro de las cuatro primeras evaluaciones.
+
+El optimismo estimado var\'ia entre \num{0.007} y \num{0.045}, un orden de magnitud por
+debajo de las diferencias entre V0 y las dem\'as variantes. Conviene precisar que no crece
+de forma ordenada con $K$: V2 dispuso de seis evaluaciones y presenta el menor optimismo,
+mientras que V1, con diez, presenta el mayor. Lo que determina la magnitud del sesgo no es
+solo el n\'umero de oportunidades, sino la forma de la trayectoria, puesto que un m\'aximo
+aislado se corrige m\'as que una meseta. La cifra es adem\'as conservadora: seleccionar
+sobre la mitad de los episodios introduce m\'as ruido que hacerlo sobre los \num{50}.
+
+En conjunto, estas lecturas acotan el sesgo, pero no lo sustituyen por una medida
+independiente. Esa medida es la del \cref{sec:prueba-final}.
 
 V2 se reanud\'o desde un punto de control intermedio. El registro conserva tanto cinco
 \'epocas de la rama abandonada como sus equivalentes tras la reanudaci\'on, con pasos
@@ -96,45 +149,123 @@ evaluaci\'on de la \'epoca \num{150} desciende a \num{0.5792}, y la ejecuci\'on 
 cuatro \'epocas despu\'es. V4 alcanza \num{0.5351} en la \'epoca \num{100} y cae a
 \num{0.4353} en la \num{150}, antes de completar las \num{200} \'epocas asignadas.
 
-La comparaci\'on de los mejores puntos de control sit\'ua V0 por encima de las dem\'as
-variantes. Los m\'argenes abarcan desde \num{0.197} frente a V1 hasta \num{0.329} frente a
-V4. La \cref{tab:contrastes} relaciona las diez diferencias con su dispersi\'on entre
-episodios y con el contraste de Wilcoxon.
+La comparaci\'on de las trayectorias sit\'ua V0 por encima de las dem\'as variantes en
+todas las evaluaciones a partir de la \'epoca \num{50}. Esta figura describe el
+comportamiento del entrenamiento y no constituye el resultado del estudio, puesto que las
+mismas puntuaciones decidieron qu\'e punto de control se conserva. Los contrastes entre
+variantes se calculan sobre el bloque de prueba y se recogen en el
+\cref{sec:prueba-final}.
+
+\section{Prueba final sobre semillas disjuntas}
+\label{sec:prueba-final}
+
+Los cinco puntos de control congelados se evaluaron una sola vez sobre las \num{200}
+condiciones iniciales del bloque \numrange{200000}{200199}, ajenas tanto a las
+demostraciones como a la selecci\'on, bajo el protocolo del \cref{sec:seleccion-prueba}.
+La \cref{tab:prueba-final} recoge el resultado, que es el resultado principal de este
+trabajo.
 
 \begin{table}[htbp]
   \centering
-  \caption{Diferencias pareadas entre los puntos de control seleccionados.}
+  \caption{Puntuaci\'on sobre el bloque de prueba disjunto, \num{200} condiciones por
+    variante.}
+  \label{tab:prueba-final}
+  \small
+  \begin{tabular}{llccrc}
+    \toprule
+    Variante & Estrategia & Puntuaci\'on & IC \SI{95}{\percent} & \'Exito &
+      Selecci\'on \\
+    \midrule
+    V0 & Desde cero  & \num{0.872} $\pm$ \num{0.018} &
+      {[\num{0.838};\,\num{0.906}]} & \num{101}/\num{200} & \num{0.864} \\
+    V1 & Congelado   & \num{0.649} $\pm$ \num{0.026} &
+      {[\num{0.597};\,\num{0.700}]} & \num{37}/\num{200}  & \num{0.668} \\
+    V2 & Ajuste fino & \num{0.586} $\pm$ \num{0.029} &
+      {[\num{0.529};\,\num{0.642}]} & \num{32}/\num{200}  & \num{0.648} \\
+    V3 & Congelado   & \num{0.578} $\pm$ \num{0.028} &
+      {[\num{0.523};\,\num{0.633}]} & \num{32}/\num{200}  & \num{0.622} \\
+    V4 & Congelado   & \num{0.490} $\pm$ \num{0.029} &
+      {[\num{0.434};\,\num{0.547}]} & \num{16}/\num{200}  & \num{0.535} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{La puntuaci\'on se acompa\~na de su error est\'andar sobre las \num{200}
+    condiciones. La columna de \'exito cuenta las condiciones que alcanzan el umbral de
+    cobertura. La \'ultima columna reproduce la puntuaci\'on de selecci\'on de la
+    \cref{tab:resultados} para facilitar la comparaci\'on.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La ordenaci\'on de las cinco variantes coincide con la observada en el conjunto de
+selecci\'on, de modo que ninguna conclusi\'on cambia de sentido. El error est\'andar se
+reduce de \num{0.040}--\num{0.059} a \num{0.018}--\num{0.029}, consecuencia de cuadruplicar
+el n\'umero de condiciones.
+
+El sesgo optimista se materializa de forma desigual. V0 obtiene sobre el bloque disjunto
+\num{0.872}, ligeramente por encima de su puntuaci\'on de selecci\'on, mientras que las
+cuatro variantes preentrenadas pierden entre \num{0.019} y \num{0.062} puntos. En
+consecuencia, la ventaja de V0 no proced\'ia de haber dispuesto de m\'as oportunidades de
+selecci\'on: al medirla sin sesgo, esa ventaja aumenta.
+
+Conviene contrastar este dato con la estimaci\'on de la \cref{tab:seleccion-sesgo}. El
+optimismo realizado no reproduce el estimado por partici\'on mitad-mitad variante a
+variante, y V2 ilustra la discrepancia: el m\'etodo le atribu\'ia \num{0.007} y pierde
+\num{0.062}. La estimaci\'on acota el orden de magnitud del fen\'omeno, pero no predice su
+valor en un caso concreto, de manera que no sustituye a la medida independiente.
+
+La \cref{tab:contrastes} recoge los diez contrastes por pares sobre ese mismo bloque.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Diferencias pareadas sobre el bloque de prueba disjunto.}
   \label{tab:contrastes}
   \small
   \scriptsize
   \begin{tabular}{lcccc}
     \toprule
-    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} & $p$ & $p_{\mathrm{Holm}}$ \\
+    Comparaci\'on & Diferencia media & IC \SI{95}{\percent} BCa & $p$ &
+      $p_{\mathrm{Holm}}$ \\
     \midrule
-    V0 frente a V1 & \num{0.197} & {[\num{0.091};\,\num{0.303}]} & \num{0.0004} & \num{0.0030} \\
-    V0 frente a V2 & \num{0.217} & {[\num{0.102};\,\num{0.332}]} & \num{0.0001} & \num{0.0009} \\
-    V0 frente a V3 & \num{0.242} & {[\num{0.122};\,\num{0.362}]} & \num{0.0003} & \num{0.0026} \\
-    V0 frente a V4 & \num{0.329} & {[\num{0.208};\,\num{0.451}]} & \num{0.000003} & \num{0.000030} \\
-    V1 frente a V2 & \num{0.020} & {[\num{-0.093};\,\num{0.133}]} & \num{0.82} & \num{1.00} \\
-    V1 frente a V3 & \num{0.045} & {[\num{-0.089};\,\num{0.179}]} & \num{0.46} & \num{1.00} \\
-    V1 frente a V4 & \num{0.132} & {[\num{0.018};\,\num{0.247}]} & \num{0.0084} & \num{0.0501} \\
-    V2 frente a V3 & \num{0.025} & {[\num{-0.101};\,\num{0.152}]} & \num{0.54} & \num{1.00} \\
-    V2 frente a V4 & \num{0.113} & {[\num{-0.034};\,\num{0.259}]} & \num{0.10} & \num{0.5154} \\
-    V3 frente a V4 & \num{0.087} & {[\num{-0.027};\,\num{0.201}]} & \num{0.14} & \num{0.5532} \\
+    V0 frente a V1 & \num{0.223} & {[\num{0.170};\,\num{0.279}]} & \num{2.5e-13} & \num{1.8e-12} \\
+    V0 frente a V2 & \num{0.286} & {[\num{0.228};\,\num{0.346}]} & \num{1.9e-18} & \num{1.7e-17} \\
+    V0 frente a V3 & \num{0.294} & {[\num{0.234};\,\num{0.353}]} & \num{2.8e-17} & \num{2.2e-16} \\
+    V0 frente a V4 & \num{0.382} & {[\num{0.318};\,\num{0.444}]} & \num{2.6e-21} & \num{2.6e-20} \\
+    V1 frente a V2 & \num{0.063} & {[\num{0.001};\,\num{0.124}]} & \num{0.066} & \num{0.132} \\
+    V1 frente a V3 & \num{0.070} & {[\num{0.006};\,\num{0.132}]} & \num{0.017} & \num{0.052} \\
+    V1 frente a V4 & \num{0.159} & {[\num{0.092};\,\num{0.224}]} & \num{6.0e-06} & \num{3.6e-05} \\
+    V2 frente a V3 & \num{0.007} & {[\num{-0.052};\,\num{0.066}]} & \num{0.68} & \num{0.68} \\
+    V2 frente a V4 & \num{0.095} & {[\num{0.027};\,\num{0.161}]} & \num{0.013} & \num{0.052} \\
+    V3 frente a V4 & \num{0.088} & {[\num{0.021};\,\num{0.154}]} & \num{0.010} & \num{0.051} \\
     \bottomrule
   \end{tabular}
-  \notatabla{Diferencias calculadas sobre los \num{50} episodios comunes. La prueba de
-    Wilcoxon emplea la aproximaci\'on normal y los diez valores $p$ se ajustan mediante el
-    procedimiento de Holm. Los intervalos no incorporan este ajuste.}
+  \notatabla{Diferencias sobre las \num{200} condiciones comunes, con el ruido de
+    difusi\'on sincronizado entre variantes. Los intervalos proceden de un
+    \textit{bootstrap} BCa de \num{10000} remuestreos y no incorporan el ajuste de
+    multiplicidad. La prueba de Wilcoxon emplea la aproximaci\'on normal con correcci\'on
+    de continuidad, y los diez valores $p$ se ajustan mediante el procedimiento de Holm.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Las cuatro diferencias entre V0 y las variantes preentrenadas excluyen el cero y conservan
-significaci\'on tras el ajuste de Holm. Entre las variantes preentrenadas, solo V1 frente a
-V4 alcanza significaci\'on sin corregir, con $p = \num{0.0084}$. El ajuste eleva ese valor
-a \num{0.0501}, por lo que ning\'un contraste interno supera el umbral familiar del
-\SI{5}{\percent}. Estos resultados no cuantifican la variabilidad entre semillas de
-entrenamiento, cuesti\'on que se retoma en el \cref{sec:limitaciones}.
+Las cuatro diferencias entre V0 y las variantes preentrenadas son muy superiores al umbral
+familiar, con valores ajustados entre \num{1.8e-12} y \num{2.6e-20}. La conclusi\'on
+principal del trabajo se sostiene, por tanto, sobre una medida que no particip\'o en la
+elecci\'on de los puntos de control.
+
+Entre las cuatro variantes preentrenadas, en cambio, solo V1 frente a V4 supera el umbral
+tras la correcci\'on, con $p_{\mathrm{Holm}} = \num{3.6e-05}$. Tres contrastes quedan justo
+por encima de \num{0.05}, entre \num{0.051} y \num{0.052}, y los dos restantes ni se
+aproximan. El aumento del tama\~no muestral ha estrechado los intervalos sin resolver ese
+orden interno, lo que sugiere que las diferencias entre variantes preentrenadas, de
+existir, son peque\~nas frente a la dispersi\'on entre condiciones iniciales.
+
+Merece atenci\'on el contraste entre congelaci\'on y ajuste fino, la \'unica comparaci\'on
+del estudio que a\'isla un solo factor. Sobre el conjunto de selecci\'on la diferencia era
+de \num{0.020} con $p = \num{0.82}$; sobre el bloque de prueba asciende a \num{0.063} con
+$p = \num{0.066}$, y su intervalo apenas excluye el cero por el extremo inferior. La
+evidencia apunta ahora en contra del ajuste fino con m\'as claridad que antes, si bien no
+alcanza significaci\'on tras corregir la familia de diez contrastes.
+
+Estos resultados no cuantifican la variabilidad entre semillas de entrenamiento, cuesti\'on
+que se retoma en el \cref{sec:limitaciones}.
 
 \section{Ajuste y generalizaci\'on}
 \label{sec:ajuste-resultados}
@@ -373,22 +504,27 @@ rendimiento medio.
 \section{Contraste de las hip\'otesis}
 \label{sec:contraste-hipotesis}
 
+El contraste se realiza sobre el bloque de prueba disjunto, no sobre el conjunto de
+selecci\'on. Las cifras que siguen proceden, por tanto, de la \cref{tab:prueba-final} y de
+la \cref{tab:contrastes}.
+
 La primera hip\'otesis planteaba que el preentrenamiento aportar\'ia representaciones m\'as
 \'utiles que el entrenamiento desde cero. Los resultados no la respaldan: V0 supera entre
-\num{0.197} y \num{0.329} puntos a las cuatro variantes preentrenadas. Todas las
-diferencias conservan significaci\'on tras el ajuste de Holm.
+\num{0.223} y \num{0.382} puntos a las cuatro variantes preentrenadas. Las cuatro
+diferencias conservan significaci\'on tras el ajuste de Holm por amplio margen.
 
 La segunda hip\'otesis propon\'ia una ventaja del ajuste fino sobre la congelaci\'on. Tampoco
-queda respaldada, ya que V1 obtiene \num{0.668} y V2 \num{0.648}. La diferencia de
-\num{0.020} no alcanza significaci\'on ($p = \num{0.82}$) y su intervalo de confianza,
-{[\num{-0.093};\,\num{0.133}]}, contiene el cero. En consecuencia, tampoco cabe afirmar la
-superioridad de la congelaci\'on: lo que descarta la evidencia es una mejora observable del
-ajuste fino en esta ejecuci\'on.
+queda respaldada, ya que V1 obtiene \num{0.649} y V2 \num{0.586}. La diferencia de
+\num{0.063} favorece a la congelaci\'on y su intervalo, {[\num{0.001};\,\num{0.124}]},
+excluye el cero por poco, pero el valor ajustado, $p_{\mathrm{Holm}} = \num{0.132}$, no
+alcanza el umbral familiar. En consecuencia, la evidencia descarta una mejora del ajuste
+fino, sin llegar a establecer la superioridad de la congelaci\'on.
 
 La tercera hip\'otesis propon\'ia que los transformadores alcanzar\'ian un rendimiento
 comparable al de las redes convolucionales con mayor coste de inferencia. V3 y V4 quedan
-por debajo de V0, pero no se distinguen de V1 y V2 tras la correcci\'on familiar. Por tanto,
-los datos no muestran una ventaja de rendimiento propia de la arquitectura ViT.
+por debajo de V0 y no se distinguen de V1 ni de V2 tras la correcci\'on familiar, con la
+\'unica excepci\'on de V1 frente a V4. Por tanto, los datos no muestran una ventaja de
+rendimiento propia de la arquitectura ViT.
 
 Su segunda parte, la relativa al coste, se cumple en el codificador y no en la pol\'itica.
 La \cref{tab:latencia} sit\'ua el codificador de V3 y V4 entre tres y seis veces por encima
@@ -407,22 +543,24 @@ diez evaluaciones, V2 seis, y V3 y V4 solo cuatro. V3 se interrumpi\'o tras \num
 posterior. La comparaci\'on corresponde a los mejores puntos observados dentro de esos
 presupuestos, no a curvas con igual horizonte.
 
-La segunda limitaci\'on es el uso de una sola semilla de entrenamiento. Los intervalos y
-los contrastes de la \cref{tab:contrastes} cuantifican la dispersi\'on debida a las
-condiciones iniciales del simulador, ya que los \num{50} episodios son condiciones
-distintas evaluadas con el mismo modelo. No cuantifican, en cambio, la variabilidad entre
-ejecuciones de entrenamiento, puesto que cada variante se ha ajustado una sola vez. Una
-r\'eplica con otra semilla podr\'ia desplazar las curvas, y esa incertidumbre queda fuera
-de las cifras reportadas.
+La segunda limitaci\'on es el uso de una sola semilla de entrenamiento, y es la m\'as
+restrictiva de todas. Los intervalos y los contrastes de la \cref{tab:contrastes}
+cuantifican la dispersi\'on debida a las condiciones iniciales del simulador, ya que las
+\num{200} condiciones de prueba se resuelven con el mismo modelo. No cuantifican, en
+cambio, la variabilidad entre ejecuciones de entrenamiento, puesto que cada variante se ha
+ajustado una sola vez. Por tanto, las cifras describen el rendimiento de cinco artefactos
+concretos y no el rendimiento esperado de volver a entrenar cada estrategia. Una r\'eplica
+con otra semilla podr\'ia desplazar las curvas, y esa incertidumbre queda fuera de lo
+reportado.
 
-La tercera afecta a la selecci\'on del modelo. Las \num{50} condiciones reservadas se
-eval\'uan peri\'odicamente y determinan qu\'e punto de control se conserva, de modo que
-act\'uan como conjunto de selecci\'on y no como evaluaci\'on final independiente, tal como
-precisa el \cref{sec:metricas}. El m\'aximo reportado presenta por ello un sesgo optimista,
-que la media de las tres \'ultimas evaluaciones ayuda a acotar. Cerrar el problema
-exigir\'ia evaluar los puntos de control seleccionados sobre un bloque de semillas disjunto
-del empleado en la selecci\'on, medida que no se ha ejecutado y que se propone en el
-\cref{sec:trabajo-futuro}.
+La tercera afecta al conjunto de puntos de control candidatos. El bloque de prueba del
+\cref{sec:prueba-final} es disjunto del de selecci\'on y proporciona una medida
+independiente de cada punto de control congelado. Sin embargo, durante el entrenamiento
+solo se guardaron los tres mejores de cada variante seg\'un la puntuaci\'on de selecci\'on,
+de modo que el candidato evaluado procede de un conjunto ya filtrado por la m\'etrica
+contaminada. El procedimiento acota el sesgo de selecci\'on y elimina el sesgo del
+m\'aximo, pero no garantiza que el punto de control congelado sea el mejor que la variante
+podr\'ia haber ofrecido.
 
 Por \'ultimo, la evaluaci\'on cada \num{50} \'epocas ofrece una visi\'on discreta de la
 trayectoria y puede omitir m\'aximos intermedios. V2 a\~nade una reanudaci\'on, y solo su

@@ -16,17 +16,19 @@ congelada y con ajuste fino, y dos transformadores de visi\'on congelados, DINOv
 y CLIP ViT-B/16. Todas entregan un vector de \num{512} componentes y comparten red
 generativa, datos y protocolo de evaluaci\'on. El ajuste emplea \num{90} de las \num{206}
 demostraciones teleoperadas disponibles, seg\'un el criterio de la implementaci\'on de
-referencia, y presupuestos de \num{200} a \num{500} \'epocas, con parada anticipada. La
-evaluaci\'on mide la puntuaci\'on media de cobertura sobre \num{50} episodios generados con
-semillas reservadas, junto con el tiempo de c\'omputo consumido.
+referencia, y presupuestos de \num{200} a \num{500} \'epocas, con parada anticipada. Un
+conjunto de \num{50} episodios generados con semillas reservadas selecciona el punto de
+control de cada variante. El rendimiento se mide despu\'es una sola vez sobre \num{200}
+episodios de un bloque de semillas disjunto, bajo un protocolo fijado de antemano, junto
+con el tiempo de c\'omputo consumido.
 
-La l\'inea base entrenada desde cero alcanza \num{0.864}. Las cuatro variantes
-preentrenadas obtienen \num{0.668}, \num{0.648}, \num{0.622} y \num{0.535}. V0 supera a
-todas con significaci\'on tras corregir los diez contrastes por pares mediante el
-procedimiento de Holm. En cambio, ninguna diferencia entre variantes preentrenadas supera
-el umbral familiar del \SI{5}{\percent}. Cada \'epoca de V0 ocupa \SI{1.6}{\minute}, frente
-a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las dem\'as. Las cinco
-ejecuciones suman \SI{237.1}{\hour}.
+Sobre ese bloque independiente, la l\'inea base entrenada desde cero alcanza \num{0.872}.
+Las cuatro variantes preentrenadas obtienen \num{0.649}, \num{0.586}, \num{0.578} y
+\num{0.490}. V0 supera a todas con significaci\'on tras corregir los diez contrastes por
+pares mediante el procedimiento de Holm. En cambio, solo una diferencia entre variantes
+preentrenadas supera el umbral familiar del \SI{5}{\percent}. Cada \'epoca de V0 ocupa
+\SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las
+dem\'as. Las cinco ejecuciones suman \SI{237.1}{\hour}.
 
 Se concluye que, en Push-T y con pocas demostraciones, ninguno de los bloques
 preentrenados evaluados mejora el rendimiento ni el coste de la l\'inea base. Esta ventaja

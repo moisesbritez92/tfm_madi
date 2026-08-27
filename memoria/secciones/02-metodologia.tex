@@ -530,8 +530,8 @@ demostraci\'on hasta la tabla de resultados finales.
 El estimando primario es la puntuaci\'on media de cobertura de un punto de control fijo
 sobre el generador de condiciones iniciales de Push-T. Se estima con las \num{200}
 condiciones del bloque de prueba, muestreadas de ese generador mediante semillas
-consecutivas. La variable de resultado secundaria es la tasa de \'exito, es decir la fracci\'on de
-condiciones cuya puntuaci\'on alcanza el umbral.
+consecutivas. La variable de resultado secundaria es la tasa de \'exito, es decir, la
+fracci\'on de condiciones cuya puntuaci\'on alcanza el umbral.
 
 El estudio maneja tres unidades distintas y solo replica una de ellas. El episodio de
 demostraci\'on construye las ventanas de entrenamiento; la condici\'on inicial eval\'ua un
@@ -554,8 +554,8 @@ Se eval\'ua una sola vez cada uno de los cinco puntos de control ya seleccionado
 pesos de la media m\'ovil exponencial y la misma configuraci\'on del simulador que durante
 el entrenamiento. Ninguna decisi\'on posterior a esa medida modifica qu\'e punto de control
 representa a cada variante. El protocolo, incluidas las semillas, el tama\~no de muestra,
-las variables de resultado y el an\'alisis, se fij\'o por escrito y se registr\'o en el repositorio antes
-de ejecutar la evaluaci\'on.
+las variables de resultado y el an\'alisis, se fij\'o por escrito y se registr\'o en el
+repositorio antes de ejecutar la evaluaci\'on.
 
 Conviene declarar el l\'imite de este procedimiento. Durante el entrenamiento solo se
 conservaron los tres mejores puntos de control de cada variante seg\'un la puntuaci\'on de
@@ -591,8 +591,8 @@ descartan seg\'un el criterio del propio Wilcoxon. Con \num{200} pares la distri
 exacta no resulta aplicable, de modo que se usa la aproximaci\'on normal con correcci\'on
 de continuidad; el m\'etodo empleado se registra en cada fila de la tabla de contrastes.
 
-La familia de hip\'otesis la forman las diez comparaciones por pares de la variable de resultado principal.
-Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
+La familia de hip\'otesis la forman las diez comparaciones por pares de la variable de
+resultado principal. Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
 error familiar sin suponer independencia entre contrastes, y la significaci\'on se
 determina sobre los valores ajustados con un umbral de \num{0.05}. Los intervalos de
 confianza no incorporan ese ajuste y se presentan como descriptivos.

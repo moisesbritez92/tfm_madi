@@ -20,15 +20,18 @@ vision transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a
 protocol.
 Training uses \num{90} of the \num{206} teleoperated demonstrations, following the
 reference implementation, and budgets ranging from \num{200} to
-\num{500} epochs, with early stopping. Evaluation measures the mean coverage score over
-\num{50} episodes generated with held-out seeds, together with the compute time consumed.
+\num{500} epochs, with early stopping. A set of \num{50} episodes generated with held-out
+seeds selects the checkpoint of each variant. Performance is then measured once on
+\num{200} episodes from a disjoint seed block, under a protocol fixed in advance, together
+with the compute time consumed.
 
-The baseline trained from scratch reaches \num{0.864}. The four pretrained variants score
-\num{0.668}, \num{0.648}, \num{0.622}, and \num{0.535}. V0 outperforms all of them after
-the ten pairwise tests are corrected with Holm's procedure. By contrast, no difference
-among the pretrained variants exceeds the family-wise \SI{5}{\percent} threshold. Each V0
-epoch takes \SI{1.6}{\minute}, compared with \SI{2.3}{\minute} to \SI{14.7}{\minute} for
-the other variants. The five runs total \SI{237.1}{\hour}.
+On that independent block, the baseline trained from scratch reaches \num{0.872}. The four
+pretrained variants score \num{0.649}, \num{0.586}, \num{0.578}, and \num{0.490}. V0
+outperforms all of them after the ten pairwise tests are corrected with Holm's procedure.
+By contrast, only one difference among the pretrained variants exceeds the family-wise
+\SI{5}{\percent} threshold. Each V0 epoch takes \SI{1.6}{\minute}, compared with
+\SI{2.3}{\minute} to \SI{14.7}{\minute} for the other variants. The five runs total
+\SI{237.1}{\hour}.
 
 The study concludes that, on Push-T and with few demonstrations, none of the evaluated
 pretrained visual blocks improves the baseline in performance or cost. This advantage must

@@ -102,7 +102,9 @@ def contraste(a, b):
         "pares_no_nulos": len(no_nulos),
         "metodo_wilcoxon": "exacto" if exacto else "aproximado con correccion de continuidad",
         "W": estadistico,
-        "p": round(p, 6),
+        # Not rounded: four of the ten p-values fall below 1e-6 and rounding
+        # them to six decimals would print them as an exact zero.
+        "p": float(p),
     }
 
 
@@ -162,7 +164,7 @@ def main():
             }
         )
     for fila, ajustado in zip(contrastes, holm([c["p"] for c in contrastes])):
-        fila["p_holm"] = round(ajustado, 6)
+        fila["p_holm"] = float(ajustado)
 
     print()
     for fila in contrastes:

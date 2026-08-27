@@ -31,18 +31,27 @@ preguntas del \cref{sec:problema}, con las limitaciones causales descritas m\'as
 \divisionmenor{Sobre el rendimiento de las variantes}
 
 La conclusi\'on principal contradice la hip\'otesis de partida: ning\'un bloque visual
-preentrenado mejora el rendimiento en Push-T. La l\'inea base alcanza \num{0.864}, frente a
-\num{0.668} en V1, \num{0.648} en V2, \num{0.622} en V3 y \num{0.535} en V4. Las
-diferencias respecto a V0 abarcan entre \num{0.197} y \num{0.329} puntos. Las cuatro
+preentrenado mejora el rendimiento en Push-T. Sobre el bloque de prueba disjunto, ajeno a
+la selecci\'on del punto de control, la l\'inea base alcanza \num{0.872}, frente a
+\num{0.649} en V1, \num{0.586} en V2, \num{0.578} en V3 y \num{0.490} en V4. Las
+diferencias respecto a V0 abarcan entre \num{0.223} y \num{0.382} puntos y las cuatro
 conservan significaci\'on tras corregir los diez contrastes mediante el procedimiento de
-Holm, con valores ajustados iguales o inferiores a \num{0.0030}.
+Holm, con valores ajustados inferiores a \num{2e-12}.
+
+Conviene subrayar de d\'onde procede esa evidencia. Las mismas \num{50} condiciones que
+eligieron cada punto de control habr\'ian producido una estimaci\'on optimista, de modo que
+la comparaci\'on se repiti\'o sobre \num{200} condiciones nunca consultadas, con el
+protocolo fijado por escrito antes de ejecutarla. La ordenaci\'on no cambi\'o y la ventaja
+de V0 creci\'o, puesto que fue la \'unica variante que no perdi\'o puntuaci\'on al pasar al
+bloque disjunto.
 
 Asimismo, la segunda hip\'otesis tampoco se sostiene. El ajuste fino del codificador
-preentrenado no supera a su congelaci\'on, puesto que V2 se queda \num{0.020} por debajo de
-V1. Esa diferencia no alcanza significaci\'on ($p_{\mathrm{Holm}} = \num{1.00}$) y su
-intervalo contiene el cero. Por tanto, no se demuestra que una estrategia supere a la
-otra. La incertidumbre entre semillas de entrenamiento, no cuantificada, se suma a esa
-indeterminaci\'on.
+preentrenado no supera a su congelaci\'on, puesto que V2 se queda \num{0.063} por debajo de
+V1. Esa diferencia favorece a la congelaci\'on y su intervalo excluye el cero por escaso
+margen, pero no alcanza significaci\'on tras la correcci\'on familiar
+($p_{\mathrm{Holm}} = \num{0.132}$). Por tanto, la evidencia descarta una mejora del ajuste
+fino sin llegar a demostrar la superioridad de la congelaci\'on. La incertidumbre entre
+semillas de entrenamiento, no cuantificada, se suma a esa indeterminaci\'on.
 
 El ajuste fino s\'i presenta una din\'amica de entrenamiento menos favorable.
 V2 permanece estancada alrededor de \num{0.11} hasta la \'epoca \num{50}, cuando V0 y V1
@@ -53,10 +62,12 @@ representaci\'on de partida sin construir otra m\'as \'util con las demostracion
 disponibles.
 
 Los transformadores congelados tampoco revierten el resultado. DINOv2 ViT-S/14 supera a
-CLIP ViT-B/16 por \num{0.087} puntos, pero la diferencia no es significativa
-($p_{\mathrm{Holm}} = \num{0.5532}$). Tras la correcci\'on familiar, ninguna de las seis
-comparaciones entre variantes preentrenadas establece un orden significativo. La familia
-del codificador no explica por s\'i sola las diferencias observadas.
+CLIP ViT-B/16 por \num{0.088} puntos, si bien la diferencia queda en el l\'imite tras la
+correcci\'on familiar ($p_{\mathrm{Holm}} = \num{0.051}$). De las seis comparaciones entre
+variantes preentrenadas, solo V1 frente a V4 la supera con holgura; tres m\'as quedan justo
+por encima del umbral. El orden interno de las cuatro variantes preentrenadas sigue sin
+resolverse, de modo que la familia del codificador no explica por s\'i sola las diferencias
+observadas.
 
 Una explicaci\'on plausible atiende a la distancia entre dominios. Push-T contiene
 im\'agenes sint\'eticas de fondo uniforme y pocas formas, mientras que ImageNet representa
@@ -143,10 +154,12 @@ pero no la variabilidad entre ejecuciones de entrenamiento; solo la r\'eplica pe
 estimarla, limitaci\'on declarada desde el \cref{sec:alcance} y cuantificada en el
 \cref{sec:coste}.
 
-En tercer lugar, evaluar los puntos de control seleccionados sobre un bloque de semillas de
-entorno disjunto del empleado para seleccionarlos. Ese paso convertir\'ia la medida actual,
-que act\'ua como puntuaci\'on de selecci\'on, en una evaluaci\'on final independiente, y su
-coste se reduce a tres ejecuciones de inferencia.
+En tercer lugar, ampliar el conjunto de puntos de control candidatos. La prueba del
+\cref{sec:prueba-final} mide sin sesgo el punto de control congelado de cada variante,
+pero ese candidato procede de los tres que el entrenamiento guard\'o seg\'un la
+puntuaci\'on de selecci\'on. Guardar los puntos de control a intervalos fijos, con
+independencia de su puntuaci\'on, y elegir despu\'es sobre un bloque de selecci\'on tambi\'en
+disjunto cerrar\'ia el \'unico resquicio que el protocolo actual deja abierto.
 
 En cuarto lugar, repetir la comparaci\'on con los \num{202} episodios disponibles para
 ajuste, y no solo con los \num{90} que fija la implementaci\'on de referencia. El descarte

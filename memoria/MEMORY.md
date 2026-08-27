@@ -3,7 +3,7 @@
 Estado y decisiones de la redaccion en LaTeX. El README.md documenta el uso; este
 fichero documenta el *porque* y lo que hay pendiente.
 
-Ultima actualizacion: 26 de agosto de 2026.
+Ultima actualizacion: 27 de agosto de 2026.
 
 ## Que es esto
 
@@ -249,6 +249,60 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
       `scripts/figuras_dataset.py` dibuja la figura en Windows y reimprime los contrastes.
       La figura se regenera sin WSL.
 
+18. **27 de agosto de 2026: prueba final sobre semillas disjuntas (C1).** El informe
+    `../evaluacion_tfm_I.md` aplicaba un techo de **59/100** por una sola razon material:
+    las 50 condiciones `100000-100049` elegian el punto de control y ademas producian la
+    media, el IC y el *p* que la memoria reportaba como resultado. Ya no.
+    - **El preregistro es la pieza clave, no el numero.** `preregistro_prueba_final.md`
+      fija bloque, *n*, variables de resultado, metodo de IC, tratamiento de ceros y
+      familia de Holm, con los SHA-256 de los cinco checkpoints, y **se commiteo antes de
+      ejecutar nada** (commit `8bc22e7`, 08:31). La marca de tiempo del commit es la
+      evidencia que el evaluador exige. Si se rehace algo de esto, el preregistro se
+      escribe primero, siempre.
+    - **Resultado.** Sobre `200000-200199`, n = 200: **V0 0,872 · V1 0,649 · V2 0,586 ·
+      V3 0,578 · V4 0,490**. La ordenacion no cambia y la ventaja de V0 **crece**: los
+      margenes pasan de 0,197-0,329 a 0,223-0,382, con Holm entre 1,8e-12 y 2,6e-20.
+    - **El sesgo optimista existia y era desigual, pero no en la direccion temida.** V0 fue
+      la unica que no perdio (-0,007, gana un poco); las cuatro preentrenadas perdieron
+      entre 0,019 y 0,062. Es decir, el sesgo iba **en contra** de la conclusion, no a
+      favor. Este es el argumento fuerte para la defensa.
+    - **Cuidado con la estimacion split-half.** `scripts/analisis_seleccion.py` la calcula
+      (0,040 / 0,045 / 0,007 / 0,030 / 0,021) y **no predice el optimismo realizado
+      variante a variante**: a V2 le atribuia 0,007 y perdio 0,062. Acota el orden de
+      magnitud del fenomeno, nada mas. La memoria lo dice de forma expresa; no venderla
+      como mas de lo que es.
+    - **Lecturas libres de maximo, sin GPU** (mismo script, `datos/seleccion_*.csv`): a
+      epoca comun 150, V0 0,828 frente a 0,668 / 0,648 / 0,579 / 0,435; con las
+      oportunidades igualadas a K = 4, V0 0,837. **Ojo: la comparacion a epoca fija solo
+      se puede hacer con los logs.** No hay checkpoint de la epoca 150 de V0 (guarda
+      200/350/400) y la interseccion de epocas guardadas entre las cinco variantes es
+      vacia.
+    - **Numeros aleatorios comunes (M4), verificados.** `evaluar_bloque_test.py` siembra
+      `torch.manual_seed(base*1000003 + tanda*1000 + paso)` antes de cada
+      `predict_action`, envolviendo la instancia sin tocar el arbol de WSL. Dos pasadas de
+      V4 sobre las mismas 8 semillas dan puntuaciones **identicas bit a bit**. Funciona
+      porque en `eval()` el `CropRandomizer` hace recorte central y el codificador no
+      consume RNG; el unico consumo es el `torch.randn` de la politica, con forma
+      (8, 16, 2) en las cinco variantes.
+    - **La cordura antes de gastar las horas.** Reevaluar V0 sobre el propio conjunto de
+      seleccion dio 0,8566 frente a los 0,8645 registrados, desvio 0,0079. No sale exacto
+      (el estado del RNG durante el entrenamiento no era este) y no tiene por que.
+    - **Coste real:** 2 h 33 min para las cinco variantes, ~30 min cada una, 25 tandas de
+      8 condiciones a ~80 s. La latencia medida en Windows con torch 2.6 subestima: en WSL
+      con torch 1.12 el rollout va mas lento.
+    - **Lo que sigue abierto y hay que declararlo:** solo se guardaron los tres mejores
+      checkpoints *segun la metrica contaminada*, asi que el pool de candidatos viene
+      prefiltrado. El bloque disjunto elimina el sesgo del maximo, no el del pool. Y M1
+      sigue intacto: una sola semilla de entrenamiento.
+    - En la memoria: apartado 3.8 nuevo (`sec:seleccion-prueba`) con estimando, unidades y
+      estadistica completa (cierra M6 y M9), Figura 2 con el flujo, `tab:seleccion-sesgo`,
+      `tab:prueba-final` y `tab:contrastes` **trasladada al bloque de prueba**. La Tabla 9
+      se titula ahora «conjunto de seleccion, estimaciones optimistas». Resumen, abstract,
+      contraste de hipotesis y conclusiones rehechos con las cifras nuevas.
+    - Trampa nueva: **los heredoc de bash de esta sesion se comen la contrabarra antes de
+      apostrofo**, de modo que `\'o` se convierte en `'o` y rompe el LaTeX en silencio. Los
+      ficheros `.tex` se editan con la herramienta de edicion, no con `sed`/heredoc.
+
 ## Origen de la bibliografia
 
 `bib/referencias.bib` se construyo a partir del cuaderno de NotebookLM **«Diffusion Policy
@@ -363,11 +417,18 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [ ] Decidir si el encabezado se mantiene con filete y cursiva o se simplifica.
 - [ ] Sustituir el texto provisional de agradecimientos y los dos anexos de plantilla, o
       retirar esas paginas si no formaran parte de la entrega.
-- [ ] **Del informe de evaluacion, lo que necesita GPU o acceso a WSL** (ver
-      `../../respuestas_evaluador.md`): evaluar los tres puntos de control sobre semillas
-      disjuntas 200000-200049, para convertir la puntuacion de seleccion en prueba
-      independiente (P2.1, tres inferencias); y los dos runs de ablacion que separan
-      los cuatro factores confundidos (~85 h a 224 px, ~17 h a 96 px sin recorte).
+- [x] **Prueba final sobre semillas disjuntas.** Hecha el 27 de agosto de 2026 sobre las
+      **cinco** variantes y **200** semillas (`200000-200199`), no las tres y 50 que se
+      habian previsto. Ver la decision 18.
+- [ ] **Ablaciones de los cuatro factores confundidos** (M3 del segundo informe): los dos
+      runs que separan inicializacion y preprocesado, ~85 h a 224 px y ~17 h a 96 px sin
+      recorte. Siguen pendientes y necesitan GPU.
+- [ ] **Actualizar `beamer/beamer.tex`**, que repite las cifras del conjunto de seleccion
+      (0,864 / 0,668 / 0,648 / 0,622 / 0,535). Las de la defensa son ahora las de la
+      prueba final.
+- [ ] **Resolver las dos referencias `??`** (N1 del informe): ambas apuntan a
+      `anx:primero`, del anexo que `main.tex` tiene comentado. O se reactiva el anexo o se
+      retiran las dos remisiones.
 - [x] **M5 del informe: caracterizacion del `zarr`** con distribucion de longitudes y
       puntuaciones y el reparto train/val/descartados explicito (P2.8). Resuelto el 26 de
       agosto de 2026 sin computo de GPU. Ver la decision 17.
