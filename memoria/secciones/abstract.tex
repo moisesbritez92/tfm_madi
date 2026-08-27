@@ -18,7 +18,8 @@ the same network pretrained on ImageNet in frozen and fine-tuned versions, and t
 vision transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a
 \num{512}-component vector and share the generative network, the data, and the evaluation
 protocol.
-Training uses \num{206} teleoperated demonstrations and budgets ranging from \num{200} to
+Training uses \num{90} of the \num{206} teleoperated demonstrations, following the
+reference implementation, and budgets ranging from \num{200} to
 \num{500} epochs, with early stopping. Evaluation measures the mean coverage score over
 \num{50} episodes generated with held-out seeds, together with the compute time consumed.
 

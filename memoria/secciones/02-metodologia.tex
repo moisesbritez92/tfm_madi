@@ -63,11 +63,86 @@ teleoperadas por un operador humano, que suman \num{25650} transiciones. Cada tr
 almacena la imagen, el estado del efector, los puntos caracter\'isticos de la pieza, la
 acci\'on ejecutada y el n\'umero de contactos.
 
-La partici\'on de los datos reproduce la de la implementaci\'on de referencia. Un dos por
-ciento de los episodios se reserva para validaci\'on y el entrenamiento se limita a
-\num{90} episodios; los restantes se descartan. Mantener este criterio permite comparar los
-resultados con los publicados y, adem\'as, sit\'ua el experimento en el r\'egimen de pocas
-demostraciones que motiva las hip\'otesis del \cref{sec:planteamiento}.
+Cada demostraci\'on arranca en la condici\'on inicial que el simulador genera a partir de
+una semilla propia, y esas semillas recorren los valores de \num{0} a \num{205}. El dato se
+ha verificado reproduciendo con el entorno el primer instante de las \num{206}
+demostraciones, que se recupera sin error apreciable. Las semillas reservadas para la
+evaluaci\'on, descritas en el \cref{sec:evaluacion}, quedan por tanto fuera de ese rango.
+
+La partici\'on de los datos reproduce la de la implementaci\'on de referencia y se resume en
+la \cref{tab:particion}. Un sorteo aleatorio reserva el dos por ciento de los episodios para
+validaci\'on, cuatro en total, y un segundo sorteo escoge \num{90} de los \num{202}
+restantes para el entrenamiento. Los \num{112} episodios no seleccionados, el
+\SI{54.4}{\percent} del conjunto, no intervienen en el ajuste. La semilla de ambos sorteos
+est\'a fijada en \num{42} dentro de la configuraci\'on de la tarea y es independiente de la
+semilla de entrenamiento, de modo que las cinco variantes emplean exactamente los mismos
+episodios.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Reparto del conjunto de demostraciones de Push-T y caracter\'isticas de cada
+    subconjunto. La puntuaci\'on es la que alcanza el operador humano seg\'un la
+    \cref{eq:score}.}
+  \label{tab:particion}
+  \small
+  \begin{tabular}{lrrrrr}
+    \toprule
+    Subconjunto & Episodios & Transiciones & Ventanas & Longitud media &
+      Puntuaci\'on media \\
+    \midrule
+    Entrenamiento & 90  & \num{11356} & \num{10726} & \num{126.2} & \num{0.894} \\
+    Validaci\'on  & 4   & \num{432}   & \num{404}   & \num{108.0} & \num{0.893} \\
+    Descartados   & 112 & \num{13862} & ---         & \num{123.8} & \num{0.891} \\
+    \midrule
+    Total         & 206 & \num{25650} & ---         & \num{124.5} & \num{0.892} \\
+    \bottomrule
+  \end{tabular}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+El tope de \num{90} episodios procede de la implementaci\'on de referencia y define el
+r\'egimen de pocas demostraciones que motiva las hip\'otesis del \cref{sec:planteamiento}.
+Ese r\'egimen admite una descripci\'on cuantitativa. Los episodios de entrenamiento aportan
+\num{11356} transiciones, equivalentes a \SI{18.9}{\minute} de teleoperaci\'on de los
+\SI{42.8}{\minute} que contiene el fichero. Con el horizonte de \num{16} instantes, el
+muestreador extrae de ellos \num{10726} ventanas, que a lote efectivo \num{64} producen
+\num{168} actualizaciones por \'epoca.
+
+La calidad de las demostraciones acota lo que la pol\'itica puede aprender. Al aplicar a
+cada una la m\'etrica definida en el \cref{sec:metricas}, el operador humano obtiene una
+puntuaci\'on media de \num{0.892}, con mediana \num{0.896} y recorrido entre \num{0.813} y
+\num{0.949}. Ninguna de las \num{206} demostraciones alcanza el umbral de cobertura que el
+entorno considera un \'exito, de manera que el valor unitario de la m\'etrica no est\'a
+representado en los datos. Esa cifra es una referencia y no una cota superior estricta,
+puesto que las condiciones iniciales de las demostraciones no coinciden con las de la
+evaluaci\'on.
+
+La \cref{fig:caracterizacion-dataset} re\'une las cuatro distribuciones que describen el
+conjunto: longitud de los episodios, puntuaci\'on del demostrador, posici\'on inicial de la
+pieza y orientaci\'on inicial de la pieza.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=\textwidth]{img/caracterizacion_dataset.pdf}
+  \caption[Caracterizaci\'on del conjunto de demostraciones de
+    Push-T.]{Caracterizaci\'on del conjunto de demostraciones de Push-T: (a) longitud de los
+    episodios; (b) puntuaci\'on del demostrador, con el m\'aximo de V0 y el umbral de
+    \'exito; (c) posici\'on inicial de la pieza, con las \num{50} condiciones de
+    evaluaci\'on superpuestas; (d) orientaci\'on inicial de la pieza.}
+  \label{fig:caracterizacion-dataset}
+  \fuente{elaboraci\'on propia}
+\end{figure}
+
+El descarte de \num{112} episodios no introduce un sesgo apreciable, ya que responde a un
+sorteo aleatorio uniforme y no a un criterio de calidad. Los episodios de entrenamiento y
+los descartados no se distinguen en longitud, con $p = \num{0.752}$ en la prueba $U$ de
+Mann-Whitney y $p = \num{0.999}$ en la de Kolmogorov-Smirnov, ni en puntuaci\'on del
+demostrador, con $p = \num{0.302}$ y $p = \num{0.418}$. Tampoco se aprecian diferencias
+entre las condiciones iniciales de entrenamiento y las \num{50} de evaluaci\'on: los cinco
+contrastes de Kolmogorov-Smirnov sobre la posici\'on del efector, la posici\'on de la pieza
+y su orientaci\'on arrojan valores $p$ entre \num{0.232} y \num{0.696}. En cambio, el efecto
+de aprovechar tambi\'en los \num{112} episodios descartados no se ha medido y queda
+recogido en el \cref{sec:trabajo-futuro}.
 
 Conviene precisar que la evaluaci\'on no consume datos del fichero anterior. El rendimiento
 se mide ejecutando la pol\'itica en el simulador sobre condiciones iniciales generadas de
@@ -351,9 +426,15 @@ denominada puntuaci\'on media de evaluaci\'on. Junto a ella se reportan la desvi
 t\'ipica y el error est\'andar de esos \num{50} valores, magnitudes que describen la
 dispersi\'on de la propia m\'etrica. Se registran adem\'as cuatro cantidades auxiliares:
 la p\'erdida de entrenamiento, la p\'erdida de validaci\'on, el error cuadr\'atico medio
-de la acci\'on predicha y la puntuaci\'on media sobre las condiciones de entrenamiento.
-Las dos primeras describen el ajuste, mientras que la comparaci\'on entre las dos
-puntuaciones permite detectar sobreajuste.
+de la acci\'on predicha y la puntuaci\'on media sobre las seis condiciones que la
+implementaci\'on de referencia denomina de entrenamiento. Las dos primeras describen el
+ajuste y su comparaci\'on es la que revela el sobreajuste.
+
+Esa cuarta cantidad exige una advertencia. Sus seis condiciones iniciales son las de las
+demostraciones \num{0} a \num{5}, y el sorteo descrito en el \cref{sec:datos} dej\'o las
+seis fuera del subconjunto de entrenamiento. La puntuaci\'on que se obtiene sobre ellas no
+mide, por tanto, el rendimiento en condiciones vistas durante el ajuste, y no se emplea en
+esta memoria como indicio de sobreajuste.
 
 El nombre de la m\'etrica principal requiere una precisi\'on. Las \num{50} condiciones se
 generan con semillas reservadas y no intervienen en el ajuste de los pesos, pero se

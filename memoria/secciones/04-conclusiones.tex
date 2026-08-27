@@ -115,7 +115,7 @@ trabajo pertenece al entrenamiento, no al despliegue.
 \divisionmenor{Respuesta al objetivo general}
 
 En conjunto, la respuesta al objetivo general es inequ\'ivoca para la configuraci\'on
-estudiada. Con \num{206} demostraciones de Push-T, la ResNet-18 entrenada de extremo a
+estudiada. Con \num{90} demostraciones de Push-T, la ResNet-18 entrenada de extremo a
 extremo a resoluci\'on nativa domina en rendimiento y coste a las cuatro alternativas
 preentrenadas. Ni DINOv2 \cite{oquab2024dinov2} ni CLIP \cite{radford2021clip} alteran esa
 conclusi\'on. La ventaja corresponde al bloque visual completo y no permite atribuir el
@@ -124,7 +124,7 @@ efecto exclusivamente al preentrenamiento.
 \section{Trabajo futuro}
 \label{sec:trabajo-futuro}
 
-Del estudio se derivan cinco l\'ineas de continuaci\'on, ordenadas por su capacidad para
+Del estudio se derivan seis l\'ineas de continuaci\'on, ordenadas por su capacidad para
 afianzar o corregir las conclusiones anteriores.
 
 En primer lugar, aislar los cuatro factores confundidos entre la l\'inea base y las
@@ -148,7 +148,15 @@ entorno disjunto del empleado para seleccionarlos. Ese paso convertir\'ia la med
 que act\'ua como puntuaci\'on de selecci\'on, en una evaluaci\'on final independiente, y su
 coste se reduce a tres ejecuciones de inferencia.
 
-En cuarto lugar, examinar la agregaci\'on espacial a la salida de los codificadores
+En cuarto lugar, repetir la comparaci\'on con los \num{202} episodios disponibles para
+ajuste, y no solo con los \num{90} que fija la implementaci\'on de referencia. El descarte
+es aleatorio y representativo, seg\'un se comprueba en el \cref{sec:datos}, de modo que la
+l\'inea mide el efecto del tama\~no del conjunto y no el de su composici\'on. Ese
+experimento resulta especialmente pertinente aqu\'i, puesto que la ventaja del
+preentrenamiento se atribuye habitualmente a la escasez de datos. Su coste por \'epoca
+crecer\'ia en proporci\'on al n\'umero de ventanas, algo m\'as del doble del actual.
+
+En quinto lugar, examinar la agregaci\'on espacial a la salida de los codificadores
 preentrenados. La l\'inea base conserva la localizaci\'on de las activaciones mediante un
 \textit{spatial softmax} \cite{levine2016visuomotor}, mientras que las variantes
 preentrenadas entregan un descriptor global. Cabe evaluar si una agregaci\'on que preserve

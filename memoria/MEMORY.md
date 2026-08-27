@@ -206,6 +206,49 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
     Nota: `siunitx` **no admite numeros de version** en `\num{}`; `\num{2.6.0}` aborta la
     compilacion. Las versiones van en `\texttt{}`.
 
+17. **26 de agosto de 2026: caracterizacion del conjunto de datos (M5).** El apartado 3.2
+    describia el `zarr` pero no lo caracterizaba. Ahora lleva la Tabla 3 (`tab:particion`)
+    y la Figura 1 (`fig:caracterizacion-dataset`), la primera figura del capitulo 3.
+    - **El reparto es 90 / 4 / 112**, es decir el **54,4 % de los episodios no se usa**.
+      `task/pusht_image.yaml` fija `dataset.seed: 42` como literal, no como `${seed}`: la
+      particion **no depende de la semilla de entrenamiento** y sera la misma en la fase 2.
+      Los cuatro episodios de validacion son los indices 18, 90, 134 y 157.
+    - **El regimen de pocas demostraciones, en cifras**: 11.356 transiciones, 10.726
+      ventanas de horizonte 16 y 18,9 min de teleoperacion de los 42,8 del fichero. Las
+      10.726 ventanas a lote efectivo 64 dan las 168 actualizaciones por epoca que ya
+      aparecian en los `global_step`; es una comprobacion cruzada, no una coincidencia.
+    - **El descarte es representativo**, y esa es la respuesta al tribunal: sorteo
+      aleatorio uniforme, sin criterio de calidad. Entrenamiento frente a descarte da
+      p = 0,752 (Mann-Whitney) y p = 0,999 (KS) en longitud, y p = 0,302 y p = 0,418 en
+      puntuacion.
+    - **El demostrador humano promedia 0,892 y ninguna demostracion alcanza el umbral de
+      exito de 0,95** (cobertura maxima 0,902). El 0,864 de V0 es el **96,9 %** de esa
+      referencia. El dato entra en 3.2 y se cita una vez en 4.2; no se toco ni el resumen
+      ni las conclusiones por eso.
+    - **Las demostraciones son las semillas 0 a 205 del entorno**:
+      `PushTEnv(legacy=True).seed(i).reset()` reproduce el primer instante de la
+      demostracion `i` con error 0,000 px en las 206. De ahi salen dos consecuencias. La
+      primera, que demostraciones y evaluacion muestrean el mismo generador con semillas
+      disjuntas (los cinco contrastes KS quedan entre 0,232 y 0,696). La segunda, que
+      **las seis condiciones `train/` del evaluador son las de las demostraciones 0 a 5, y
+      el sorteo dejo las seis fuera del entrenamiento** (el primer episodio de
+      entrenamiento es el 7). El apartado 3.7 afirmaba que comparar esa puntuacion con la
+      de evaluacion detecta sobreajuste: es falso, y el texto lo advierte ahora.
+    - **Cuidado con `legacy` al leer el `zarr`.** Para *reconstruir* un estado guardado
+      vale `legacy=False` (error de 1,16 px por resolucion de contactos, y 0,46 px contra
+      los `keypoint` almacenados); con `legacy=True` el error llega a 90 px porque el giro
+      se aplica despues de colocar la pieza. Para *generar* una condicion inicial desde una
+      semilla es al reves: manda `legacy=True`, que es lo que usan la recogida de datos y
+      el evaluador. Los dos scripts lo comprueban con `assert`.
+    - Trampa: crear un `PymunkKeypointManager` sobre el mismo entorno que se usa para medir
+      cobertura altera su espacio de `pymunk` y **la cobertura sale 0** sin avisar.
+    - Se corrigio de paso un error factual repetido: resumen, abstract y conclusiones
+      decian **206 demostraciones** donde el ajuste usa **90**.
+    - Reparto de scripts: `../diffuser/scripts/caracterizar_dataset.py` extrae en WSL a
+      `datos/demostraciones_episodios.csv` y `datos/condiciones_evaluacion.csv`;
+      `scripts/figuras_dataset.py` dibuja la figura en Windows y reimprime los contrastes.
+      La figura se regenera sin WSL.
+
 ## Origen de la bibliografia
 
 `bib/referencias.bib` se construyo a partir del cuaderno de NotebookLM **«Diffusion Policy
@@ -323,10 +366,11 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [ ] **Del informe de evaluacion, lo que necesita GPU o acceso a WSL** (ver
       `../../respuestas_evaluador.md`): evaluar los tres puntos de control sobre semillas
       disjuntas 200000-200049, para convertir la puntuacion de seleccion en prueba
-      independiente (P2.1, tres inferencias); caracterizar el
-      `zarr` con distribucion de longitudes y puntuaciones de las demostraciones y explicitar
-      el reparto train/val/descartados (P2.8, M5); y los dos runs de ablacion que separan
+      independiente (P2.1, tres inferencias); y los dos runs de ablacion que separan
       los cuatro factores confundidos (~85 h a 224 px, ~17 h a 96 px sin recorte).
+- [x] **M5 del informe: caracterizacion del `zarr`** con distribucion de longitudes y
+      puntuaciones y el reparto train/val/descartados explicito (P2.8). Resuelto el 26 de
+      agosto de 2026 sin computo de GPU. Ver la decision 17.
 - [x] M7 del informe (literatura de preentrenamiento visual para control) **ya estaba
       resuelto**: el apartado 2.5.4 cubre MVP, Voltron y VC-1/CortexBench. El informe
       describe un apartado 2.4 que no corresponde a la version actual.

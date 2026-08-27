@@ -57,7 +57,19 @@ en Windows (torch 2.6.0+cu124, hydra-core 1.3.2, zarr 2.18.7). No copiar version
 - Host: **15,7 GB RAM**, con WSL capado a 12 GB en `C:\Users\moise\.wslconfig`.
 - **El replay buffer de Push-T ocupa 2,84 GB de RAM por proceso.** El `img` del zarr es
   `float32` (`<f4`, 25650×96×96×3) y `ReplayBuffer.copy_from_path` lo carga entero en
-  memoria. Este dato explica casi todos los problemas de RAM del proyecto.
+  memoria. Este dato explica casi todos los problemas de RAM del proyecto. Para analizar
+  el zarr sin pagar ese coste, abrirlo con `zarr.open(..., 'r')` y leer solo lo necesario.
+
+## El reparto del dataset no es el que sugiere «206 demostraciones»
+
+De los 206 episodios, **el entrenamiento usa 90 (10.726 ventanas de horizonte 16, 168
+actualizaciones por época a lote efectivo 64), la validación 4 y se descartan 112**, el
+54,4 %. `task/pusht_image.yaml` fija `dataset.seed: 42` como literal, no como `${seed}`:
+la partición **no depende de la semilla de entrenamiento** y será idéntica en la fase 2.
+Las demostraciones son las semillas 0 a 205 del propio entorno, y las seis condiciones
+`train/` del evaluador (semillas 0-5) cayeron todas en el descarte, así que
+`train/mean_score` **no mide condiciones vistas durante el ajuste**. Lo calcula todo
+`diffuser/scripts/caracterizar_dataset.py`.
 
 ## Regla dura: un solo entrenamiento a la vez
 

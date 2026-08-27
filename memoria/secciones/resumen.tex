@@ -14,8 +14,9 @@ ese fin se implementan cinco variantes del codificador dentro de la misma pol\'i
 ResNet-18 entrenada desde cero, la misma red preentrenada sobre ImageNet en versiones
 congelada y con ajuste fino, y dos transformadores de visi\'on congelados, DINOv2 ViT-S/14
 y CLIP ViT-B/16. Todas entregan un vector de \num{512} componentes y comparten red
-generativa, datos y protocolo de evaluaci\'on. El ajuste emplea \num{206} demostraciones
-teleoperadas y presupuestos de \num{200} a \num{500} \'epocas, con parada anticipada. La
+generativa, datos y protocolo de evaluaci\'on. El ajuste emplea \num{90} de las \num{206}
+demostraciones teleoperadas disponibles, seg\'un el criterio de la implementaci\'on de
+referencia, y presupuestos de \num{200} a \num{500} \'epocas, con parada anticipada. La
 evaluaci\'on mide la puntuaci\'on media de cobertura sobre \num{50} episodios generados con
 semillas reservadas, junto con el tiempo de c\'omputo consumido.
 
