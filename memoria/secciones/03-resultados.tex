@@ -591,6 +591,13 @@ diez evaluaciones, V2 seis, y V3 y V4 solo cuatro. V3 se interrumpi\'o tras \num
 posterior. La comparaci\'on corresponde a los mejores puntos observados dentro de esos
 presupuestos, no a curvas con igual horizonte.
 
+Se ensay\'o una prolongaci\'on de V3 y V4 destinada a igualar ese horizonte, que finalmente
+se descart\'o. La reanudaci\'on result\'o defectuosa, puesto que el planificador de la tasa
+de aprendizaje no retomaba la posici\'on que le correspond\'ia y las \'epocas a\~nadidas
+quedaban entrenadas bajo un r\'egimen distinto del previsto. Los resultados de este
+cap\'itulo proceden, en consecuencia, del protocolo original, y la desigualdad de
+horizontes permanece.
+
 La segunda limitaci\'on es el uso de una sola semilla de entrenamiento, y es la m\'as
 restrictiva de todas. Los intervalos y los contrastes de la \cref{tab:contrastes}
 cuantifican la dispersi\'on debida a las condiciones iniciales del simulador, ya que las
