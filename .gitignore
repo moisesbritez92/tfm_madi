@@ -10,3 +10,5 @@ diffuser/models
 models
 .DS_Store
 __pycache__/
+diffuser/godot/.godot/
+diffuser/godot/grabaciones/

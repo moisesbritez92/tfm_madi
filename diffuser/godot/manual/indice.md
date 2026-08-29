@@ -2,72 +2,76 @@
 
 ## Objetivo
 
-Este manual esta pensado como una guia de trabajo para aprender Godot con un fin practico: construir escenas 3D, entender el flujo del editor y preparar el terreno para usar el motor como entorno de prototipado dentro del TFM.
+Este manual empezó como una guía para aprender Godot con un fin práctico:
+construir escenas 3D, entender el flujo del editor y preparar el terreno para
+usar el motor como entorno de prototipado dentro del TFM.
 
-No intenta reemplazar la documentacion oficial. Su funcion es ordenar el camino de aprendizaje, reducir ruido y dejar claro que estudiar primero para llegar antes a un entorno 3D funcional.
+Ese terreno ya está usado. La carpeta que contiene este manual **es** un proyecto
+Godot: una reimplementación de Push-T sobre Godot Physics 2D, con vista 3D
+cenital, en la que el punto de control congelado de V0 cierra el bucle a través
+de un servidor de política en Python. Los módulos 01 a 05 siguen siendo el camino
+de aprendizaje; los módulos 06 y 07 documentan lo que se construyó con él.
 
-## Alcance de la v1
+No intenta reemplazar la documentación oficial. Su función es ordenar el camino,
+reducir ruido y dejar por escrito las decisiones que costaron tiempo.
 
-Incluido en esta primera version:
+## Cómo usar este manual
 
-- Instalacion y puesta en marcha.
-- Editor, nodos, escenas y organizacion del proyecto.
-- GDScript basico, input y senales.
-- Escena 3D, camaras, luces y nociones espaciales.
-- Fisica basica, colisiones y movimiento.
-- Importacion de assets y organizacion del entorno.
-- Navegacion e interaccion sencilla.
-- Proyecto integrador pequeno.
+Si vienes a aprender Godot, la ruta es lineal y empieza en el módulo 01. Si
+vienes a entender o a tocar la demostración de Push-T, ve directo al 06.
 
-Fuera de esta primera version:
+1. [01_introduccion_y_setup.md](01_introduccion_y_setup.md), y deja Godot
+   instalado con un proyecto 3D vacío funcionando.
+2. [02_fundamentos_nodos_escenas_editor.md](02_fundamentos_nodos_escenas_editor.md),
+   para entender el paradigma central del motor.
+3. [03_gdscript_input_senales.md](03_gdscript_input_senales.md), para poder
+   escribir y conectar lógica.
+4. Después, el bloque 3D y de física.
 
-- Shaders y rendering avanzado.
-- Networking y multijugador.
-- XR.
-- Optimizacion profunda.
-- Plugins o extensiones de editor.
-- Exportacion multiplataforma detallada.
+## Ruta
 
-## Como usar este manual
-
-La ruta recomendada es lineal. Cada modulo prepara el siguiente.
-
-1. Leer [01_introduccion_y_setup.md](01_introduccion_y_setup.md) y dejar Godot instalado y un proyecto 3D vacio funcionando.
-2. Completar [02_fundamentos_nodos_escenas_editor.md](02_fundamentos_nodos_escenas_editor.md) para entender el paradigma central del motor.
-3. Completar [03_gdscript_input_senales.md](03_gdscript_input_senales.md) para poder escribir y conectar logica.
-4. Pasar despues al bloque 3D, fisica e integracion.
-
-## Ruta de estudio
-
-| Modulo | Estado | Objetivo |
+| Módulo | Estado | Objetivo |
 |---|---|---|
-| [01_introduccion_y_setup.md](01_introduccion_y_setup.md) | Implementado | Instalar Godot, crear el primer proyecto y entender el flujo basico del editor. |
-| [02_fundamentos_nodos_escenas_editor.md](02_fundamentos_nodos_escenas_editor.md) | Implementado | Dominar nodos, escenas, arbol de escena, recursos e instanciacion. |
-| [03_gdscript_input_senales.md](03_gdscript_input_senales.md) | Implementado | Empezar a programar en GDScript y conectar comportamiento con input y senales. |
-| [04_escena_3d_camaras_luces.md](04_escena_3d_camaras_luces.md) | Implementado | Construir una escena 3D minima navegable. |
+| [01_introduccion_y_setup.md](01_introduccion_y_setup.md) | Implementado | Instalar Godot, crear el primer proyecto y entender el flujo básico del editor. |
+| [02_fundamentos_nodos_escenas_editor.md](02_fundamentos_nodos_escenas_editor.md) | Implementado | Dominar nodos, escenas, árbol de escena, recursos e instanciación. |
+| [03_gdscript_input_senales.md](03_gdscript_input_senales.md) | Implementado | Empezar a programar en GDScript y conectar comportamiento con input y señales. |
+| [04_escena_3d_camaras_luces.md](04_escena_3d_camaras_luces.md) | Implementado | Construir una escena 3D mínima navegable. |
 | [05_fisica_colisiones_movimiento.md](05_fisica_colisiones_movimiento.md) | Implementado | Introducir CharacterBody3D, RigidBody3D y colisiones. |
-| 06_assets_y_organizacion.md | Pendiente | Importar assets y ordenar el entorno 3D. |
-| 07_navegacion_e_interaccion.md | Pendiente | NavigationMesh, agentes y triggers simples. |
-| 08_proyecto_integrador.md | Pendiente | Consolidar el flujo completo en un mini proyecto. |
-| 09_siguientes_pasos.md | Pendiente | Marcar rutas de ampliacion segun el TFM. |
+| [06_puente_python_godot.md](06_puente_python_godot.md) | Implementado | El protocolo con el servidor de política, el port de la física de Push-T y sus cuatro trampas. |
+| [07_escena_pusht.md](07_escena_pusht.md) | Implementado | La escena, los modos de ejecución y cómo se lanza la demostración. |
 
-## Resultado esperado al terminar la v1
+Los módulos que la primera versión dejaba pendientes —assets, navegación,
+proyecto integrador— se han quedado sin objeto: el proyecto integrador acabó
+siendo Push-T, y ni los assets importados ni la navegación entraban en él.
 
-Al finalizar este manual deberias poder:
+## Qué hay fuera de `manual/`
 
-- Crear un proyecto Godot 4 estable desde cero.
-- Construir una escena 3D simple y navegar por ella.
-- Entender como se organiza la logica en nodos y escenas.
-- Escribir scripts basicos en GDScript.
-- Capturar input, lanzar eventos y usar senales.
-- Montar un prototipo 3D con colisiones, movimiento e interaccion elemental.
+```
+diffuser/godot/
+├── project.godot        physics_ticks_per_second = 100
+├── lanzar.ps1           arranca servidor y Godot, y limpia al salir
+├── escenas/Main.tscn    raíz mínima; la escena se construye por código
+├── scripts/             GDScript: física, cobertura, cliente, vista 3D, panel
+├── servidor/            Python: servidor de política, rasterizador, verificación
+└── grabaciones/         trayectorias y capturas (ignorado por git)
+```
+
+## Resultado esperado
+
+Al terminar los cinco primeros módulos deberías poder crear un proyecto Godot 4
+estable, construir y navegar una escena 3D, organizar la lógica en nodos y
+escenas, escribir GDScript básico, capturar input, usar señales y montar un
+prototipo con colisiones y movimiento.
+
+Al terminar los dos últimos deberías poder lanzar la demostración, saber qué se
+está enseñando y qué no, y reproducir las cuatro comprobaciones que sostienen el
+port.
 
 ## Referencia base
 
-La referencia principal es la documentacion oficial estable de Godot:
+Usa siempre la rama `stable` de la documentación oficial, para no mezclar
+funciones o pantallas de versiones en desarrollo:
 
 - https://docs.godotengine.org/en/stable/about/introduction.html
 - https://docs.godotengine.org/en/stable/getting_started/step_by_step/index.html
 - https://docs.godotengine.org/en/stable/getting_started/first_3d_game/index.html
-
-Usa siempre la rama `stable` de la documentacion para evitar mezclar funciones o pantallas de versiones en desarrollo.

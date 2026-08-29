@@ -199,6 +199,68 @@ limpio borrarlo entero que intentar repararlo.
 Claves útiles por línea: `train_loss`, `val_loss`, `test/mean_score`, `train/mean_score`,
 `train_action_mse_error`, `global_step`, `epoch`.
 
+## `diffuser/godot/` es un proyecto Godot, y no produce cifras reportables
+
+Desde el 29 de agosto de 2026 esa carpeta dejó de ser solo el manual de Godot: es la raíz
+de un proyecto Godot 4.7.2 que reimplementa Push-T y pone el punto de control congelado de
+V0 en el bucle. El manual vive ahora en `diffuser/godot/manual/`, con dos módulos nuevos
+(06 el puente y el port, 07 la escena y los modos).
+
+**Es una demostración visual para la defensa.** Lo que muestre el panel es ilustrativo. El
+resultado del TFM sigue siendo la pasada preregistrada sobre `200000-200199` que está en
+`logs_entrenamiento/prueba_final/`. No mezclar las dos cosas en ningún texto.
+
+```powershell
+cd diffuser\godot
+.\lanzar.ps1                  # condición A: Godot simula, la imagen la dibuja Python
+.\lanzar.ps1 -Obs godot       # condición B: la política ve los píxeles 3D de Godot
+.\lanzar.ps1 -Modo reproducir # sin GPU ni servidor; la red de seguridad de la defensa
+```
+
+Dos condiciones, una bandera del servidor, el mismo código en Godot:
+
+- **A, `--obs estado`.** Godot manda el estado y `servidor/rasterizador_pusht.py` dibuja el
+  96×96 con el código del entrenamiento. Solo ha cambiado el motor de física.
+- **B, `--obs godot`.** La observación sale del `SubViewport` ortográfico cenital. Han
+  cambiado la física y los píxeles.
+
+La física se simula en **2D** aunque la vista sea 3D. Con gravedad y fricción de mesa la T
+volcaría y la tarea dejaría de ser la que V0 aprendió.
+
+Cuatro cosas que ya están comprobadas y no hay que volver a descubrir:
+
+1. **`space.damping = 0` es amortiguación total**, no rozamiento suave: anula la velocidad
+   al principio de cada subpaso. Se replica en `_integrate_forces` de `bloque_t.gd`. Sin
+   eso la pieza conserva inercia y la tarea cambia.
+2. **El centro de gravedad es `(0, 45)`, no el origen**, así que fijar el ángulo desplaza la
+   posición. Para reproducir una pose conocida: ángulo primero, posición después. El orden
+   `legacy` de `_set_state` es el contrario, pero eso pertenece al muestreo del reinicio.
+3. **El rasterizador arrastraba puntos de contacto** del reinicio aleatorio con el que se
+   construye. `_vaciar_contactos` lo deja determinista; a cambio nunca dibuja contactos,
+   uno o dos píxeles de 9216.
+4. **El estado inicial lo sortea Python**, con el `PushTEnv` de verdad, y Godot recibe los
+   cinco números ya resueltos. Verificado exacto contra `seed(s); reset()`.
+5. **Los `_process` corren antes del dibujado.** Al capturar las dos observaciones de la
+   condición B, `vista3d._process` sobrescribía la pose histórica por la actual y las dos
+   imágenes salían iguales, sin ningún síntoma salvo una puntuación algo peor (0,9159 en
+   vez de 0,9453 en la semilla 10000). Lo evita el cerrojo `_congelado`, y el servidor
+   avisa por consola si vuelve a pasar.
+
+Referencia de las comprobaciones, para detectar una regresión: cobertura frente a shapely
+3,1e-07; física 2,3 px de salto en el primer contacto y 0,30 px de separación tras 250
+pasos de control; observación de Godot frente al renderizador original, 2,9 % de píxeles
+con diferencia mayor que 8 y media 1,0 sobre 255. Los comandos están en el módulo 06.
+
+**El tiempo real es imposible y no hay que pelearlo**: V0 tarda 1743,9 ms de mediana por
+llamada y cada llamada cubre 0,8 s de simulación, así que el techo es ×0,46. El panel lo
+rotula.
+
+**Los episodios no son reproducibles bit a bit.** La semilla 200003 en la condición A dio
+0,9726 en 183 pasos una vez y 0,9545 en 242 otra. El ruido de difusión sí está sembrado;
+lo que no es determinista son las convoluciones en GPU, y la simulación con contactos
+amplifica la diferencia. Por eso el flujo para la defensa es `grabar` y luego `reproducir`,
+no relanzar en vivo esperando el mismo episodio.
+
 ## Archivos clave del modelo
 
 ```

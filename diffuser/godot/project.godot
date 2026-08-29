@@ -1,0 +1,35 @@
+; Push-T en Godot 4 con la politica V0 en el bucle.
+;
+; La fisica es 2D y replica la de pymunk del entorno original; el 3D es solo la
+; vista. physics_ticks_per_second = 100 no es decorativo: cada tick es uno de
+; los diez subpasos de dt = 0,01 que el entorno original ejecuta por paso de
+; control, y toda la temporizacion del proyecto cuenta ticks.
+
+config_version=5
+
+[application]
+
+config/name="Push-T en Godot"
+config/description="Demostracion: el punto de control congelado de V0 resolviendo Push-T en un motor distinto. Las cifras que muestra son ilustrativas."
+run/main_scene="res://escenas/Main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+[physics]
+
+common/physics_ticks_per_second=100
+common/max_physics_steps_per_frame=64
+2d/default_gravity=0.0
+2d/default_gravity_vector=Vector2(0, 0)
+2d/default_linear_damp=0.0
+2d/default_angular_damp=0.0
+
+[rendering]
+
+anti_aliasing/quality/msaa_2d=0
+anti_aliasing/quality/msaa_3d=0
+anti_aliasing/quality/screen_space_aa=0
