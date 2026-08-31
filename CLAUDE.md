@@ -246,6 +246,83 @@ limpio borrarlo entero que intentar repararlo.
 Claves útiles por línea: `train_loss`, `val_loss`, `test/mean_score`, `train/mean_score`,
 `train_action_mse_error`, `global_step`, `epoch`.
 
+## `V_Paper` es el modelo del artículo, y no es una sexta variante
+
+`diffuser/models/V_Paper/epoch=0500-test_mean_score=0.884.ckpt` (4,0 GB) es el punto de
+control que publicaron los autores para Push-T. **No entra en la tabla de «Estado del
+experimento»** y no se le llama V5 en ningún sitio: es la referencia externa contra la que
+se contrasta V0, no un brazo del experimento.
+
+Su arquitectura no es la de V0-V4. Workspace `TrainDiffusionUnetHybridWorkspace`, política
+`DiffusionUnetHybridImagePolicy`, y el codificador es **el de robomimic**: ResNet-18 +
+`SpatialSoftmax` de 32 puntos clave + `Linear(64→64)`, con `crop_shape [84,84]`,
+`obs_encoder_group_norm` y `eval_fixed_crop`. Es decir, **`V_Paper` es la prueba material de
+la corrección factual nº 1**: el *spatial softmax* del artículo existe, pero pertenece al
+codificador de robomimic y ninguna de las cinco variantes lo usa. Todo lo demás coincide con
+V0: UNet `down_dims [512,1024,2048]`, DDPM de 100 pasos, `horizon 16 / n_obs 2 / n_action 8`
+y la misma partición del dataset (`seed 42`, `val_ratio 0.02`, 90 episodios).
+
+**Su `0,884` está medido sobre las semillas `4300000-4300049`**, el bloque con el que los
+autores eligieron su propio punto de control. No es comparable con el `100000-100049` de
+nuestra selección ni con el `200000-200199` de la prueba final. No citarlo junto a las
+cifras del TFM sin decir esto.
+
+### Dónde vive robomimic, y por qué `--no-deps`
+
+- WSL `robodiff`: ya lo tenía, 0.2.0 con torch 1.12.1. `generate_paper_configs` importa.
+- Windows `.venv_diffuser_infer`: se instaló el 31 de agosto de 2026 con
+  `pip install robomimic==0.2.0 --no-deps`, más `h5py`, `termcolor` y `tensorboardX`.
+  Los cuatro están pineados al final de `requirements_inference_windows.txt`.
+
+El `--no-deps` **no es opcional**: robomimic declara torch, torchvision, numpy e imageio sin
+techo y arrastraría el entorno de los cinco notebooks. `egl_probe` y `tensorboard` quedan sin
+instalar a propósito; solo los importa `env_robosuite`, que no se toca.
+
+Dato que ahorra una tarde: **`torchvision 0.21` todavía acepta el kwarg legacy
+`resnet18(pretrained=False)`** por `handle_legacy_interface`, que es exactamente lo que hace
+`robomimic.models.base_nets.ResNet18Conv`. Era el riesgo obvio de compatibilidad y está
+descartado.
+
+### La guarda de `cfg.policy.obs_encoder`
+
+La política híbrida construye su codificador dentro de robomimic y **no tiene la clave
+`cfg.policy.obs_encoder`**. Cualquier código que la lea sin guarda revienta con
+`ConfigAttributeError` antes de cargar nada.
+
+- Ya la tiene: `diffuser/v0_inference_utils.py:94` (`load_policy_bundle`) y
+  `diffuser/scripts/evaluar_paper_bloque_test.py`.
+- **Siguen sin ella**: `diffuser/scripts/evaluar_bloque_test.py:124`,
+  `diffuser/scripts/memoria_gpu.py:165` y `memoria/scripts/latencia_inferencia.py:174`.
+  Los tres funcionan con V0-V4 y fallarían con `V_Paper`.
+
+### Inferencia gráfica en Windows
+
+`diffuser/inferencia_paper_pusht.ipynb` y `diffuser/paper_inference_utils.py`. El módulo
+**no** se llama `v5_inference_utils` a propósito: `servidor_politica.cargar_politica`
+resuelve las variantes por ese patrón (`importlib.import_module(f"{variante}_inference_utils")`)
+y la demo de Godot no debe cargar el modelo del artículo como si fuera una del experimento.
+
+### La comparación con V0 va en WSL, no en Windows
+
+Preregistro en `memoria/preregistro_comparacion_paper.md`, cerrado el 31 de agosto de 2026
+antes de ejecutar. Compara V0 con `V_Paper` sobre el mismo bloque `200000-200199`, con
+permutación por inversión de signo, TOST de margen `δ = 0,05` (responde al hallazgo M9) y
+**dos realizaciones de ruido de difusión por brazo**, semillas base `20260827` y `20260831`
+(responde al M5).
+
+**La evaluación de `V_Paper` se hace en WSL con `robodiff`, no en `.venv_diffuser_infer`**,
+aunque en Windows también carga. Un cambio de torch entre los dos brazos sería una
+diferencia de procedimiento dentro del propio contraste pareado.
+
+Piezas: `diffuser/scripts/evaluar_paper_bloque_test.{py,sh}` y
+`memoria/scripts/analisis_comparacion_paper.py`. El hermano `evaluar_bloque_test.py`
+**no se toca**: es el artefacto que produjo los cinco JSON congelados.
+
+Lo que el contraste **no** aísla, y hay que repetirlo en cualquier texto que lo cite:
+difieren a la vez el codificador, el presupuesto de entrenamiento (3050 épocas con punto de
+control en la 500, frente a 500 con punto de control en la 350), el bloque de selección y el
+linaje de implementación. La unidad de inferencia sigue siendo el artefacto entrenado.
+
 ## `diffuser/godot/` es un proyecto Godot, y no produce cifras reportables
 
 Desde el 29 de agosto de 2026 esa carpeta dejó de ser solo el manual de Godot: es la raíz

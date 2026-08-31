@@ -3,7 +3,7 @@
 Estado y decisiones de la redaccion en LaTeX. El README.md documenta el uso; este
 fichero documenta el *porque* y lo que hay pendiente.
 
-Ultima actualizacion: 27 de agosto de 2026.
+Ultima actualizacion: 31 de agosto de 2026.
 
 ## Que es esto
 
@@ -376,6 +376,37 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
     - Compila limpio: 71 paginas, 1 aviso (parche `footnote` de microtype, inocuo),
       cero `??`, 32 referencias sin avisos de BibTeX.
 
+20. **31 de agosto de 2026: comparacion con el punto de control publicado del articulo.**
+    A peticion del director. `diffuser/models/V_Paper/` es el checkpoint que publicaron los
+    autores para Push-T. Protocolo cerrado por adelantado en
+    `preregistro_comparacion_paper.md`; el detalle operativo esta en `../CLAUDE.md`.
+    - **No es una sexta variante y no entra en la tabla de las cinco.** Su codificador es el
+      de robomimic, con `SpatialSoftmax` de 32 puntos clave y recorte 84x84. Es la prueba
+      material de que el *spatial softmax* del articulo existe y que ninguna de las cinco
+      variantes lo usa.
+    - **Su 0,884 no es comparable con nuestras cifras**: esta medido sobre `4300000-4300049`,
+      el bloque con el que los autores eligieron su propio punto de control.
+    - **Por que merece la pena.** La reevaluacion admite a V0 como linea base *porque
+      reproduce la opcion de referencia de Diffusion Policy* (lineas 470 y 582), y esa
+      afirmacion nunca se habia contrastado contra el artefacto real.
+    - **Cierra dos hallazgos abiertos.** M9: margen de equivalencia `delta = 0,05` fijado
+      antes de mirar y TOST resuelto como intervalo BCa al 90 % dentro de ese margen, con
+      las cuatro casillas de la regla de decision escritas de antemano. Es exactamente lo
+      que a la expectativa E3 le falta. M5: **dos realizaciones de ruido de difusion por
+      brazo**, semillas base 20260827 y 20260831, con el estimando declarado sobre condicion
+      **y** ruido, y la componente de varianza intra-condicion como endpoint secundario.
+    - **Un solo contraste primario**, permutacion por inversion de signo, sin multiplicidad
+      que corregir. **La familia de diez de la prueba final no se toca** y sus CSV no se
+      reescriben; el analisis nuevo lo comprueba.
+    - **Integridad parcial, y se declara.** Las puntuaciones de V0 en la realizacion A ya
+      existian (`prueba_v0.json`). El preregistro fija el brazo nuevo, la realizacion B de
+      los dos brazos y todo el analisis; no puede fijar lo ya observado.
+    - **La evaluacion va en WSL con `robodiff`**, no en `.venv_diffuser_infer`, aunque en
+      Windows tambien carga: un cambio de torch entre los dos brazos seria una diferencia de
+      procedimiento dentro del propio contraste pareado.
+    - Los JSON nuevos llevan `fecha_iso` y `commit`, que faltaban en los cinco de la prueba
+      final (hallazgo m8).
+
 ## Origen de la bibliografia
 
 `bib/referencias.bib` se construyo a partir del cuaderno de NotebookLM **«Diffusion Policy
@@ -452,6 +483,11 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [x] Redactar resultados y presupuesto. Cifras finales V0-V4: 0,864 / 0,668 / 0,648 /
       0,622 / 0,535; epocas 500 / 500 / 266 / 155 / 200; 1,6 / 5,3 / 14,7 / 2,3 / 4,0
       min por epoca; 237,1 h de tiempo total.
+- [ ] Redactar en resultados y conclusiones el contraste V0 frente al punto de control
+      publicado del articulo, cuando esten las cifras de
+      `datos/comparacion_paper_contrastes.csv`. Nombrar la casilla de la regla de decision
+      y repetir que el contraste no aisla el codificador: difieren a la vez codificador,
+      presupuesto, bloque de seleccion y linaje de implementacion.
 - [ ] Confirmar con el director los supuestos economicos del presupuesto, que son
       estimaciones y no datos: 450 h del autor repartidas por fases, 40 h de direccion,
       30 y 60 \euro/h de coste horario, 1.800 \euro de precio del portatil, siete meses de
