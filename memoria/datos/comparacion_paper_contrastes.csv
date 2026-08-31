@@ -1,0 +1,2 @@
+comparacion,n,realizaciones_ruido,diferencia_medias,error_estandar,ic95_bca_inf,ic95_bca_sup,ic90_bca_inf,ic90_bca_sup,delta_equivalencia,equivalencia,p_permutacion,decision,pares_no_nulos,W,p_wilcoxon,gana_v0,gana_paper,mcnemar_prueba_solo_v0,mcnemar_prueba_solo_paper,mcnemar_prueba_p,mcnemar_ruido_b_solo_v0,mcnemar_ruido_b_solo_paper,mcnemar_ruido_b_p
+V0-V_PAPER,200,2,0.040771,0.018914,0.004944,0.079237,0.010654,0.073631,0.05,False,0.035996400359964,diferencia relevante,182,7126.0,0.09177962979753092,98,84,46,39,0.5154257318839007,50,42,0.465707445773062

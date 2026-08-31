@@ -323,6 +323,45 @@ difieren a la vez el codificador, el presupuesto de entrenamiento (3050 épocas 
 control en la 500, frente a 500 con punto de control en la 350), el bloque de selección y el
 linaje de implementación. La unidad de inferencia sigue siendo el artefacto entrenado.
 
+### Resultado, ejecutado el 31 de agosto de 2026
+
+Los tres portones pasaron: V0 reprodujo `prueba_v0.json` bit a bit sobre ocho condiciones,
+V_Paper dio **0,8623** sobre su propio bloque `4300000-4300049` frente al 0,884 publicado
+(desvío 0,0217 con tolerancia 0,07), y los dos brazos muestrean el mismo primer tensor de
+ruido.
+
+| Brazo | Realización A (`20260827`) | Realización B (`20260831`) | Media |
+|---|---|---|---|
+| V0 | 0,8719 | 0,9019 | **0,8869** |
+| V_Paper | 0,8500 | 0,8422 | **0,8461** |
+
+Diferencia media pareada **+0,0408** a favor de V0 (EE 0,0189), IC95 BCa
+`[+0,0049, +0,0792]`, permutación **p = 0,036**. La casilla de la regla de decisión es
+**«diferencia relevante»**, pero hay que leerla con cuidado y así debe escribirse: el
+IC90 es `[+0,0107, +0,0736]` y **no cabe en ±0,05**, así que no se puede declarar
+equivalencia; y la estimación puntual, 0,041, **está por debajo del margen**, así que
+tampoco está demostrado que la ventaja lo supere. Lo que sí queda establecido es que **V0 no
+es peor que el punto de control publicado**. Eso valida la premisa que el evaluador da por
+buena en las líneas 470 y 582.
+
+Dos cosas más que conviene no volver a descubrir:
+
+- **La permutación y Wilcoxon discrepan cruzando el 0,05** (0,036 frente a 0,092). Manda la
+  permutación, que es la primaria y apunta a la media, que es el estimando; Wilcoxon opera
+  sobre rangos. Es el mismo tipo de discrepancia de borde que ya aparecía en V2-V4 y V3-V4.
+- **En la tasa de éxito no hay ninguna diferencia**: 101/200 y 100/200 en V0 frente a 94/200
+  y 92/200, McNemar exacto `p = 0,52` y `p = 0,47`.
+
+**El dato más incómodo, y el más útil: cambiar solo la semilla del ruido movió la media de V0
+de 0,8719 a 0,9019**, tres centésimas, el 73 % del tamaño de la propia diferencia entre los
+dos brazos. La varianza intra-condición entre realizaciones es 0,0272 en V0 y 0,0239 en
+V_Paper. Es decir, **el 0,872 que la memoria reporta para V0 es una realización del ruido, no
+una constante**, y eso es exactamente lo que denunciaba el hallazgo M5. Ninguna cifra de la
+prueba final de las cinco variantes lleva esa incertidumbre incorporada.
+
+Datos: `memoria/datos/comparacion_paper_{episodios,resumen,contrastes}.csv` y los cuatro
+JSON en `logs_entrenamiento/prueba_final/`.
+
 ## `diffuser/godot/` es un proyecto Godot, y no produce cifras reportables
 
 Desde el 29 de agosto de 2026 esa carpeta dejó de ser solo el manual de Godot: es la raíz

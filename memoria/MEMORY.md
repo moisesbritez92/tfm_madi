@@ -406,6 +406,32 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
       procedimiento dentro del propio contraste pareado.
     - Los JSON nuevos llevan `fecha_iso` y `commit`, que faltaban en los cinco de la prueba
       final (hallazgo m8).
+    - **Resultado, mismo dia.** Portones superados: V0 reprodujo `prueba_v0.json` bit a
+      bit y V_Paper dio 0,8623 sobre su propio bloque `4300000-4300049` frente al 0,884
+      publicado. Medias sobre las dos realizaciones: **V0 0,8869 y V_Paper 0,8461**;
+      diferencia pareada **+0,0408** (EE 0,0189), IC95 BCa [+0,0049, +0,0792], permutacion
+      **p = 0,036**. Casilla de la regla de decision: *diferencia relevante*.
+    - **Como hay que redactarlo, sin sobrevender.** El IC90 es [+0,0107, +0,0736] y no cabe
+      en +-0,05, asi que **no se puede declarar equivalencia**; pero la estimacion puntual,
+      0,041, esta **por debajo** del margen, asi que tampoco esta demostrado que la ventaja
+      lo supere. La afirmacion sostenible es **«V0 no es peor que el punto de control
+      publicado»**, que es justo lo que la reevaluacion da por bueno en las lineas 470 y 582
+      sin haberlo contrastado nunca.
+    - **La permutacion y Wilcoxon discrepan cruzando el 0,05** (0,036 frente a 0,092). Manda
+      la permutacion: es la primaria y apunta a la media, que es el estimando declarado.
+      Declararlo en el texto, como ya se hizo con V2-V4 y V3-V4.
+    - **En tasa de exito no hay diferencia**: 101 y 100 sobre 200 en V0 frente a 94 y 92 en
+      V_Paper, McNemar exacto p = 0,52 y p = 0,47.
+    - **El dato mas incomodo y el mas util (M5 cuantificado).** Cambiar *solo* la semilla del
+      ruido movio la media de V0 de **0,8719 a 0,9019**: tres centesimas, el 73 % del tamano
+      de la diferencia entre los dos brazos. Varianza intra-condicion 0,0272 en V0 y 0,0239
+      en V_Paper. **El 0,872 que la memoria reporta para V0 es una realizacion del ruido, no
+      una constante**, y ninguna cifra de la prueba final de las cinco variantes lleva esa
+      incertidumbre incorporada. Hay que decirlo en el apartado de validez.
+    - **Sin regresion**: reejecutados `analisis_prueba_final.py` y `_v2.py`, los cinco CSV de
+      la prueba final salen identicos byte a byte. La familia de diez no se toca.
+    - Coste: 32,8 + 31,5 min las dos de V0 (la A reutilizada, no reejecutada), 37,0 + 34,2
+      min las dos de V_Paper, mas 16,9 min del porton de cordura.
 
 ## Origen de la bibliografia
 
