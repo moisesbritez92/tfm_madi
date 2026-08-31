@@ -128,3 +128,16 @@ static func vertices_objetivo() -> Array:
 ## Recompensa por paso, con el mismo recorte que `pusht_env.step` (:132).
 static func recompensa(cobertura: float) -> float:
 	return clampf(cobertura / UMBRAL_EXITO, 0.0, 1.0)
+
+
+## El aclarado de `light_color` de `pymunk_override.py`: multiplica por 1,2, satura
+## en 255 y trunca a entero.
+##
+## Es lo que separa el relleno del borde en la pieza y en el agente. Existe aqui
+## para que una perturbacion de color pueda derivar su relleno igual que el
+## original en vez de inventarse un segundo tono.
+static func aclarar(color: Color) -> Color:
+	var canales := PackedInt32Array()
+	for c in [color.r8, color.g8, color.b8]:
+		canales.append(int(min(float(c) * 1.2, 255.0)))
+	return Color8(canales[0], canales[1], canales[2])

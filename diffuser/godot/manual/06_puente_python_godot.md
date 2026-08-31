@@ -36,6 +36,25 @@ No hay hilos en el lado de Godot. La petición se envía y la respuesta se sonde
 en `_process`, así que la ventana sigue viva mientras V0 piensa. La simulación
 sí se detiene, porque no tiene acciones que ejecutar.
 
+## Qué punto de control, y qué escena
+
+El servidor no está atado a V0. `--variante {v0,v1,v2,v3,v4}` elige cuál de los
+cinco puntos de control congelados se pone en el bucle. Solo
+`v0_inference_utils` exporta `load_policy_bundle`; los otros cuatro módulos son
+envoltorios que redefinen tres constantes, así que el cargador es siempre el de
+V0 y de la variante salen el punto de control y su carpeta de artefactos. Sirve
+igual para V3 y V4: el cargador ya fija `rgb_model.pretrained = False` cuando el
+codificador vive en `pretrained_encoders`, de modo que no se descarga nada.
+
+Godot **no** recibe la variante por línea de órdenes: la lee de la respuesta a
+`hola`. Un parámetro menos que puede desincronizarse con el servidor que de
+verdad tiene los pesos cargados.
+
+Del lado de la escena, `perturbacion={ninguna,t_roja,sombras}` cambia lo que
+Godot dibuja, y solo tiene efecto en la condición B. Los resultados de ese
+experimento están en `perturbaciones.md`, en la raíz del proyecto, con la
+advertencia que les corresponde: son una bitácora, no una medición.
+
 ## Las dos condiciones
 
 La demostración distingue qué parte del entorno original se ha sustituido:

@@ -10,6 +10,12 @@ Escribe un PNG de tres paneles a 96 px: Godot, el rasterizador y el valor
 absoluto de la diferencia, y ademas resume por color cuanto se desvia cada
 elemento de la escena.
 
+Cuidado con leer el numero al reves cuando hay una perturbacion de por medio. Sin
+perturbar, una diferencia grande seria un fallo del ajuste de la camara. Con
+`t_roja` o `sombras`, la diferencia grande **es la variable de entrada del
+experimento**: mide cuanto se ha alejado la observacion de la distribucion sobre
+la que se entreno la politica, que es justo lo que se queria cambiar.
+
 Uso:
     ... comparar_observacion.py --godot diffuser/godot/grabaciones/observacion_godot_seed10000.png
 """
@@ -83,7 +89,11 @@ def main() -> int:
     distintos = int((diferencia.max(axis=-1) > 8).sum())
     total = de_godot.shape[0] * de_godot.shape[1]
 
+    perturbacion = json.loads(estado_ruta.read_text(encoding="utf-8")).get(
+        "perturbacion", "ninguna"
+    )
     print(f"estado: {[round(v, 2) for v in estado]}")
+    print(f"perturbacion: {perturbacion}")
     print(f"pixeles con diferencia mayor que 8: {distintos}/{total} "
           f"({100.0 * distintos / total:.1f} %)")
     print(f"diferencia media {diferencia.mean():.2f} | maxima {diferencia.max()}")

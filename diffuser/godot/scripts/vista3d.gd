@@ -40,6 +40,9 @@ const GROSOR: float = 20.0
 const DESPLAZAMIENTO_OBS: float = -0.5
 
 var fisica: FisicaPushT
+## Que se le ha cambiado a la escena. Se asigna antes de entrar al arbol; si nadie
+## la fija, la escena es la original.
+var perturbacion: Perturbacion = Perturbacion.crear(Perturbacion.NINGUNA)
 
 var _nodo_agente: Node3D
 var _nodo_bloque: Node3D
@@ -97,12 +100,18 @@ func _pieza(malla: Mesh, color_demo: Color, color_obs: Color) -> Node3D:
 	var obs := MeshInstance3D.new()
 	obs.mesh = malla
 	obs.layers = CAPA_OBS
-	obs.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var material_obs := StandardMaterial3D.new()
-	material_obs.albedo_color = color_obs
-	# Sin sombreado el color sale tal cual, sin luz ni ambiente que lo desvie.
-	material_obs.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	obs.material_override = material_obs
+	if perturbacion.sombreado:
+		# Ablacion deliberada: la camara de observacion pasa a ver lo mismo que la
+		# de la demostracion, iluminado y con sombras. Ningun color nominal
+		# cambia; cambian todos los pixeles.
+		obs.material_override = material_demo
+	else:
+		obs.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var material_obs := StandardMaterial3D.new()
+		material_obs.albedo_color = color_obs
+		# Sin sombreado el color sale tal cual, sin luz ni ambiente que lo desvie.
+		material_obs.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		obs.material_override = material_obs
 	raiz.add_child(obs)
 
 	return raiz
@@ -148,7 +157,7 @@ func _construir_mesa() -> void:
 	mesa.layers = CAPA_DEMO
 	mesa.position = Vector3(PushTConst.MUNDO * 0.5, Y_MESA, PushTConst.MUNDO * 0.5)
 	var material := StandardMaterial3D.new()
-	material.albedo_color = PushTConst.COLOR_FONDO
+	material.albedo_color = perturbacion.color_fondo
 	material.roughness = 0.9
 	mesa.material_override = material
 	add_child(mesa)
@@ -184,7 +193,7 @@ func _construir_objetivo() -> void:
 	for parte in _partes_de_la_t():
 		var caja := _pieza(
 			_caja(parte[1], 1.0, parte[2]),
-			PushTConst.COLOR_OBJETIVO, PushTConst.COLOR_OBJETIVO
+			perturbacion.color_objetivo, perturbacion.color_objetivo
 		)
 		caja.position = Vector3(parte[0].x, 0.0, parte[0].y)
 		nodo.add_child(caja)
@@ -214,7 +223,7 @@ func _construir_bloque() -> void:
 		# original, donde el relleno del segundo tapa parte del borde del primero.
 		var caja := _rectangulo_con_borde(
 			parte[0], parte[1], parte[2], altura,
-			PushTConst.COLOR_T_RELLENO, PushTConst.COLOR_T_BORDE
+			perturbacion.color_t_relleno, perturbacion.color_t_borde
 		)
 		_nodo_bloque.add_child(caja)
 		altura += 0.5
@@ -226,12 +235,12 @@ func _construir_agente() -> void:
 	_nodo_agente.name = "Agente"
 	var borde := _pieza(
 		_cilindro(PushTConst.RADIO_AGENTE, GROSOR),
-		PushTConst.COLOR_AGENTE_BORDE, PushTConst.COLOR_AGENTE_BORDE
+		perturbacion.color_agente_borde, perturbacion.color_agente_borde
 	)
 	_nodo_agente.add_child(borde)
 	var relleno := _pieza(
 		_cilindro(PushTConst.RADIO_AGENTE - PushTConst.GROSOR_BORDE, GROSOR),
-		PushTConst.COLOR_AGENTE_RELLENO, PushTConst.COLOR_AGENTE_RELLENO
+		perturbacion.color_agente_relleno, perturbacion.color_agente_relleno
 	)
 	relleno.position.y = 1.0
 	_nodo_agente.add_child(relleno)
@@ -309,8 +318,13 @@ func _construir_camara_obs() -> void:
 	_camara_obs.rotation = Vector3(-PI * 0.5, 0.0, 0.0)
 	var entorno := Environment.new()
 	entorno.background_mode = Environment.BG_COLOR
-	entorno.background_color = PushTConst.COLOR_FONDO
-	entorno.ambient_light_source = Environment.AMBIENT_SOURCE_DISABLED
+	entorno.background_color = perturbacion.color_fondo
+	if perturbacion.sombreado:
+		entorno.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+		entorno.ambient_light_color = Color(0.85, 0.88, 0.92)
+		entorno.ambient_light_energy = 0.6
+	else:
+		entorno.ambient_light_source = Environment.AMBIENT_SOURCE_DISABLED
 	entorno.tonemap_mode = Environment.TONE_MAPPER_LINEAR
 	_camara_obs.environment = entorno
 	_subviewport.add_child(_camara_obs)

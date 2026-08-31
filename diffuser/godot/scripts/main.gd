@@ -10,6 +10,7 @@ extends Node
 ##   modo=vivo|grabar|reproducir|comparar|cobertura|observacion
 ##   seed=10000            condicion inicial
 ##   obs=estado|godot      solo informativo; quien decide es el servidor
+##   perturbacion=ninguna|t_roja|sombras   cambia la escena, solo en obs=godot
 ##   host=127.0.0.1 puerto=5555
 ##   pasos=300             tope de pasos de control
 ##   velocidad=1.0         multiplicador de tiempo en modo grabar
@@ -27,6 +28,11 @@ var hud: CanvasLayer
 var modo: String = "vivo"
 var seed_episodio: int = 10000
 var modo_obs: String = "estado"
+## Quien manda sobre la variante es el servidor, que la dice en el saludo: es
+## quien tiene los pesos cargados. El argumento `variante=` solo sirve para el
+## modo reproducir, donde no hay servidor al que preguntarle.
+var variante: String = "v0"
+var nombre_perturbacion: String = Perturbacion.NINGUNA
 var host: String = "127.0.0.1"
 var puerto: int = 5555
 var max_pasos: int = PushTConst.MAX_PASOS_CONTROL
@@ -91,6 +97,8 @@ func _leer_argumentos() -> void:
 			"modo": modo = valor
 			"seed": seed_episodio = int(valor)
 			"obs": modo_obs = valor
+			"perturbacion": nombre_perturbacion = valor
+			"variante": variante = valor.to_lower()
 			"host": host = valor
 			"puerto": puerto = int(valor)
 			"pasos": max_pasos = int(valor)
@@ -168,6 +176,7 @@ func _arrancar_vivo() -> void:
 		_fallar(str(saludo.get("error", "saludo rechazado")))
 		return
 	modo_obs = str(saludo.get("modo_obs", modo_obs))
+	variante = str(saludo.get("variante", variante)).to_lower()
 	_mensaje = "%s | %s | %s | obs=%s" % [
 		saludo.get("variante", "?"), saludo.get("punto_control", "?"),
 		saludo.get("dispositivo", "?"), modo_obs,
@@ -278,6 +287,8 @@ func _cerrar_episodio() -> void:
 		"modo": modo,
 		"seed": seed_episodio,
 		"obs": modo_obs,
+		"variante": variante,
+		"perturbacion": nombre_perturbacion,
 		"pasos": _pasos,
 		"decisiones": _decisiones,
 		"cobertura_max": _cobertura_max,
@@ -313,21 +324,41 @@ func _modo_observacion() -> void:
 	if error != "":
 		_fallar(error)
 		return
+
+	# Saludar antes de reiniciar: la variante la dice el servidor, y sin ella el
+	# PNG se guardaria con el nombre de otra.
+	var saludo := cliente.pedir({"cmd": "hola"})
+	if not saludo.get("ok", false):
+		_fallar(str(saludo.get("error", "saludo rechazado")))
+		return
+	variante = str(saludo.get("variante", variante)).to_lower()
+
 	var inicio := cliente.pedir({"cmd": "reset", "seed": seed_episodio})
 	if not inicio.get("ok", false):
 		_fallar(str(inicio.get("error", "reset rechazado")))
 		return
 	var estado0: Array = inicio["estado0"]
 	fisica.colocar(estado0)
-	var ruta := ruta_salida if ruta_salida != "" 		else "res://grabaciones/observacion_godot_seed%d.png" % seed_episodio
+
+	var ruta := ruta_salida
+	if ruta == "":
+		var nombre := "observacion_%s_%s_seed%d.png"
+		ruta = "res://grabaciones/" + nombre % [variante, nombre_perturbacion, seed_episodio]
+
 	# Dos fotogramas de margen: la escena 3D se construye en _ready y sus nodos
 	# no tienen transformada valida hasta que _process ha corrido una vez.
 	await get_tree().process_frame
 	await get_tree().process_frame
 	await vista.guardar_observacion(estado0, ruta)
+
 	var json_ruta := ruta.get_basename() + ".json"
 	var archivo := FileAccess.open(json_ruta, FileAccess.WRITE)
-	archivo.store_string(JSON.stringify({"seed": seed_episodio, "estado": estado0}, "  "))
+	archivo.store_string(JSON.stringify({
+		"seed": seed_episodio,
+		"estado": estado0,
+		"variante": variante,
+		"perturbacion": nombre_perturbacion,
+	}, "  "))
 	archivo.close()
 	print("estado escrito en ", ProjectSettings.globalize_path(json_ruta))
 	_terminar()
@@ -339,6 +370,7 @@ func _montar_vista() -> void:
 	vista = load("res://scripts/vista3d.gd").new()
 	vista.name = "Vista3D"
 	vista.fisica = fisica
+	vista.perturbacion = Perturbacion.crear(nombre_perturbacion)
 	add_child(vista)
 	hud = load("res://scripts/hud.gd").new()
 	hud.name = "HUD"
@@ -355,7 +387,8 @@ func _ruta_por_defecto() -> String:
 	# que haya que pasarle ninguna ruta.
 	if modo in MODOS_SIN_SERVIDOR:
 		return "res://grabaciones/%s_godot.json" % modo
-	return "res://grabaciones/%s_%s_seed%d.json" % [modo, modo_obs, seed_episodio]
+	return "res://grabaciones/%s_%s_%s_%s_seed%d.json" \
+		% [modo, modo_obs, variante, nombre_perturbacion, seed_episodio]
 
 
 func _escribir(datos: Dictionary) -> void:
@@ -371,14 +404,10 @@ func _escribir(datos: Dictionary) -> void:
 
 
 func _arrancar_reproduccion() -> void:
-	# Lo que se reproduce lo escribio el modo `grabar`, asi que la ruta por
-	# defecto lleva su nombre y no el de este modo.
-	var ruta := ruta_salida if ruta_salida != "" \
-		else "res://grabaciones/grabar_%s_seed%d.json" % [modo_obs, seed_episodio]
-	var archivo := FileAccess.open(ruta, FileAccess.READ)
-	if archivo == null:
-		_fallar("no existe la grabacion " + ruta)
+	var ruta := _buscar_grabacion()
+	if ruta == "":
 		return
+	var archivo := FileAccess.open(ruta, FileAccess.READ)
 	var datos = JSON.parse_string(archivo.get_as_text())
 	archivo.close()
 	if typeof(datos) != TYPE_DICTIONARY:
@@ -386,11 +415,47 @@ func _arrancar_reproduccion() -> void:
 		return
 	if not _sin_ventana():
 		_montar_vista()
+	print("reproduciendo %s | %s | perturbacion %s"
+		% [ruta.get_file(), datos.get("obs", "?"), datos.get("perturbacion", "ninguna")])
 	_traza = datos["traza"]
 	fisica.colocar(_traza[0]["estado"])
 	# Sin servidor ni GPU: la fisica no vuelve a correr, solo se recolocan los
 	# cuerpos en las poses grabadas. Es la red de seguridad de la defensa.
 	_reproducir()
+
+
+## Localiza la grabacion que toca, tolerando el nombre anterior.
+##
+## Las primeras grabaciones son de antes de que el nombre llevara variante y
+## perturbacion. Se prueban los dos formatos antes de rendirse, y al rendirse se
+## dice que hay, que es mas util que decir que falta lo que se pidio.
+func _buscar_grabacion() -> String:
+	if ruta_salida != "":
+		if FileAccess.file_exists(ruta_salida):
+			return ruta_salida
+		_fallar("no existe la grabacion " + ruta_salida)
+		return ""
+
+	var candidatas := [
+		"res://grabaciones/grabar_%s_%s_%s_seed%d.json"
+			% [modo_obs, variante, nombre_perturbacion, seed_episodio],
+		"res://grabaciones/grabar_%s_seed%d.json" % [modo_obs, seed_episodio],
+	]
+	for candidata in candidatas:
+		if FileAccess.file_exists(candidata):
+			return candidata
+
+	var disponibles := PackedStringArray()
+	var carpeta := DirAccess.open("res://grabaciones")
+	if carpeta != null:
+		for fichero in carpeta.get_files():
+			if fichero.begins_with("grabar_") and fichero.ends_with(".json"):
+				disponibles.append(fichero)
+	var lista := ", ".join(disponibles)
+	_fallar("no hay grabacion para obs=%s variante=%s perturbacion=%s seed=%d."
+		% [modo_obs, variante, nombre_perturbacion, seed_episodio]
+		+ " Disponibles: " + lista)
+	return ""
 
 
 func _reproducir() -> void:

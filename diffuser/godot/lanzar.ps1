@@ -10,6 +10,8 @@
 #   .\lanzar.ps1 -Semilla 200003       otra condicion inicial
 #   .\lanzar.ps1 -Modo grabar          episodio completo a grabaciones\, sin ventana en A
 #   .\lanzar.ps1 -Modo reproducir      reproduce lo grabado, sin GPU y sin servidor
+#   .\lanzar.ps1 -Variante v3          pone DINOv2 congelada en el bucle en vez de V0
+#   .\lanzar.ps1 -Obs godot -Perturbacion t_roja   la pieza se pinta de rojo
 #
 # Ninguna cifra que muestre es un resultado del TFM.
 
@@ -17,6 +19,14 @@
 param(
     [ValidateSet("estado", "godot")]
     [string]$Obs = "estado",
+
+    [ValidateSet("v0", "v1", "v2", "v3", "v4")]
+    [string]$Variante = "v0",
+
+    # Solo tiene efecto en la condicion B: en la A la imagen la dibuja Python con
+    # el codigo del entrenamiento, que no sabe nada de perturbaciones.
+    [ValidateSet("ninguna", "t_roja", "sombras")]
+    [string]$Perturbacion = "ninguna",
 
     [ValidateSet("vivo", "grabar", "reproducir", "observacion", "comparar", "cobertura")]
     [string]$Modo = "vivo",
@@ -57,9 +67,10 @@ $necesitaServidor = $Modo -notin @("comparar", "cobertura", "reproducir")
 
 $proceso = $null
 if ($necesitaServidor) {
-    Write-Host "arrancando el servidor de politica (obs=$Obs, puerto $Puerto) ..." -ForegroundColor Cyan
+    Write-Host "arrancando el servidor de politica ($($Variante.ToUpper()), obs=$Obs, puerto $Puerto) ..." -ForegroundColor Cyan
     $proceso = Start-Process -FilePath $Python `
-        -ArgumentList @($Servidor, "--obs", $Obs, "--puerto", "$Puerto") `
+        -ArgumentList @($Servidor, "--variante", $Variante, "--obs", $Obs,
+                        "--puerto", "$Puerto") `
         -PassThru -NoNewWindow
 
     # Cargar V0 son unos treinta segundos: se espera al puerto, no a un reloj.
@@ -87,7 +98,8 @@ if ($necesitaServidor) {
 $sinVentana = ($Obs -eq "estado") -and ($Modo -in @("grabar", "comparar", "cobertura"))
 $argumentos = @("--path", $Proyecto)
 if ($sinVentana) { $argumentos = @("--headless") + $argumentos }
-$argumentos += @("--", "modo=$Modo", "obs=$Obs", "seed=$Semilla", "puerto=$Puerto", "velocidad=$Velocidad")
+$argumentos += @("--", "modo=$Modo", "obs=$Obs", "seed=$Semilla", "puerto=$Puerto",
+                 "velocidad=$Velocidad", "perturbacion=$Perturbacion", "variante=$Variante")
 
 try {
     & $exe @argumentos

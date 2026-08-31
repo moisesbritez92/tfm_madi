@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """TCP policy server: Godot simulates, this answers with actions.
 
-The demo puts the frozen V0 checkpoint in the loop of a Push-T reimplemented in
-Godot 4. Godot owns the environment; this process owns the policy and nothing
+The demo puts a frozen checkpoint of the experiment -- V0 by default, any of the
+five with ``--variante`` -- in the loop of a Push-T reimplemented in Godot 4.
+Godot owns the environment; this process owns the policy and nothing
 else about the simulation, save one detail it cannot delegate: the initial
 state. Reproducing the legacy Mersenne Twister of numpy in GDScript would be a
 pointless risk, so ``reset`` samples the condition with the real ``PushTEnv``
@@ -22,6 +23,7 @@ illustrative; the numbers of the memoir are the ones in
 
 Usage (Windows, from the repository root):
     .venv_diffuser_infer\\Scripts\\python.exe diffuser/godot/servidor/servidor_politica.py --obs estado
+    ... servidor_politica.py --variante v3 --obs godot --puerto 5556
 """
 
 from __future__ import annotations
@@ -48,13 +50,34 @@ HOST = "127.0.0.1"
 # Same base as the preregistered pass, so a seed always yields the same video.
 BASE_SEED_DIFUSION = 20260827
 
+VARIANTES = ("v0", "v1", "v2", "v3", "v4")
 
-def cargar_v0(checkpoint=None, dispositivo=None):
-    """Rebuild V0 from its checkpoint, reusing the loader of the notebooks."""
+
+def cargar_politica(variante="v0", checkpoint=None, dispositivo=None):
+    """Rebuild a frozen checkpoint, reusing the loader of the notebooks.
+
+    Only ``v0_inference_utils`` exports ``load_policy_bundle``; the other four
+    modules are thin shims that redefine three constants and re-export the rest.
+    So the checkpoint and the artifact directory come from the module of the
+    variant, and the loader is always the one of V0. It is generic: it reads the
+    config out of the checkpoint, and it already sets ``rgb_model.pretrained =
+    False`` when the encoder target lives in ``pretrained_encoders``, which is
+    exactly the case of the DINOv2 of V3 and the CLIP of V4. Nothing is
+    downloaded.
+
+    Passing the artifact directory of the variant keeps V3 from writing under
+    ``artifacts/v0_inference/``, which is where a previous session left four
+    stray folders.
+    """
+    import importlib
+
     import v0_inference_utils as v0
 
-    ruta = Path(checkpoint) if checkpoint else v0.default_checkpoint()
-    bundle = v0.load_policy_bundle(ruta, device=dispositivo)
+    modulo = importlib.import_module(f"{variante}_inference_utils")
+    ruta = Path(checkpoint) if checkpoint else modulo.default_checkpoint()
+    bundle = v0.load_policy_bundle(
+        ruta, device=dispositivo, artifact_dir=modulo.ARTIFACT_DIR
+    )
     return bundle, ruta
 
 
@@ -112,12 +135,14 @@ class Servidor:
         self.sesion = Sesion(args.base_seed)
         self._aviso_dado = False
 
-        print("cargando V0 ...", flush=True)
-        bundle, ruta = cargar_v0(args.checkpoint, args.dispositivo)
+        self.variante = args.variante
+        print(f"cargando {self.variante.upper()} ...", flush=True)
+        bundle, ruta = cargar_politica(self.variante, args.checkpoint, args.dispositivo)
         self.politica = bundle["policy"]
         self.dispositivo = bundle["device"]
         self.ckpt = ruta.name
-        print(f"V0 listo | {self.ckpt} | {self.dispositivo} | obs={self.modo_obs}", flush=True)
+        print(f"{self.variante.upper()} listo | {self.ckpt} | {self.dispositivo} | "
+              f"obs={self.modo_obs}", flush=True)
 
         # A second environment, used only to sample initial conditions. Keeping
         # it apart from the rasteriser avoids one command disturbing the other.
@@ -130,7 +155,7 @@ class Servidor:
     def hola(self, _):
         return {
             "ok": True,
-            "variante": "V0",
+            "variante": self.variante.upper(),
             "punto_control": self.ckpt,
             "modo_obs": self.modo_obs,
             "dispositivo": str(self.dispositivo),
@@ -282,8 +307,10 @@ def main():
                              "godot: la imagen llega renderizada por Godot (condicion B)")
     parser.add_argument("--host", default=HOST)
     parser.add_argument("--puerto", type=int, default=PUERTO)
+    parser.add_argument("--variante", choices=VARIANTES, default="v0",
+                        help="que punto de control congelado se pone en el bucle")
     parser.add_argument("--checkpoint", default=None,
-                        help="por defecto, el punto de control congelado de V0")
+                        help="por defecto, el punto de control congelado de la variante")
     parser.add_argument("--dispositivo", default=None)
     parser.add_argument("--base-seed", type=int, default=BASE_SEED_DIFUSION)
     args = parser.parse_args()

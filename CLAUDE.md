@@ -251,6 +251,28 @@ Referencia de las comprobaciones, para detectar una regresión: cobertura frente
 pasos de control; observación de Godot frente al renderizador original, 2,9 % de píxeles
 con diferencia mayor que 8 y media 1,0 sobre 255. Los comandos están en el módulo 06.
 
+El servidor ya no está atado a V0: `--variante {v0..v4}` pone cualquiera de los cinco
+puntos de control congelados en el bucle, y Godot lee cuál es de la respuesta a `hola`.
+`perturbacion={ninguna,t_roja,sombras}` cambia la escena y solo afecta a la condición B.
+Lo que salga de ahí va a `diffuser/godot/perturbaciones.md`, que es una bitácora y **no
+una medición**: un episodio por celda y semillas elegidas condicionando en el éxito. Dos
+cosas de ahí conviene no volver a descubrir:
+
+- **Las semillas se eligen con `servidor/elegir_semillas.py`, que cruza dos filtros.** El
+  segundo no es evidente: la puntuación es el *máximo* de la cobertura del episodio, así
+  que una condición inicial que ya arranca parcialmente resuelta da el mismo número para
+  todas las variantes y todas las perturbaciones. Las semillas 200007 y 200019 arrancan a
+  0,665 y 0,373, e invalidaron un barrido entero.
+- **V3 no sobrevive al cambio de simulador.** Sobre cinco semillas donde V0 y V3 puntúan
+  las dos 1,000 en el preregistro, en Godot condición B V0 promedia 0,995 y V3, 0,429. Y
+  con la pieza pintada de rojo las dos caen a ~0,13 y 0,00. El preentrenamiento congelado
+  no compró invariancia.
+- **El fallo por color es una pendiente, no un acantilado** (`diffuser/godot/barrido_color.md`).
+  Correlaciona −0,97 con la distancia RGB, y un gris neutro degrada tanto como un rojo a
+  la misma distancia: no hay clasificación por tono, hay rasgos sintonizados en un punto
+  del espacio de color. La tolerancia son ~30 unidades RGB. El candidato obvio para
+  arreglarlo es aumento fotométrico, que V0 no tuvo: su único aumento es el recorte.
+
 **El tiempo real es imposible y no hay que pelearlo**: V0 tarda 1743,9 ms de mediana por
 llamada y cada llamada cubre 0,8 s de simulación, así que el techo es ×0,46. El panel lo
 rotula.
