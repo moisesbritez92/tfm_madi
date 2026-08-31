@@ -122,6 +122,53 @@ Sobre `n_envs=8`: el rollout evalúa 56 condiciones iniciales (6 train + 50 test
 `n_chunks = ceil(n_inits/n_envs)` y la agregación itera `for i in range(n_inits)` sobre
 las 56, no sobre `n_envs`. Solo cambia el tiempo de pared del rollout.
 
+## No reanudar V3 ni V4 sin el parche del planificador (bug del 28/08/2026)
+
+`train_diffusion_unet_image_workspace.py` reconstruye el `lr_scheduler` en cada arranque,
+porque es una variable local y **no se guarda en el checkpoint**. Lo reconstruía así:
+
+```python
+num_training_steps=(len(train_dataloader) * num_epochs) // gradient_accumulate_every
+last_epoch=self.global_step-1        # <- contador de LOTES
+```
+
+Pero `lr_scheduler.step()` solo se ejecuta cuando `global_step % gradient_accumulate_every == 0`,
+es decir **una vez por paso de optimizador**. Al reanudar con `gradient_accumulate_every: 2`
+el planificador se sitúa al doble de distancia de la que le toca, se pasa del final del
+coseno y la tasa **vuelve a subir** en lugar de seguir bajando.
+
+- **Solo afecta a V3 y V4** (`accumulate: 2`). V0, V1 y V2 usan `accumulate: 1`, así que la
+  reanudación de V2 es válida y no hay que tocarla.
+- **Solo se manifiesta al reanudar.** En un run nuevo `global_step` vale 0 y el cálculo es
+  correcto: las ramas originales de V3 y V4 son sanas.
+- Magnitud: en la época 150 de V3, la rama limpia da `lr` 5,08e-05 y la defectuosa 1,11e-08.
+  En la época 199 de V4, 6,28e-09 frente a 2,14e-05. Tres mil veces en ambos sentidos.
+
+Corregido con `last_epoch=(self.global_step // cfg.training.gradient_accumulate_every)-1`,
+verificado en marcha (V3 reanudó en 4,97e-05 y V4 en 1,50e-05, alineados con sus ramas
+limpias). **El árbol de WSL no está versionado**: si se recrea, hay que volver a aplicar el
+parche desde `diffuser/scripts/train_diffusion_unet_image_workspace.py`.
+
+### Los logs de WSL de V3 y V4 ya no coinciden con lo que reporta la memoria
+
+Ese día se extendieron V3 y V4 hasta la época ~200 y **la extensión se descartó entera**.
+La memoria reporta el estado preregistrado (V3 con 155 épocas, V4 con 200, ambas con última
+evaluación en la 150), pero `logs.json.txt` en WSL conserva las ramas añadidas:
+
+- V3 tiene **tres** evaluaciones de la época 150: 0,579 (original), 0,538 (defectuosa) y
+  0,635 (reentrenada limpia). La última supera el máximo preregistrado de la época 100
+  (0,6224), lo que habría movido el checkpoint seleccionado.
+- V4 tiene dos de la época 150: 0,435 (original) y 0,388 (limpia). Su máximo no se mueve.
+
+**`exportar_logs_wsl.sh` volvería a traer esas ramas.** Si hay que reexportar V3 o V4, hay
+que recortar el log en el punto donde arranca la extensión, o el criterio de «última
+aparición gana» seleccionará datos que la memoria no reporta.
+
+Dato que sí merece recordarse: tres evaluaciones de estados de entrenamiento casi idénticos
+se separan 0,097 en V3 y 0,047 en V4, del orden del error estándar del propio rollout
+(~0,055). **La diferencia entre épocas vecinas de la curva de selección es ruido**, y eso
+respalda el argumento de sesgo optimista que ya sostiene el capítulo de resultados.
+
 ## Estado del experimento
 
 | Variante | Backbone | Estado |
