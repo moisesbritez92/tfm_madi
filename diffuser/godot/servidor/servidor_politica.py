@@ -24,6 +24,7 @@ illustrative; the numbers of the memoir are the ones in
 Usage (Windows, from the repository root):
     .venv_diffuser_infer\\Scripts\\python.exe diffuser/godot/servidor/servidor_politica.py --obs estado
     ... servidor_politica.py --variante v3 --obs godot --puerto 5556
+    ... servidor_politica.py --variante v_paper --obs godot --puerto 5556
 """
 
 from __future__ import annotations
@@ -50,20 +51,33 @@ HOST = "127.0.0.1"
 # Same base as the preregistered pass, so a seed always yields the same video.
 BASE_SEED_DIFUSION = 20260827
 
-VARIANTES = ("v0", "v1", "v2", "v3", "v4")
+# The five variants of the experiment resolve by the usual pattern. ``v_paper`` is
+# not one of them: it is the checkpoint the authors published, its module is
+# deliberately not named ``v5_inference_utils``, and it is reachable only from
+# here and from ``comparar_godot_paper.py`` -- never from ``lanzar.ps1``, whose
+# ValidateSet stays at the five so the defence demo cannot load it by accident.
+MODELOS = {v: f"{v}_inference_utils" for v in ("v0", "v1", "v2", "v3", "v4")}
+MODELOS["v_paper"] = "paper_inference_utils"
+
+VARIANTES = tuple(MODELOS)
 
 
 def cargar_politica(variante="v0", checkpoint=None, dispositivo=None):
     """Rebuild a frozen checkpoint, reusing the loader of the notebooks.
 
-    Only ``v0_inference_utils`` exports ``load_policy_bundle``; the other four
-    modules are thin shims that redefine three constants and re-export the rest.
-    So the checkpoint and the artifact directory come from the module of the
-    variant, and the loader is always the one of V0. It is generic: it reads the
-    config out of the checkpoint, and it already sets ``rgb_model.pretrained =
-    False`` when the encoder target lives in ``pretrained_encoders``, which is
-    exactly the case of the DINOv2 of V3 and the CLIP of V4. Nothing is
-    downloaded.
+    Only ``v0_inference_utils`` exports ``load_policy_bundle``; the other modules
+    are thin shims that redefine three constants and re-export the rest. So the
+    checkpoint and the artifact directory come from the module of the variant,
+    and the loader is always the one of V0. It is generic: it reads the config
+    out of the checkpoint, it already sets ``rgb_model.pretrained = False`` when
+    the encoder target lives in ``pretrained_encoders`` -- the DINOv2 of V3 and
+    the CLIP of V4 -- and it guards the access to ``cfg.policy.obs_encoder``,
+    which the hybrid policy of ``v_paper`` does not have because it builds its
+    encoder inside robomimic. Nothing is downloaded in either case.
+
+    The module name is looked up in ``MODELOS`` and not built from the variant,
+    so that ``v_paper`` can be served without renaming its module to
+    ``v5_inference_utils`` and without turning it into a sixth variant.
 
     Passing the artifact directory of the variant keeps V3 from writing under
     ``artifacts/v0_inference/``, which is where a previous session left four
@@ -73,7 +87,9 @@ def cargar_politica(variante="v0", checkpoint=None, dispositivo=None):
 
     import v0_inference_utils as v0
 
-    modulo = importlib.import_module(f"{variante}_inference_utils")
+    if variante not in MODELOS:
+        raise ValueError(f"modelo desconocido: {variante!r}; hay {', '.join(MODELOS)}")
+    modulo = importlib.import_module(MODELOS[variante])
     ruta = Path(checkpoint) if checkpoint else modulo.default_checkpoint()
     bundle = v0.load_policy_bundle(
         ruta, device=dispositivo, artifact_dir=modulo.ARTIFACT_DIR
@@ -308,7 +324,9 @@ def main():
     parser.add_argument("--host", default=HOST)
     parser.add_argument("--puerto", type=int, default=PUERTO)
     parser.add_argument("--variante", choices=VARIANTES, default="v0",
-                        help="que punto de control congelado se pone en el bucle")
+                        help="que punto de control congelado se pone en el bucle. "
+                             "v_paper es el modelo publicado del articulo, no una "
+                             "variante del experimento")
     parser.add_argument("--checkpoint", default=None,
                         help="por defecto, el punto de control congelado de la variante")
     parser.add_argument("--dispositivo", default=None)

@@ -446,6 +446,48 @@ lo que no es determinista son las convoluciones en GPU, y la simulación con con
 amplifica la diferencia. Por eso el flujo para la defensa es `grabar` y luego `reproducir`,
 no relanzar en vivo esperando el mismo episodio.
 
+### La única excepción: el contraste V0 / V_Paper dentro de Godot
+
+Preregistro en `memoria/preregistro_godot_paper.md`, cerrado el 31 de agosto de 2026 antes
+de ejecutar nada. Es la **única** medición reportable que sale de `diffuser/godot/`, y está
+acotada a lo que declara: dos brazos (V0 y `V_Paper`), las 50 condiciones `200000-200049`
+**no** condicionadas al éxito, las dos condiciones de observación y dos realizaciones de
+ruido. Ocho celdas, 400 episodios, unas 13 h. Pregunta si la paridad V0 / V_Paper del
+simulador original sobrevive al cambio de motor de física y de renderizador.
+
+`perturbaciones.md` y `barrido_color.md` **no cambian de estatus**: siguen siendo bitácoras.
+Y lo que muestre el panel durante la defensa sigue sin ser un resultado.
+
+Piezas: `diffuser/godot/servidor/comparar_godot_paper.py` (lote, con los portones) y
+`memoria/scripts/analisis_godot_paper.py`. Datos en `logs_entrenamiento/godot_paper/` y
+`memoria/datos/godot_paper_*.csv`. `analisis_comparacion_paper.py` **no se toca**: el
+hermano nuevo importa de él y no lo copia.
+
+Cinco cosas que conviene no volver a descubrir:
+
+- **`servidor_politica.py` ya no resuelve la variante por patrón.** Hay un diccionario
+  `MODELOS`, y `v_paper` apunta a `paper_inference_utils`. El módulo sigue sin llamarse
+  `v5_inference_utils` y **`lanzar.ps1` sigue admitiendo solo las cinco variantes**, así que
+  la demo de la defensa no puede cargar el modelo del artículo por accidente.
+- **El nombre por defecto de las grabaciones no lleva la realización de ruido**
+  (`main.gd:390`), así que la segunda tanda machacaría la primera sin decir nada. El guion de
+  lote pasa `salida=` explícito y lee el JSON escrito, en vez de parsear la consola como hace
+  `barrido_color.py`.
+- **Un servidor a la vez.** Cada celda necesita su propia sesión porque `--variante`, `--obs`
+  y `--base-seed` son argumentos de arranque; dos contextos CUDA no caben en 8 GB.
+  `parar_servidor` confirma que el anterior ha muerto antes de arrancar el siguiente.
+- **El portón de deriva no aísla la versión de torch.** El servidor siembra el ruido por
+  semilla de episodio y el evaluador de WSL lo siembra por índice de tanda: la corriente de
+  ruido no es la misma por construcción, y por eso el criterio es una tolerancia de 0,07
+  sobre la media y no una igualdad. Separa «todo lo que no es Godot» de «Godot», que es lo
+  que hace falta, y nada más fino.
+- **El diseño no puede declarar equivalencia.** Con n = 50 el EE esperado es 0,038 y el IC90
+  mide unas 0,125, que no cabe en ±0,05. El efecto mínimo detectable es ~0,105. Está escrito
+  en el preregistro antes de mirar: **no poder declarar equivalencia aquí no es un
+  resultado**, y no se arregla añadiendo semillas después de ver el dato.
+
+**Resultado: pendiente.** Los ocho JSON no existen todavía.
+
 ## Archivos clave del modelo
 
 ```

@@ -131,16 +131,36 @@ es esa cobertura dividida por 0,95 y recortada a 1, igual que en el original.
 - **Los últimos puntos de cobertura son los caros.** Llegar a 0,90 es rápido;
   pasar de 0,95 exige ajustar el ángulo, y ahí es donde se agotan los 300 pasos.
 
+## Una excepción, y hasta dónde llega
+
+Desde el 31 de agosto de 2026 hay **una** medición que sí sale de este proyecto de
+Godot, y está acotada por `memoria/preregistro_godot_paper.md`: V0 contra el punto
+de control publicado por los autores, sobre las 50 condiciones `200000-200049`, en
+las dos condiciones de observación y con dos realizaciones de ruido. Pregunta si la
+paridad entre los dos —establecida en el simulador original— sobrevive al cambio de
+motor de física y de renderizador.
+
+Lo que la hace distinta de `perturbaciones.md` son tres cosas, y ninguna es
+opcional: el protocolo está escrito y commiteado **antes** de ejecutar; **las
+semillas no se eligen condicionando en el éxito**; y cada celda son 50 episodios,
+no uno. Se ejecuta con `servidor/comparar_godot_paper.py` y se analiza con
+`memoria/scripts/analisis_godot_paper.py`.
+
+Todo lo demás que salga de esta carpeta sigue siendo ilustrativo. **Lo que muestre
+el panel durante la defensa no es un resultado**, y `perturbaciones.md` y
+`barrido_color.md` siguen siendo bitácoras.
+
 ## Qué sigue
 
-Lo que queda abierto está en `indice.md`: convertir esta demostración en una
-medición requiere ejecutar el protocolo preregistrado completo sobre las 200
-condiciones del bloque disjunto, en las dos condiciones y con las cinco
-variantes, no solo con V0. Eso ya no es una demostración, y no forma parte del
-alcance de este trabajo.
+Lo que queda abierto está en `indice.md`. Ampliar la excepción de arriba a una
+medición general exigiría ejecutar el protocolo sobre las 200 condiciones del
+bloque disjunto y con las cinco variantes, no con dos modelos y 50 condiciones.
+Eso no forma parte del alcance de este trabajo: el contraste preregistrado está
+dimensionado para detectar una separación de unas 0,105 y nada más fino.
 
 ## Referencias
 
 - Módulo 06: el puente, el port de la física y sus trampas.
 - Preregistro de la prueba final: `memoria/preregistro_prueba_final.md`.
+- Preregistro del contraste en Godot: `memoria/preregistro_godot_paper.md`.
 - Latencia medida: `memoria/datos/latencia_inferencia.csv`.

@@ -33,12 +33,24 @@ RAIZ = GODOT.parent.parent
 PRUEBA_FINAL = RAIZ / "logs_entrenamiento" / "prueba_final"
 
 
+# El brazo del articulo no sigue el patron `prueba_v<n>.json`: su fichero es
+# `prueba_paper.json` y las grabaciones lo nombran `v_paper`. Sin esta entrada la
+# columna de referencia saldria vacia justo para el brazo que mas la necesita.
+FICHERO_REFERENCIA = {"v_paper": "prueba_paper.json"}
+
+
 def referencia() -> dict:
     """Puntuaciones por semilla de la pasada preregistrada, por variante."""
     salida = {}
     for ruta in sorted(PRUEBA_FINAL.glob("prueba_v*.json")):
         variante = ruta.stem.split("_")[1]
         salida[variante] = json.loads(ruta.read_text(encoding="utf-8"))["puntuaciones"]
+    for variante, nombre in FICHERO_REFERENCIA.items():
+        ruta = PRUEBA_FINAL / nombre
+        if ruta.is_file():
+            salida[variante] = json.loads(
+                ruta.read_text(encoding="utf-8")
+            )["puntuaciones"]
     return salida
 
 
