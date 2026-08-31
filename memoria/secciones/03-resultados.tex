@@ -293,7 +293,8 @@ elecci\'on del procedimiento, y no que est\'en establecidas. La afirmaci\'on que
 trabajo sostiene es la m\'as d\'ebil de las dos posibles: V4 tiende a situarse por debajo
 del resto, mientras que el orden entre V1, V2 y V3 no queda resuelto. Tampoco se afirma lo
 contrario: la ausencia de significaci\'on no demuestra equivalencia, puesto que el
-dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello.
+dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello para esta familia
+de contrastes. S\'i lo hace el contraste del \cref{sec:resultado-paper}, ajeno a ella.
 
 Merece atenci\'on aparte el contraste entre V1 y V2, congelaci\'on frente a ajuste fino.
 Sobre el conjunto de selecci\'on la diferencia era de \num{0.020} con $p = \num{0.82}$;
@@ -306,6 +307,97 @@ modo que el contraste combina la estrategia con el origen de la inicializaci\'on
 
 Estos resultados no cuantifican la variabilidad entre semillas de entrenamiento, cuesti\'on
 que se retoma en el \cref{sec:limitaciones}.
+
+\section{Comparaci\'on con el punto de control publicado}
+\label{sec:resultado-paper}
+
+Las cifras anteriores ordenan cinco artefactos propios, pero no indican d\'onde se sit\'ua el
+mejor de ellos respecto de la implementaci\'on de referencia. Este apartado responde a esa
+cuesti\'on siguiendo el protocolo del \cref{sec:comparacion-paper}.
+
+\divisionmenor{Comprobaciones previas}
+
+Las tres comprobaciones fijadas de antemano se superaron. La reevaluaci\'on de V0 sobre las
+ocho primeras condiciones del bloque reprodujo exactamente las puntuaciones ya registradas,
+de modo que la primera realizaci\'on de V0 se reutiliza sin repetirla. V\textsubscript{pub}
+obtuvo \num{0.862} sobre el bloque de \num{50} semillas con el que sus autores lo reportan,
+frente a la cifra publicada de \num{0.884}: el desv\'io, \num{0.022}, queda muy por debajo de
+la tolerancia declarada de \num{0.07}. La ruta de inferencia empleada aqu\'i reproduce, por
+tanto, la de los autores. Los dos artefactos muestrearon adem\'as el mismo tensor de ruido
+con la misma semilla, de manera que los n\'umeros aleatorios comunes quedaron alineados y el
+pareo conserva su reducci\'on de varianza.
+
+\divisionmenor{Puntuaciones y contraste}
+
+La \cref{tab:comparacion-paper} recoge las cuatro medidas, dos artefactos por dos
+realizaciones del ruido.
+
+\begin{table}[htbp]
+  \centering
+  \caption{V0 frente al punto de control publicado sobre el bloque disjunto, con dos
+    realizaciones del ruido de difusi\'on.}
+  \label{tab:comparacion-paper}
+  \small
+  \scriptsize
+  \begin{tabular}{lccc c}
+    \toprule
+    Artefacto & Realizaci\'on A & Realizaci\'on B & Media & \'Exito (A / B) \\
+    \midrule
+    V0                  & \num{0.872} & \num{0.902} & \textbf{\num{0.887}} &
+      \num{101} / \num{100} \\
+    V\textsubscript{pub} & \num{0.850} & \num{0.842} & \textbf{\num{0.846}} &
+      \num{94} / \num{92} \\
+    \midrule
+    Diferencia & \num{0.022} & \num{0.060} & \textbf{\num{0.041}} & \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Puntuaci\'on media de cobertura sobre las \num{200} condiciones del bloque
+    \numrange{200000}{200199}. Las realizaciones A y B se distinguen \'unicamente por la
+    semilla base del ruido de difusi\'on, com\'un a los dos artefactos dentro de cada
+    realizaci\'on. La columna de media promedia las dos realizaciones dentro de cada
+    condici\'on antes de agregar. La tasa de \'exito cuenta, sobre \num{200}, las condiciones
+    que alcanzan el umbral de cobertura.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La diferencia media pareada asciende a \num{0.041} puntos a favor de V0, con un error
+est\'andar de \num{0.019} y un intervalo BCa al \SI{95}{\percent} de
+{[\num{0.005};\,\num{0.079}]}, que excluye el cero. La prueba de permutaci\'on devuelve
+$p = \num{0.036}$ y el intervalo al \SI{90}{\percent}, {[\num{0.011};\,\num{0.074}]}, no
+queda contenido en $\pm\num{0.05}$. Seg\'un la \cref{tab:regla-decision}, el desenlace es el
+de \emph{diferencia relevante}.
+
+Esa etiqueta exige una lectura precisa, y conviene formularla en los dos sentidos. Por un
+lado, el intervalo al \SI{90}{\percent} rebasa el margen y no autoriza a declarar
+equivalencia pr\'actica. Por otro, la estimaci\'on puntual, \num{0.041}, se sit\'ua por
+debajo de ese mismo margen, de manera que tampoco queda demostrado que la ventaja lo supere.
+La afirmaci\'on que los datos sostienen es m\'as modesta que la etiqueta y, a la vez,
+suficiente para el prop\'osito del apartado: \textbf{V0 no rinde por debajo del punto de
+control publicado} sobre las condiciones ensayadas.
+
+Dos matices acotan esa lectura. En primer lugar, la prueba de permutaci\'on y la de Wilcoxon
+discrepan a uno y otro lado del umbral, con \num{0.036} y \num{0.092} respectivamente. Se
+adopta la primera por ser la primaria del protocolo y apuntar a la media, que es el
+estimando; la discrepancia indica, no obstante, que el resultado se sit\'ua en el l\'imite de
+lo que la muestra resuelve. En segundo lugar, la tasa de \'exito no distingue a los dos
+artefactos en ninguna de las dos realizaciones, con valores de la prueba exacta de McNemar de
+\num{0.52} y \num{0.47}.
+
+\divisionmenor{Magnitud del ruido de difusi\'on}
+
+El dise\~no con dos realizaciones aporta una medida que el
+\cref{sec:prueba-final} no pod\'ia ofrecer, y su resultado merece atenci\'on por s\'i mismo.
+Cambiar \'unicamente la semilla del ruido desplaz\'o la puntuaci\'on media de V0 de
+\num{0.872} a \num{0.902}, es decir \num{0.030} puntos, aproximadamente tres cuartas partes
+del tama\~no de la diferencia entre los dos artefactos. La varianza intracondici\'on entre
+realizaciones alcanza \num{0.027} en V0 y \num{0.024} en V\textsubscript{pub}.
+
+De ah\'i se sigue una consecuencia que afecta a todo el cap\'itulo. Las puntuaciones de la
+\cref{tab:prueba-final} corresponden a una realizaci\'on concreta del ruido y no a una
+constante del artefacto, y sus intervalos no incorporan esa fuente de variaci\'on. La
+sincronizaci\'on del ruido protege los contrastes pareados, puesto que la componente com\'un
+se cancela en la diferencia, pero no protege a las medias individuales. Esta limitaci\'on,
+anticipada en el \cref{sec:limitaciones}, queda ahora cuantificada.
 
 \section{Ajuste y generalizaci\'on}
 \label{sec:ajuste-resultados}
@@ -628,6 +720,15 @@ a esa realizaci\'on del ruido, y los intervalos de la \cref{tab:prueba-final} no
 variabilidad que aparecer\'ia al repetir la inferencia con otras semillas. Las
 comparaciones de diferencia peque\~na, en particular las que enfrentan a V1, V2 y V3, son
 las m\'as sensibles a esta limitaci\'on.
+
+El contraste del \cref{sec:resultado-paper} permite acotar su magnitud, puesto que repite la
+medida con una segunda realizaci\'on del ruido. Cambiar solo esa semilla desplaz\'o la
+puntuaci\'on media de V0 en \num{0.030} puntos, y la varianza intracondici\'on entre
+realizaciones result\'o de \num{0.027}. La cifra es del orden de las diferencias que separan
+a V1, V2 y V3 entre s\'i, lo que refuerza la lectura prudente adoptada para ese grupo. Una
+correcci\'on completa exigir\'ia repetir la inferencia de las cinco variantes con varias
+semillas y definir el estimando sobre condici\'on y ruido de forma conjunta, tal como se
+propone en el \cref{sec:trabajo-futuro}.
 
 La quinta afecta al diagn\'ostico de sobreajuste. La p\'erdida de validaci\'on se estima
 sobre cuatro episodios, es decir \num{404} ventanas que no son independientes entre s\'i,

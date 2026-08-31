@@ -827,6 +827,157 @@ la sincronizaci\'on del ruido, no la mezclan con la del muestreo de difusi\'on. 
 sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
 repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
 
+\section{Comparaci\'on con la implementaci\'on de referencia}
+\label{sec:comparacion-paper}
+
+El \cref{sec:seleccion-prueba} ordena cinco artefactos propios entre s\'i. Queda abierta una
+pregunta distinta y previa: si V0, que reproduce la configuraci\'on visual de la
+implementaci\'on de referencia, alcanza el rendimiento del punto de control que sus autores
+publicaron para Push-T \cite{chi2023diffusion}. El presente apartado fija el protocolo de
+ese contraste, registrado en el repositorio antes de ejecutar la medida.
+
+\divisionmenor{Artefacto de referencia y factores confundidos}
+
+El punto de control publicado, designado en adelante V\textsubscript{pub}, no constituye una
+sexta variante del experimento. Su codificador procede de la biblioteca robomimic
+\cite{mandlekar2021robomimic} y agrega la salida convolucional mediante un
+\textit{spatial softmax} de \num{32} puntos clave seguido de una capa lineal, mientras que
+las cinco variantes de este trabajo emplean promediado global o componente de clase. La
+\cref{tab:comparacion-factores} detalla qu\'e comparten los dos artefactos y en qu\'e
+difieren.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Elementos comunes y factores que difieren entre V0 y el punto de control
+    publicado.}
+  \label{tab:comparacion-factores}
+  \small
+  \scriptsize
+  \begin{tabular}{p{30mm} p{40mm} p{40mm}}
+    \toprule
+    Elemento & V0 & V\textsubscript{pub} \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Comunes}} \\
+    Datos y partici\'on & \multicolumn{2}{p{82mm}}{\num{90} episodios de ajuste y \num{4} de
+      validaci\'on, con la misma semilla de partici\'on} \\
+    Red generativa & \multicolumn{2}{p{82mm}}{U-Net condicional, canales \num{512},
+      \num{1024} y \num{2048}} \\
+    Muestreo & \multicolumn{2}{p{82mm}}{DDPM con \num{100} pasos} \\
+    Horizontes & \multicolumn{2}{p{82mm}}{predicci\'on \num{16}, observaci\'on \num{2},
+      ejecuci\'on \num{8}} \\
+    \midrule
+    \multicolumn{3}{l}{\textit{Difieren}} \\
+    Agregaci\'on espacial & Promediado global & \textit{Spatial softmax} de \num{32} puntos
+      clave \\
+    Recorte & \num{76}$\times$\num{76} & \num{84}$\times$\num{84} \\
+    Presupuesto y punto de control & \num{500} \'epocas, \'epoca \num{350} & calendario de
+      \num{3050} \'epocas, \'epoca \num{500} \\
+    Bloque de selecci\'on & \numrange{100000}{100049} & \numrange{4300000}{4300049} \\
+    Implementaci\'on & Bifurcaci\'on propia & C\'odigo original de los autores \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Los cuatro factores de la mitad inferior var\'ian de forma conjunta, de modo que
+    el contraste no aisla ninguno de ellos por separado.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Cuatro factores var\'ian a la vez. El alcance del contraste es, en consecuencia, el de una
+comparaci\'on entre dos artefactos completos: determina si el modelo obtenido en este
+trabajo iguala al publicado, no a qu\'e componente se debe la diferencia. La unidad sobre la
+que se infiere sigue siendo el artefacto entrenado.
+
+\divisionmenor{Dise\~no pareado y realizaciones del ruido}
+
+Ambos artefactos se eval\'uan sobre las mismas \num{200} condiciones iniciales del bloque
+\numrange{200000}{200199}, de manera que la comparaci\'on queda pareada por condici\'on. Ese
+bloque es adem\'as disjunto de las \num{50} semillas con las que los autores seleccionaron su
+punto de control, extremo que el programa de evaluaci\'on comprueba antes de ejecutar nada.
+
+A diferencia del \cref{sec:seleccion-prueba}, cada artefacto se eval\'ua con \textbf{dos
+realizaciones del ruido de difusi\'on}, generadas a partir de dos semillas base declaradas de
+antemano. Dentro de cada realizaci\'on se mantienen los n\'umeros aleatorios comunes entre
+los dos artefactos. La ampliaci\'on responde a la limitaci\'on recogida en el
+\cref{sec:limitaciones}: con una sola trayectoria, el estimando queda condicionado a esa
+realizaci\'on concreta del ruido.
+
+El estimando primario es, por tanto, la diferencia entre las puntuaciones medias de cobertura
+de los dos artefactos sobre el generador de condiciones iniciales \textbf{y} sobre la
+realizaci\'on del ruido. La unidad de observaci\'on sigue siendo la condici\'on inicial: las
+dos realizaciones se promedian dentro de cada condici\'on antes de contrastar, de modo que el
+an\'alisis opera sobre \num{200} diferencias independientes y no sobre \num{400}
+observaciones anidadas. La varianza intracondici\'on entre realizaciones se reporta por
+separado, como variable de resultado secundaria.
+
+\divisionmenor{Contraste primario y margen de equivalencia}
+
+El contraste primario es la prueba de permutaci\'on por inversi\'on de signo sobre la
+diferencia media, bilateral, con \num{10000} permutaciones y semilla fija. Se adopta como
+primaria, y no como complemento, porque su estad\'istico es la media, que es la cantidad
+declarada en el estimando. La prueba de Wilcoxon se conserva como comprobaci\'on de robustez.
+Al existir un \'unico contraste primario entre dos artefactos, no hay familia de
+hip\'otesis que corregir, y la familia de diez comparaciones del \cref{sec:prueba-final}
+permanece intacta.
+
+El dise\~no incorpora adem\'as un an\'alisis de equivalencia, ausente en el protocolo
+anterior. Se fija un margen pr\'actico $\delta = \num{0.05}$ antes de observar los datos. Su
+justificaci\'on es emp\'irica: evaluaciones repetidas de estados de entrenamiento casi
+id\'enticos se separan entre \num{0.047} y \num{0.097} puntos, del orden de un error
+est\'andar de la propia medida, de modo que una diferencia inferior a \num{0.05} no supera la
+dispersi\'on de repetir la medici\'on. Ese margen equivale, asimismo, a menos de la cuarta
+parte de la menor diferencia que el \cref{sec:prueba-final} da por establecida. Se declara
+equivalencia pr\'actica cuando el intervalo BCa al \SI{90}{\percent} de la diferencia media
+queda contenido en $(-\delta, +\delta)$. Ese criterio equivale al procedimiento de las dos
+pruebas unilaterales (TOST, \textit{two one-sided tests}) con $\alpha = \num{0.05}$.
+
+La combinaci\'on de ambas decisiones produce los cuatro desenlaces de la
+\cref{tab:regla-decision}, fijados antes de observar los datos.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Regla de decisi\'on del contraste, fijada antes de observar los datos.}
+  \label{tab:regla-decision}
+  \small
+  \scriptsize
+  \begin{tabular}{p{32mm} p{40mm} p{40mm}}
+    \toprule
+    & $p < \num{0.05}$ & $p \geq \num{0.05}$ \\
+    \midrule
+    IC \SI{90}{\percent} dentro de $\pm\delta$ & Diferencia detectable, pr\'acticamente
+      irrelevante & Equivalencia pr\'actica \\
+    IC \SI{90}{\percent} fuera de $\pm\delta$ & Diferencia relevante & Indeterminado, por
+      potencia insuficiente \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{El valor $p$ procede de la prueba de permutaci\'on y el intervalo del
+    \textit{bootstrap} BCa de \num{10000} remuestreos. La casilla inferior derecha no
+    autoriza a concluir equivalencia, puesto que la ausencia de significaci\'on y la
+    imprecisi\'on del intervalo son compatibles con diferencias mayores que el margen.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+La variable de resultado secundaria es la tasa de \'exito, contrastada por realizaci\'on
+mediante la prueba exacta de McNemar sobre los pares discordantes. No se agrega entre
+realizaciones, puesto que el promedio de dos indicadores binarios no constituye un indicador.
+
+\divisionmenor{Comprobaciones previas y alcance del preregistro}
+
+Tres comprobaciones con criterio num\'erico fijado de antemano preceden a la medida. La
+primera reeval\'ua V0 sobre las ocho primeras condiciones del bloque con la semilla base
+original y exige coincidencia exacta con el resultado ya registrado; de ella depende que ese
+resultado pueda reutilizarse como primera realizaci\'on en lugar de repetirlo. La segunda
+eval\'ua V\textsubscript{pub} sobre el bloque de \num{50} semillas con el que sus autores lo
+reportan y exige que la media se aleje menos de \num{0.07}, dos errores est\'andar, de la
+cifra publicada; sin ella, la ruta de inferencia empleada aqu\'i no reproducir\'ia la de los
+autores y el contraste carecer\'ia de sentido. La tercera compara el primer tensor de ruido
+que muestrean ambos artefactos con la misma semilla y verifica que los n\'umeros aleatorios
+comunes quedan alineados.
+
+Conviene precisar, por \'ultimo, el alcance del preregistro. Las puntuaciones de V0 en la
+primera realizaci\'on ya exist\'ian, puesto que proceden del \cref{sec:prueba-final}. El
+documento fija por adelantado el artefacto de referencia completo, la segunda realizaci\'on
+de ambos artefactos y la totalidad del an\'alisis, pero no puede fijar lo ya observado. Esa
+asimetr\'ia se declara y no se subsana.
+
 \section{Entorno de ejecuci\'on y reproducibilidad}
 \label{sec:entorno}
 

@@ -33,6 +33,16 @@ dem\'as, y el orden entre las tres restantes queda sin resolver. Cada \'epoca de
 \SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las
 dem\'as. Las cinco ejecuciones suman \SI{237.1}{\hour}.
 
+Un contraste adicional, tambi\'en preregistrado, compara esa l\'inea base con el punto de
+control que los autores de la implementaci\'on de referencia publicaron, sobre el mismo
+bloque y con dos realizaciones del ruido de difusi\'on. La l\'inea base obtiene \num{0.887}
+y el modelo publicado \num{0.846}, diferencia de \num{0.041} puntos. Con un margen de
+equivalencia de \num{0.05} fijado de antemano, los datos permiten afirmar que la
+reproducci\'on no rinde por debajo del artefacto de referencia, sin establecer que lo supere
+de forma pr\'acticamente relevante. Ese mismo dise\~no revela que cambiar \'unicamente la
+semilla del ruido desplaza la puntuaci\'on media en \num{0.030} puntos, magnitud comparable
+a las diferencias que separan a las variantes preentrenadas entre s\'i.
+
 Se concluye que, entre los cinco artefactos evaluados y sobre las condiciones ensayadas,
 ninguno de los bloques preentrenados mejora el rendimiento ni el coste por \'epoca de la
 l\'inea base. La ventaja debe atribuirse al bloque visual completo (pesos iniciales,

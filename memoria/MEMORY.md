@@ -432,6 +432,16 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
       la prueba final salen identicos byte a byte. La familia de diez no se toca.
     - Coste: 32,8 + 31,5 min las dos de V0 (la A reutilizada, no reejecutada), 37,0 + 34,2
       min las dos de V_Paper, mas 16,9 min del porton de cordura.
+    - **Trampa: las tablas se han renumerado.** Las dos nuevas de metodologia son la 9 y la
+      10, y la de resultados la 19, de modo que todo lo que venia detras se desplaza. Los
+      numeros de tabla escritos en prosa en ESTE fichero y en
+      `../evaluacion_tfm_reevaluacion.md` han quedado obsoletos. Los `.tex` no se ven
+      afectados porque todos citan con `\cref`; se comprobo que no hay ni un solo «Tabla N»
+      escrito a mano. La numeracion vigente se lee de `main.lot`, no de memoria. Ahora:
+      11 plataforma, 12 pila de software, 13 pesos de partida, 14 coste temporal,
+      17 prueba final, 18 contrastes, 20 latencia, 21 memoria grafica, 22 alcance.
+    - Compila limpio: **73 paginas** (antes 71), 1 aviso (el parche `footnote` de microtype,
+      inocuo), cero referencias sin resolver.
 
 ## Origen de la bibliografia
 
@@ -509,11 +519,17 @@ paginas**; lo que falte se marca `[PENDIENTE: referencia]`.
 - [x] Redactar resultados y presupuesto. Cifras finales V0-V4: 0,864 / 0,668 / 0,648 /
       0,622 / 0,535; epocas 500 / 500 / 266 / 155 / 200; 1,6 / 5,3 / 14,7 / 2,3 / 4,0
       min por epoca; 237,1 h de tiempo total.
-- [ ] Redactar en resultados y conclusiones el contraste V0 frente al punto de control
-      publicado del articulo, cuando esten las cifras de
-      `datos/comparacion_paper_contrastes.csv`. Nombrar la casilla de la regla de decision
-      y repetir que el contraste no aisla el codificador: difieren a la vez codificador,
-      presupuesto, bloque de seleccion y linaje de implementacion.
+- [x] Redactar el contraste V0 frente al punto de control publicado del articulo. Hecho el
+      31 de agosto de 2026 en cuatro sitios: **apartado 3.9** `sec:comparacion-paper`
+      (metodologia: factores confundidos en `tab:comparacion-factores`, dos realizaciones de
+      ruido, permutacion primaria, TOST con delta = 0,05 y `tab:regla-decision`, los tres
+      portones y el alcance parcial del preregistro); **apartado 4.4** `sec:resultado-paper`
+      (resultados, con `tab:comparacion-paper`); un parrafo nuevo en `sec:limitaciones`; y un
+      bloque en conclusiones. Resumen y abstract llevan un parrafo cada uno.
+      **Ojo con la redaccion**: la casilla es *diferencia relevante*, pero la estimacion
+      puntual (0,041) esta por debajo del margen (0,05), asi que el texto afirma «V0 no
+      rinde por debajo del publicado» y no «V0 es mejor». Permutacion 0,036 frente a
+      Wilcoxon 0,092, declarado.
 - [ ] Confirmar con el director los supuestos economicos del presupuesto, que son
       estimaciones y no datos: 450 h del autor repartidas por fases, 40 h de direccion,
       30 y 60 \euro/h de coste horario, 1.800 \euro de precio del portatil, siete meses de

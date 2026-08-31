@@ -36,6 +36,15 @@ remaining three is left unresolved. Each V0 epoch takes \SI{1.6}{\minute}, compa
 \SI{2.3}{\minute} to \SI{14.7}{\minute} for the other variants. The five runs total
 \SI{237.1}{\hour}.
 
+A further preregistered contrast compares that baseline with the checkpoint released by the
+authors of the reference implementation, on the same block and with two realisations of the
+diffusion noise. The baseline scores \num{0.887} and the released model \num{0.846}, a
+difference of \num{0.041}. With an equivalence margin of \num{0.05} fixed in advance, the
+data support the claim that the reproduction does not underperform the reference artefact,
+without establishing that it exceeds it by a practically relevant amount. The same design
+shows that changing only the noise seed shifts the mean score by \num{0.030}, a magnitude
+comparable to the differences separating the pretrained variants from one another.
+
 The study concludes that, among the five artefacts evaluated and over the conditions
 tested, none of the pretrained visual blocks improves the baseline either in performance
 or in cost per epoch. The advantage must be ascribed to the complete visual block

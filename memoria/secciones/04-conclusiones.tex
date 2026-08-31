@@ -113,6 +113,36 @@ preprocesado y configuraci\'on interna de la red), y no a la inicializaci\'on ai
 Separar los efectos requiere entrenamientos adicionales, descritos en el
 \cref{sec:trabajo-futuro}.
 
+\divisionmenor{Sobre la comparaci\'on con la implementaci\'on de referencia}
+
+La l\'inea base no solo supera a las cuatro variantes preentrenadas: tampoco rinde por
+debajo del punto de control que los autores de la implementaci\'on de referencia publicaron
+para Push-T. Sobre el mismo bloque disjunto y con dos realizaciones del ruido de difusi\'on,
+V0 obtiene \num{0.887} y el modelo publicado \num{0.846}. La diferencia, \num{0.041} puntos
+a favor de V0, resulta significativa con la prueba de permutaci\'on
+($p = \num{0.036}$), si bien la de Wilcoxon no alcanza el umbral y el intervalo al
+\SI{90}{\percent} rebasa el margen de equivalencia de \num{0.05} fijado de antemano. La
+conclusi\'on sostenible es doble y conviene enunciarla completa: la reproducci\'on realizada
+en este trabajo iguala al artefacto de referencia, y no queda demostrado que lo supere en
+una cantidad pr\'acticamente relevante.
+
+El alcance de esa conclusi\'on est\'a acotado. Los dos artefactos difieren de forma conjunta
+en el codificador, el presupuesto de entrenamiento, el bloque de selecci\'on y el linaje de
+implementaci\'on, seg\'un detalla la \cref{tab:comparacion-factores}, de modo que el
+contraste compara dos modelos completos y no atribuye la diferencia a ninguno de esos
+factores. Su valor reside en otro punto: confirma que la l\'inea base frente a la que se
+miden las cuatro variantes preentrenadas es una reproducci\'on fiel de la opci\'on de
+referencia, y no una versi\'on degradada de ella. La conclusi\'on principal del trabajo se
+apoya, por tanto, sobre un t\'ermino de comparaci\'on verificado de forma independiente.
+
+Ese mismo contraste deja un resultado metodol\'ogico que trasciende su prop\'osito. Repetir
+la inferencia cambiando \'unicamente la semilla del ruido de difusi\'on desplaz\'o la
+puntuaci\'on media de V0 en \num{0.030} puntos, magnitud comparable a las diferencias que
+separan a V1, V2 y V3 entre s\'i. Las puntuaciones individuales de este trabajo describen,
+en consecuencia, una realizaci\'on concreta del muestreo estoc\'astico, y sus intervalos no
+incorporan esa fuente de variaci\'on. La cautela adoptada al no resolver el orden interno de
+las variantes preentrenadas queda as\'i respaldada por una medida y no solo por prudencia.
+
 \divisionmenor{Sobre el coste computacional}
 
 La l\'inea base obtiene la mejor puntuaci\'on y el menor coste unitario. Cada \'epoca de V0
