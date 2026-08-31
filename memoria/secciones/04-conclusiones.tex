@@ -40,12 +40,13 @@ pregunta del \cref{sec:problema}, con las limitaciones causales descritas m\'as 
 
 La conclusi\'on principal contradice la expectativa E1: ninguno de los cuatro bloques
 visuales preentrenados evaluados mejora el rendimiento de la l\'inea base en Push-T. Sobre
-el bloque de prueba disjunto, ajeno a la selecci\'on del punto de control, la l\'inea base
-alcanza \num{0.872}, frente a \num{0.649} en V1, \num{0.586} en V2, \num{0.578} en V3 y
-\num{0.490} en V4. Las diferencias respecto a V0 abarcan entre \num{0.223} y \num{0.382}
-puntos, sus intervalos excluyen el cero con holgura y las cuatro conservan significaci\'on
-tras corregir los diez contrastes mediante el procedimiento de Holm, con ambos
-procedimientos de contraste. Es el resultado mejor sostenido del trabajo.
+el bloque de prueba disjunto, ajeno a la selecci\'on del punto de control y con el ruido de
+difusi\'on integrado en el estimando, la l\'inea base alcanza \num{0.887}, frente a
+\num{0.642} en V1, \num{0.580} en V3, \num{0.571} en V2 y \num{0.490} en V4. Las diferencias
+respecto a V0 abarcan entre \num{0.245} y \num{0.397} puntos, sus intervalos excluyen el
+cero con holgura y las cuatro conservan significaci\'on tras corregir los diez contrastes
+mediante el procedimiento de Holm, con ambos procedimientos de contraste. Es el resultado
+mejor sostenido del trabajo.
 
 Conviene subrayar de d\'onde procede esa evidencia. Las mismas \num{50} condiciones que
 eligieron cada punto de control habr\'ian producido una estimaci\'on optimista, de modo que
@@ -55,10 +56,10 @@ de V0 creci\'o, puesto que fue la \'unica variante que no perdi\'o puntuaci\'on 
 bloque disjunto.
 
 Asimismo, la expectativa E2 tampoco se cumple. La configuraci\'on que actualiza los pesos
-del codificador no supera a la que los congela, puesto que V2 se queda \num{0.063} por
-debajo de V1. Esa diferencia favorece a la congelaci\'on y su intervalo excluye el cero por
-escaso margen, pero no alcanza significaci\'on tras la correcci\'on familiar, con valores
-ajustados de \num{0.132} y \num{0.093} seg\'un el contraste. Dos cautelas acompa\~nan a
+del codificador no supera a la que los congela, puesto que V2 se queda \num{0.071} por
+debajo de V1. Esa diferencia favorece a la congelaci\'on y su intervalo excluye el cero,
+pero su significaci\'on depende del contraste elegido, con valores ajustados de \num{0.024}
+en la permutaci\'on y \num{0.098} en Wilcoxon. Dos cautelas acompa\~nan a
 este resultado y ninguna es menor. La primera, que V1 y V2 no parten del mismo archivo de
 pesos preentrenados, seg\'un se documenta en el \cref{sec:entorno}, de modo que la
 comparaci\'on no aisla la estrategia de adaptaci\'on. La segunda, que la incertidumbre
@@ -81,12 +82,14 @@ del mismo archivo de pesos, seg\'un se documenta en el \cref{sec:variantes}, de 
 comparaci\'on entre ambas no aisla la estrategia de adaptaci\'on.
 
 Los transformadores congelados tampoco revierten el resultado. DINOv2 ViT-S/14 supera a
-CLIP ViT-B/16 por \num{0.088} puntos, si bien la diferencia queda en el l\'imite tras la
-correcci\'on familiar ($p_{\mathrm{Holm}} = \num{0.051}$). De las seis comparaciones entre
-variantes preentrenadas, solo V1 frente a V4 la supera con holgura; tres m\'as quedan justo
-por encima del umbral. El orden interno de las cuatro variantes preentrenadas sigue sin
-resolverse, de modo que la familia del codificador no explica por s\'i sola las diferencias
-observadas.
+CLIP ViT-B/16 por \num{0.089} puntos, diferencia que ahora s\'i supera la correcci\'on
+familiar con ambos contrastes ($p_{\mathrm{Holm}} = \num{0.009}$ y \num{0.022}). De las seis
+comparaciones entre variantes preentrenadas, dos superan el umbral con los dos
+procedimientos, tres solo con la prueba de permutaci\'on y una, la que enfrenta a V2 con V3,
+con ninguno. El orden interno queda por tanto resuelto en su extremo inferior, donde V4 se
+sit\'ua por debajo del resto, y sin resolver entre V2 y V3, cuyas puntuaciones se separan
+\num{0.009} puntos e incluso invierten su orden respecto del conjunto de selecci\'on. La
+familia del codificador no explica por s\'i sola las diferencias observadas.
 
 Una explicaci\'on plausible atiende a la distancia entre dominios. Push-T contiene
 im\'agenes sint\'eticas de fondo uniforme y pocas formas, mientras que ImageNet representa
@@ -135,13 +138,20 @@ miden las cuatro variantes preentrenadas es una reproducci\'on fiel de la opci\'
 referencia, y no una versi\'on degradada de ella. La conclusi\'on principal del trabajo se
 apoya, por tanto, sobre un t\'ermino de comparaci\'on verificado de forma independiente.
 
-Ese mismo contraste deja un resultado metodol\'ogico que trasciende su prop\'osito. Repetir
-la inferencia cambiando \'unicamente la semilla del ruido de difusi\'on desplaz\'o la
-puntuaci\'on media de V0 en \num{0.030} puntos, magnitud comparable a las diferencias que
-separan a V1, V2 y V3 entre s\'i. Las puntuaciones individuales de este trabajo describen,
-en consecuencia, una realizaci\'on concreta del muestreo estoc\'astico, y sus intervalos no
-incorporan esa fuente de variaci\'on. La cautela adoptada al no resolver el orden interno de
-las variantes preentrenadas queda as\'i respaldada por una medida y no solo por prudencia.
+Ese mismo contraste deja un resultado metodol\'ogico que trasciende su prop\'osito y que
+oblig\'o a rehacer la medida principal. Repetir la inferencia cambiando \'unicamente la
+semilla del ruido de difusi\'on desplaz\'o la puntuaci\'on media de V0 en \num{0.030}
+puntos, magnitud comparable a las diferencias que separan a las variantes preentrenadas
+entre s\'i. De ah\'i que las cinco se reevaluaran con una segunda realizaci\'on y que el
+estimando pasara a integrar condici\'on y ruido, modificaci\'on posterior al preregistro que
+el \cref{sec:limitaciones} declara con su alcance.
+
+La sensibilidad a esa fuente de variaci\'on no es la misma en todas. La varianza
+intracondici\'on vale \num{0.027} en la l\'inea base y entre \num{0.061} y \num{0.081} en
+las cuatro variantes preentrenadas. La l\'inea base no solo puntua m\'as alto: lo hace de
+forma m\'as estable ante el muestreo estoc\'astico de la propia pol\'itica, hallazgo que no
+figuraba entre los objetivos y que refuerza la lectura prudente de las diferencias
+peque\~nas dentro del grupo preentrenado.
 
 \divisionmenor{Sobre el coste computacional}
 
@@ -205,7 +215,7 @@ demuestra de lo que no, en los tres niveles pertinentes.
     No demostrado fuera del simulador \\
     \midrule
     El punto de control de V0 supera a los otros cuatro sobre \num{200} condiciones
-      disjuntas, con diferencias de \num{0.223} a \num{0.382} y significaci\'on familiar
+      disjuntas, con diferencias de \num{0.245} a \num{0.397} y significaci\'on familiar
       con ambos contrastes. &
     Que entrenar desde cero sea, en expectativa, superior a congelar o ajustar un
       codificador preentrenado. Har\'ia falta replicar cada configuraci\'on con varias
@@ -220,12 +230,12 @@ demuestra de lo que no, en los tres niveles pertinentes.
     Que la ordenaci\'on se conserve con otro muestreador de difusi\'on, otro n\'umero de
       pasos u otro equipo. \\
     \addlinespace
-    Que V4 se sit\'ua por debajo de V1, V2 y V3, y que el orden entre estas tres no queda
+    Que V4 se sit\'ua por debajo de V1, V2 y V3, y que el orden entre V2 y V3 no queda
       resuelto. &
     Que congelar sea superior a ajustar: V1 y V2 ni siquiera parten del mismo archivo de
       pesos. &
-    Que el resultado sea robusto a otra realizaci\'on del ruido de inferencia: solo se
-      evalu\'o una trayectoria por condici\'on. \\
+    Que el resultado sea robusto a m\'as de dos realizaciones del ruido de inferencia: la
+      media de dos conserva la mitad de su varianza. \\
     \addlinespace
     Que V0 es la m\'as barata por \'epoca y que el codificador apenas influye en la
       latencia de la pol\'itica completa. &
@@ -298,15 +308,17 @@ puntuaci\'on de selecci\'on. Guardar los puntos de control a intervalos fijos, c
 independencia de su puntuaci\'on, y elegir despu\'es sobre un bloque de selecci\'on tambi\'en
 disjunto cerrar\'ia ese resquicio del protocolo actual.
 
-En sexto lugar, \textbf{replicar la inferencia con varias semillas de ruido}. La prueba
-final resuelve cada condici\'on inicial con una \'unica trayectoria de difusi\'on, comun a
-las cinco variantes, de modo que el estimando queda condicionado a esa realizaci\'on del
-ruido y los intervalos no cubren la variabilidad propia del muestreo estoc\'astico. El
-dise\~no que la estimar\'ia repite el bloque de \num{200} condiciones con, por ejemplo,
-cinco semillas de ruido, manteniendo los n\'umeros aleatorios comunes \emph{dentro} de
-cada r\'eplica para no perder el emparejamiento, y descompone la varianza en sus dos
-niveles. Su coste es proporcional al de la prueba ya realizada: unas
-\SI{2.5}{\hour} por r\'eplica de las cinco variantes.
+En sexto lugar, \textbf{ampliar el n\'umero de semillas de ruido}. La prueba final resuelve
+cada condici\'on inicial con dos trayectorias de difusi\'on, lo que integra el muestreo
+estoc\'astico en el estimando pero solo reduce a la mitad su varianza, cuya magnitud resulta
+comparable a las diferencias entre variantes preentrenadas. El dise\~no que la estimar\'ia
+con precisi\'on repite el bloque de \num{200} condiciones con, por ejemplo, cinco semillas
+de ruido, manteniendo los n\'umeros aleatorios comunes \emph{dentro} de cada r\'eplica para
+no perder el emparejamiento, y descompone la varianza en sus dos niveles. Su coste es
+proporcional al de la prueba ya realizada: unas \SI{2.5}{\hour} por r\'eplica de las cinco
+variantes, de las que dos ya est\'an ejecutadas. Fijar ese n\'umero antes de medir
+devolver\'ia al estimando la condici\'on de preregistrado que la ampliaci\'on a dos
+realizaciones le hizo perder.
 
 En s\'eptimo lugar, ampliar el conjunto de validaci\'on. Los cuatro episodios que fija la
 implementaci\'on de referencia bastan para vigilar la marcha del ajuste, pero no para

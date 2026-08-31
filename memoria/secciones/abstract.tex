@@ -27,23 +27,25 @@ premise adopted in order to cover five configurations within the available compu
 budget; the unit of inference is therefore the trained artefact, not the training
 strategy.
 
-On that independent block, the baseline trained from scratch reaches \num{0.872}. The four
-pretrained variants score \num{0.649}, \num{0.586}, \num{0.578}, and \num{0.490}. V0
+Each condition is solved with two realisations of the diffusion noise, so that the estimand
+integrates both the initial condition and the stochastic sampling of the policy. On that
+independent block, the baseline trained from scratch reaches \num{0.887}. The four
+pretrained variants score \num{0.642}, \num{0.580}, \num{0.571}, and \num{0.490}. V0
 outperforms all of them after the ten pairwise tests are corrected with Holm's procedure,
-and this holds regardless of which test is used. Among the pretrained variants, by
-contrast, only the weakest is distinguishable from the others, and the ordering of the
-remaining three is left unresolved. Each V0 epoch takes \SI{1.6}{\minute}, compared with
+and this holds regardless of which test is used. Among the pretrained variants, by contrast,
+only the weakest separates from the rest under both tests, and the two intermediate ones are
+indistinguishable from each other. Each V0 epoch takes \SI{1.6}{\minute}, compared with
 \SI{2.3}{\minute} to \SI{14.7}{\minute} for the other variants. The five runs total
 \SI{237.1}{\hour}.
 
-A further preregistered contrast compares that baseline with the checkpoint released by the
-authors of the reference implementation, on the same block and with two realisations of the
-diffusion noise. The baseline scores \num{0.887} and the released model \num{0.846}, a
-difference of \num{0.041}. With an equivalence margin of \num{0.05} fixed in advance, the
-data support the claim that the reproduction does not underperform the reference artefact,
-without establishing that it exceeds it by a practically relevant amount. The same design
-shows that changing only the noise seed shifts the mean score by \num{0.030}, a magnitude
-comparable to the differences separating the pretrained variants from one another.
+A separately preregistered contrast compares that baseline with the checkpoint released by
+the authors of the reference implementation. The released model scores \num{0.846}, that is
+\num{0.041} lower. With an equivalence margin of \num{0.05} fixed in advance, the data
+support the claim that the reproduction does not underperform the reference artefact,
+without establishing that it exceeds it by a practically relevant amount. That contrast also
+revealed that changing only the noise seed shifts the mean score by \num{0.030}, a magnitude
+comparable to the differences separating the pretrained variants from one another, and this
+measurement is what prompted duplicating the realisations throughout the final test.
 
 The study concludes that, among the five artefacts evaluated and over the conditions
 tested, none of the pretrained visual blocks improves the baseline either in performance

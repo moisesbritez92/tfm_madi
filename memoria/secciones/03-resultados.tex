@@ -160,68 +160,86 @@ variantes se calculan sobre el bloque de prueba y se recogen en el
 \section{Prueba final sobre semillas disjuntas}
 \label{sec:prueba-final}
 
-Los cinco puntos de control congelados se evaluaron una sola vez sobre las \num{200}
-condiciones iniciales del bloque \numrange{200000}{200199}, ajenas tanto a las
-demostraciones como a la selecci\'on, bajo el protocolo del \cref{sec:seleccion-prueba}.
-La \cref{tab:prueba-final} recoge el resultado, que es el resultado principal de este
-trabajo.
+Los cinco puntos de control congelados se evaluaron sobre las \num{200} condiciones
+iniciales del bloque \numrange{200000}{200199}, ajenas tanto a las demostraciones como a la
+selecci\'on, con dos realizaciones del ruido de difusi\'on por condici\'on, bajo el
+protocolo del \cref{sec:seleccion-prueba}. La \cref{tab:prueba-final} recoge el resultado,
+que es el resultado principal de este trabajo.
+
+Antes de leerlo conviene precisar su estatuto. El protocolo preregistrado hab\'ia fijado una
+sola trayectoria de difusi\'on por condici\'on, de modo que promediar dos realizaciones
+constituye una \textbf{modificaci\'on posterior al registro}. Se adopta por las razones que
+expone el \cref{sec:seleccion-prueba} y se aplica de forma uniforme a las cinco variantes y
+a las diez comparaciones. Las cifras correspondientes a la primera realizaci\'on, que son
+las preregistradas, se conservan en los datos publicados del trabajo y se citan en el texto
+all\'i donde la lectura cambia.
 
 \begin{table}[htbp]
   \centering
   \caption{Puntuaci\'on sobre el bloque de prueba disjunto, \num{200} condiciones por
-    variante.}
+    variante y dos realizaciones del ruido.}
   \label{tab:prueba-final}
   \small
   \scriptsize
   \begin{tabular}{llcccc c}
     \toprule
     Variante & Estrategia & Puntuaci\'on & IC \SI{95}{\percent} BCa & \'Exito &
-      IC \SI{95}{\percent} Wilson & Selecci\'on \\
+      IC \SI{95}{\percent} BCa & Selecci\'on \\
     \midrule
-    V0 & Desde cero  & \num{0.872} $\pm$ \num{0.018} &
-      {[\num{0.833};\,\num{0.903}]} & \num{101}/\num{200} &
-      {[\num{0.436};\,\num{0.574}]} & \num{0.864} \\
-    V1 & Congelado   & \num{0.649} $\pm$ \num{0.026} &
-      {[\num{0.596};\,\num{0.699}]} & \num{37}/\num{200}  &
-      {[\num{0.137};\,\num{0.245}]} & \num{0.668} \\
-    V2 & Ajuste fino & \num{0.586} $\pm$ \num{0.029} &
-      {[\num{0.528};\,\num{0.640}]} & \num{32}/\num{200}  &
-      {[\num{0.116};\,\num{0.217}]} & \num{0.648} \\
-    V3 & Congelado   & \num{0.578} $\pm$ \num{0.028} &
-      {[\num{0.522};\,\num{0.631}]} & \num{32}/\num{200}  &
-      {[\num{0.116};\,\num{0.217}]} & \num{0.622} \\
-    V4 & Congelado   & \num{0.490} $\pm$ \num{0.029} &
-      {[\num{0.434};\,\num{0.547}]} & \num{16}/\num{200}  &
-      {[\num{0.050};\,\num{0.126}]} & \num{0.535} \\
+    V0 & Desde cero  & \num{0.887} $\pm$ \num{0.014} &
+      {[\num{0.856};\,\num{0.911}]} & \num{0.502} &
+      {[\num{0.448};\,\num{0.555}]} & \num{0.864} \\
+    V1 & Congelado   & \num{0.642} $\pm$ \num{0.023} &
+      {[\num{0.596};\,\num{0.686}]} & \num{0.190} &
+      {[\num{0.152};\,\num{0.233}]} & \num{0.668} \\
+    V2 & Ajuste fino & \num{0.571} $\pm$ \num{0.026} &
+      {[\num{0.520};\,\num{0.620}]} & \num{0.142} &
+      {[\num{0.107};\,\num{0.185}]} & \num{0.648} \\
+    V3 & Congelado   & \num{0.580} $\pm$ \num{0.024} &
+      {[\num{0.531};\,\num{0.627}]} & \num{0.160} &
+      {[\num{0.125};\,\num{0.203}]} & \num{0.622} \\
+    V4 & Congelado   & \num{0.490} $\pm$ \num{0.026} &
+      {[\num{0.438};\,\num{0.542}]} & \num{0.102} &
+      {[\num{0.075};\,\num{0.138}]} & \num{0.535} \\
     \bottomrule
   \end{tabular}
-  \notatabla{La puntuaci\'on se acompa\~na de su error est\'andar sobre las \num{200}
-    condiciones. Su intervalo procede de un \textit{bootstrap} BCa de \num{10000}
-    remuestreos con semilla \num{42}, el mismo m\'etodo que emplean los intervalos de las
-    diferencias de la \cref{tab:contrastes}. La columna de \'exito cuenta las condiciones
-    que alcanzan el umbral de cobertura, y su intervalo es el de Wilson para una
-    proporci\'on binomial. La tasa de \'exito es un resultado secundario y descriptivo: no
-    entra en la familia de contrastes corregida. La \'ultima columna reproduce la
-    puntuaci\'on de selecci\'on de la \cref{tab:resultados} para facilitar la
-    comparaci\'on.}
+  \notatabla{Cada condici\'on se resuelve con dos realizaciones del ruido de difusi\'on, que
+    se promedian antes de agregar. La puntuaci\'on se acompa\~na de su error est\'andar sobre
+    las \num{200} condiciones, y su intervalo procede de un \textit{bootstrap} BCa de
+    \num{10000} remuestreos con semilla \num{42}, el mismo m\'etodo que emplean los
+    intervalos de la \cref{tab:contrastes}. La columna de \'exito estima la probabilidad de
+    alcanzar el umbral de cobertura integrando el ruido, como fracci\'on media de
+    realizaciones con \'exito; su intervalo es tambi\'en BCa sobre las condiciones, y no de
+    Wilson, porque las \num{400} observaciones no son independientes. Es un resultado
+    secundario y descriptivo, ajeno a la familia de contrastes corregida. La \'ultima
+    columna reproduce la puntuaci\'on de selecci\'on de la \cref{tab:resultados}.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
-La ordenaci\'on de las cinco variantes coincide con la observada en el conjunto de
-selecci\'on, de modo que ninguna conclusi\'on cambia de sentido. El error est\'andar se
-reduce de \num{0.040}--\num{0.059} a \num{0.018}--\num{0.029}, consecuencia de cuadruplicar
-el n\'umero de condiciones.
+La distancia entre V0 y las cuatro variantes preentrenadas se mantiene, de modo que la
+conclusi\'on principal no cambia de sentido. El error est\'andar se reduce de
+\num{0.040}--\num{0.059} en el conjunto de selecci\'on a \num{0.014}--\num{0.026}, efecto
+conjunto de cuadruplicar el n\'umero de condiciones y de promediar dos realizaciones del
+ruido.
+
+Dentro del grupo preentrenado, en cambio, s\'i cambia una posici\'on: V3 pasa a situarse por
+encima de V2, con \num{0.580} frente a \num{0.571}, cuando el orden inverso se observaba
+tanto en el conjunto de selecci\'on como con una sola realizaci\'on del ruido. La diferencia
+entre ambas, \num{0.009} puntos, queda muy lejos de cualquier umbral, seg\'un se detalla m\'as
+adelante. Ese vuelco ilustra la magnitud del problema que motiv\'o duplicar las
+realizaciones: el orden entre V2 y V3 nunca estuvo establecido, y basta cambiar la
+realizaci\'on del ruido para invertirlo.
 
 El sesgo optimista se materializa de forma desigual. V0 obtiene sobre el bloque disjunto
-\num{0.872}, ligeramente por encima de su puntuaci\'on de selecci\'on, mientras que las
-cuatro variantes preentrenadas pierden entre \num{0.019} y \num{0.062} puntos. En
-consecuencia, la ventaja de V0 no proced\'ia de haber dispuesto de m\'as oportunidades de
-selecci\'on: al medirla sin sesgo, esa ventaja aumenta.
+\num{0.887}, es decir \num{0.022} puntos por encima de su puntuaci\'on de selecci\'on,
+mientras que las cuatro variantes preentrenadas pierden entre \num{0.025} y \num{0.077}
+puntos. En consecuencia, la ventaja de V0 no proced\'ia de haber dispuesto de m\'as
+oportunidades de selecci\'on: al medirla sin sesgo, esa ventaja aumenta.
 
 Conviene contrastar este dato con la estimaci\'on de la \cref{tab:seleccion-sesgo}. El
 optimismo realizado no reproduce el estimado por partici\'on mitad-mitad variante a
 variante, y V2 ilustra la discrepancia: el m\'etodo le atribu\'ia \num{0.007} y pierde
-\num{0.062}. La estimaci\'on acota el orden de magnitud del fen\'omeno, pero no predice su
+\num{0.077}. La estimaci\'on acota el orden de magnitud del fen\'omeno, pero no predice su
 valor en un caso concreto, de manera que no sustituye a la medida independiente.
 
 La \cref{tab:contrastes} recoge los diez contrastes por pares sobre ese mismo bloque.
@@ -237,27 +255,28 @@ La \cref{tab:contrastes} recoge los diez contrastes por pares sobre ese mismo bl
     Comparaci\'on & Diferencia media & IC \SI{95}{\percent} BCa &
       $p_{\mathrm{Holm}}$ perm. & $p_{\mathrm{Holm}}$ Wilcoxon \\
     \midrule
-    V0 frente a V1 & \num{0.223} & {[\num{0.170};\,\num{0.279}]} & \num{1e-3} & \num{1.8e-12} \\
-    V0 frente a V2 & \num{0.286} & {[\num{0.228};\,\num{0.346}]} & \num{1e-3} & \num{1.7e-17} \\
-    V0 frente a V3 & \num{0.294} & {[\num{0.234};\,\num{0.353}]} & \num{1e-3} & \num{2.2e-16} \\
-    V0 frente a V4 & \num{0.382} & {[\num{0.318};\,\num{0.444}]} & \num{1e-3} & \num{2.6e-20} \\
-    V1 frente a V2 & \num{0.063} & {[\num{0.001};\,\num{0.124}]} & \num{0.093} & \num{0.132} \\
-    V1 frente a V3 & \num{0.070} & {[\num{0.006};\,\num{0.132}]} & \num{0.093} & \num{0.052} \\
-    V1 frente a V4 & \num{0.159} & {[\num{0.092};\,\num{0.224}]} & \num{1e-3} & \num{3.6e-05} \\
-    V2 frente a V3 & \num{0.007} & {[\num{-0.052};\,\num{0.066}]} & \num{0.80} & \num{0.68} \\
-    V2 frente a V4 & \num{0.095} & {[\num{0.027};\,\num{0.161}]} & \num{0.040} & \num{0.052} \\
-    V3 frente a V4 & \num{0.088} & {[\num{0.021};\,\num{0.154}]} & \num{0.040} & \num{0.051} \\
+    V0 frente a V1 & \num{0.245} & {[\num{0.198};\,\num{0.292}]} & \num{1e-3} & \num{3.0e-18} \\
+    V0 frente a V2 & \num{0.316} & {[\num{0.264};\,\num{0.369}]} & \num{1e-3} & \num{1.9e-23} \\
+    V0 frente a V3 & \num{0.307} & {[\num{0.257};\,\num{0.359}]} & \num{1e-3} & \num{3.0e-22} \\
+    V0 frente a V4 & \num{0.397} & {[\num{0.341};\,\num{0.452}]} & \num{1e-3} & \num{6.9e-25} \\
+    V1 frente a V2 & \num{0.071} & {[\num{0.023};\,\num{0.124}]} & \num{0.024} & \num{0.098} \\
+    V1 frente a V3 & \num{0.063} & {[\num{0.010};\,\num{0.117}]} & \num{0.044} & \num{0.098} \\
+    V1 frente a V4 & \num{0.152} & {[\num{0.094};\,\num{0.206}]} & \num{1e-3} & \num{5.1e-06} \\
+    V2 frente a V3 & \num{-0.009} & {[\num{-0.060};\,\num{0.042}]} & \num{0.75} & \num{0.67} \\
+    V2 frente a V4 & \num{0.081} & {[\num{0.020};\,\num{0.139}]} & \num{0.029} & \num{0.098} \\
+    V3 frente a V4 & \num{0.089} & {[\num{0.034};\,\num{0.146}]} & \num{0.009} & \num{0.022} \\
     \bottomrule
   \end{tabular}
   \notatabla{Diferencias sobre las \num{200} condiciones comunes, con el ruido de
-    difusi\'on sincronizado entre variantes. Los intervalos proceden de un
+    difusi\'on sincronizado entre variantes dentro de cada realizaci\'on y las dos
+    realizaciones promediadas por condici\'on. Los intervalos proceden de un
     \textit{bootstrap} BCa de \num{10000} remuestreos y no incorporan el ajuste de
     multiplicidad. La pen\'ultima columna recoge la prueba de permutaci\'on por inversi\'on
     de signo sobre la diferencia media, con \num{10000} permutaciones; su valor $p$ menor
     alcanzable es \num{1e-4}, de modo que \num{1e-3} indica el m\'inimo tras la
-    correcci\'on y no un valor estimado. La \'ultima columna recoge la prueba de Wilcoxon
-    preregistrada, con aproximaci\'on normal y correcci\'on de continuidad. Ambas familias
-    de diez valores $p$ se ajustan por separado mediante el procedimiento de Holm.}
+    correcci\'on y no un valor estimado. La \'ultima columna recoge la prueba de Wilcoxon,
+    con aproximaci\'on normal y correcci\'on de continuidad. Ambas familias de diez valores
+    $p$ se ajustan por separado mediante el procedimiento de Holm.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
@@ -272,38 +291,62 @@ hoc}, no preregistrado; el contraste preregistrado se conserva junto a ella y ni
 sustituye al otro.
 
 Las cuatro diferencias entre V0 y las variantes preentrenadas son muy superiores al umbral
-familiar con ambos contrastes. Wilcoxon las sit\'ua entre \num{1.8e-12} y \num{2.6e-20};
+familiar con ambos contrastes. Wilcoxon las sit\'ua entre \num{3.0e-18} y \num{6.9e-25};
 la permutaci\'on alcanza su valor $p$ m\'inimo, \num{1e-4} con \num{10000} permutaciones,
 que tras la correcci\'on de Holm queda en \num{1e-3}. Los intervalos BCa, entre
-\num{0.170} y \num{0.444}, excluyen el cero con holgura. La conclusi\'on principal del
+\num{0.198} y \num{0.452}, excluyen el cero con holgura. La conclusi\'on principal del
 trabajo se sostiene, por tanto, sobre una medida que no particip\'o en la elecci\'on de
 los puntos de control y no depende de qu\'e contraste se elija.
 
-Entre las cuatro variantes preentrenadas el cuadro es distinto y merece cautela. V4 queda
-por debajo de las otras tres con ambos contrastes o con uno solo: V1 frente a V4 supera el
-umbral con holgura en los dos ($p_{\mathrm{Holm}} = \num{3.6e-05}$ y \num{1e-3}), mientras
-que V2 frente a V4 y V3 frente a V4 lo superan con la prueba de permutaci\'on
-($p_{\mathrm{Holm}} = \num{0.040}$) y se quedan justo por encima con Wilcoxon
-(\num{0.052} y \num{0.051}). Las tres comparaciones restantes, V1 frente a V2, V1 frente a
-V3 y V2 frente a V3, no alcanzan el umbral con ninguno de los dos.
+Entre las cuatro variantes preentrenadas el cuadro es m\'as fino y exige distinguir tres
+situaciones. V1 frente a V4 supera el umbral con holgura en ambos contrastes
+($p_{\mathrm{Holm}} = \num{5.1e-06}$ y \num{1e-3}), y V3 frente a V4 lo supera tambi\'en en
+los dos, aunque con menos margen (\num{0.022} y \num{0.009}). En un segundo grupo, tres
+comparaciones alcanzan el umbral solo con la prueba de permutaci\'on: V1 frente a V2
+($\num{0.024}$ frente a \num{0.098}), V1 frente a V3 ($\num{0.044}$ frente a \num{0.098}) y
+V2 frente a V4 ($\num{0.029}$ frente a \num{0.098}). La comparaci\'on restante, V2 frente a
+V3, no se acerca al umbral con ninguno de los dos y su diferencia, \num{-0.009} puntos,
+cambia incluso de signo respecto del conjunto de selecci\'on.
 
-De ah\'i se sigue una lectura prudente. Que dos contrastes discrepen a uno y otro lado de
-\num{0.05} en los mismos pares significa que esas diferencias no son robustas a la
-elecci\'on del procedimiento, y no que est\'en establecidas. La afirmaci\'on que este
-trabajo sostiene es la m\'as d\'ebil de las dos posibles: V4 tiende a situarse por debajo
-del resto, mientras que el orden entre V1, V2 y V3 no queda resuelto. Tampoco se afirma lo
-contrario: la ausencia de significaci\'on no demuestra equivalencia, puesto que el
-dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello para esta familia
-de contrastes. S\'i lo hace el contraste del \cref{sec:resultado-paper}, ajeno a ella.
+De ah\'i se siguen dos lecturas de distinta firmeza, y conviene no mezclarlas. Queda
+establecido que V4 se sit\'ua por debajo de las otras tres variantes preentrenadas, puesto
+que dos de sus tres comparaciones superan el umbral con ambos contrastes. En cambio, la
+posici\'on de V1 por encima de V2 y de V3 descansa \'unicamente en la prueba de
+permutaci\'on: que los dos procedimientos discrepen a uno y otro lado de \num{0.05} en esos
+tres pares indica que las diferencias no son robustas a la elecci\'on del contraste, no que
+est\'en asentadas. La afirmaci\'on que este trabajo sostiene es, por tanto, la intermedia:
+V4 queda por debajo del resto, V1 tiende a situarse por encima de V2 y de V3 sin que la
+evidencia lo asegure, y entre V2 y V3 no hay diferencia apreciable en ning\'un sentido.
+Tampoco se afirma lo contrario: la ausencia de significaci\'on no demuestra equivalencia,
+puesto que el dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello para
+esta familia de contrastes. S\'i lo hace el contraste del \cref{sec:resultado-paper}, ajeno
+a ella.
 
 Merece atenci\'on aparte el contraste entre V1 y V2, congelaci\'on frente a ajuste fino.
 Sobre el conjunto de selecci\'on la diferencia era de \num{0.020} con $p = \num{0.82}$;
-sobre el bloque de prueba asciende a \num{0.063}, con $p_{\mathrm{Holm}}$ de \num{0.132} y
-\num{0.093}. La evidencia apunta en contra del ajuste fino con m\'as claridad que antes,
-sin alcanzar significaci\'on. Y hay una segunda raz\'on, ajena a la estad\'istica, para no
-leer esa diferencia como el efecto de la estrategia de adaptaci\'on: seg\'un se documenta
-en el \cref{sec:variantes}, V1 y V2 no parten del mismo archivo de pesos preentrenados, de
-modo que el contraste combina la estrategia con el origen de la inicializaci\'on.
+sobre el bloque de prueba asciende a \num{0.071}, con $p_{\mathrm{Holm}}$ de \num{0.024} en
+la permutaci\'on y \num{0.098} en Wilcoxon. La evidencia apunta en contra del ajuste fino
+con m\'as claridad que antes, si bien depende del contraste elegido. Y hay una segunda
+raz\'on, ajena a la estad\'istica, para no leer esa diferencia como el efecto de la
+estrategia de adaptaci\'on: seg\'un se documenta en el \cref{sec:variantes}, V1 y V2 no
+parten del mismo archivo de pesos preentrenados, de modo que el contraste combina la
+estrategia con el origen de la inicializaci\'on.
+
+\divisionmenor{Sensibilidad al ruido de difusi\'on}
+
+Las dos realizaciones permiten medir cu\'anto depende cada puntuaci\'on de la trayectoria de
+difusi\'on concreta, y el resultado no es uniforme. La varianza intracondici\'on entre
+realizaciones vale \num{0.027} en V0 y se sit\'ua entre \num{0.061} y \num{0.081} en las
+cuatro variantes preentrenadas, es decir entre dos y tres veces m\'as. La l\'inea base no
+solo obtiene mejor puntuaci\'on: la obtiene de forma m\'as estable ante el muestreo
+estoc\'astico de la propia pol\'itica.
+
+Ese contraste tiene una lectura directa. Una diferencia de \num{0.009} puntos entre V2 y V3,
+como la de la \cref{tab:contrastes}, es un orden de magnitud menor que la desviaci\'on que
+introduce cambiar la semilla del ruido en cualquiera de las dos, de modo que ninguna
+conclusi\'on sobre su orden ser\'ia defendible. Conviene por ello leer las diferencias
+peque\~nas entre variantes preentrenadas junto a esta columna de varianza y no de forma
+aislada.
 
 Estos resultados no cuantifican la variabilidad entre semillas de entrenamiento, cuesti\'on
 que se retoma en el \cref{sec:limitaciones}.
@@ -385,19 +428,21 @@ artefactos en ninguna de las dos realizaciones, con valores de la prueba exacta 
 
 \divisionmenor{Magnitud del ruido de difusi\'on}
 
-El dise\~no con dos realizaciones aporta una medida que el
-\cref{sec:prueba-final} no pod\'ia ofrecer, y su resultado merece atenci\'on por s\'i mismo.
-Cambiar \'unicamente la semilla del ruido desplaz\'o la puntuaci\'on media de V0 de
-\num{0.872} a \num{0.902}, es decir \num{0.030} puntos, aproximadamente tres cuartas partes
-del tama\~no de la diferencia entre los dos artefactos. La varianza intracondici\'on entre
-realizaciones alcanza \num{0.027} en V0 y \num{0.024} en V\textsubscript{pub}.
+Este contraste fue el primero del trabajo en repetir la medida con dos realizaciones del
+ruido, y su resultado motiv\'o extender esa pr\'actica a las cinco variantes. Merece
+atenci\'on por s\'i mismo. Cambiar \'unicamente la semilla del ruido desplaz\'o la
+puntuaci\'on media de V0 de \num{0.872} a \num{0.902}, es decir \num{0.030} puntos,
+aproximadamente tres cuartas partes del tama\~no de la diferencia entre los dos artefactos.
+La varianza intracondici\'on entre realizaciones alcanza \num{0.027} en V0 y \num{0.024} en
+V\textsubscript{pub}.
 
-De ah\'i se sigue una consecuencia que afecta a todo el cap\'itulo. Las puntuaciones de la
-\cref{tab:prueba-final} corresponden a una realizaci\'on concreta del ruido y no a una
-constante del artefacto, y sus intervalos no incorporan esa fuente de variaci\'on. La
-sincronizaci\'on del ruido protege los contrastes pareados, puesto que la componente com\'un
-se cancela en la diferencia, pero no protege a las medias individuales. Esta limitaci\'on,
-anticipada en el \cref{sec:limitaciones}, queda ahora cuantificada.
+De ah\'i se sigui\'o una consecuencia que afecta a todo el cap\'itulo. Una puntuaci\'on
+obtenida con una sola realizaci\'on describe esa realizaci\'on y no una constante del
+artefacto, y su intervalo no cubre dicha fuente de variaci\'on. La sincronizaci\'on del
+ruido protege los contrastes pareados, puesto que la componente com\'un se cancela en la
+diferencia, pero no protege a las medias individuales. Por ese motivo la
+\cref{tab:prueba-final} promedia dos realizaciones, y la \cref{tab:contrastes} recoge la
+sensibilidad desigual que ese cambio revel\'o entre las cinco variantes.
 
 \section{Ajuste y generalizaci\'on}
 \label{sec:ajuste-resultados}
@@ -645,26 +690,27 @@ esos cinco artefactos, no lo que cabr\'ia esperar al repetir el entrenamiento.
 
 La expectativa E1 anticipaba que las configuraciones con codificador preentrenado
 superar\'ian a la entrenada desde cero. Los resultados apuntan en sentido contrario: V0
-supera entre \num{0.223} y \num{0.382} puntos a las cuatro, y las cuatro diferencias
+supera entre \num{0.245} y \num{0.397} puntos a las cuatro, y las cuatro diferencias
 conservan significaci\'on tras el ajuste de Holm por amplio margen y con ambos contrastes.
 Es el resultado negativo m\'as claro del trabajo.
 
 La expectativa E2 anticipaba una ventaja del ajuste fino sobre la congelaci\'on entre las
 dos configuraciones que comparten arquitectura. Tampoco se cumple, ya que V1 obtiene
-\num{0.649} y V2 \num{0.586}. La diferencia de \num{0.063} favorece a la congelaci\'on y
-su intervalo, {[\num{0.001};\,\num{0.124}]}, excluye el cero por poco, pero los valores
-ajustados, \num{0.132} y \num{0.093}, no alcanzan el umbral familiar. Adem\'as, y como se
-razona en el \cref{sec:prueba-final}, ese contraste no aisla la estrategia de
+\num{0.642} y V2 \num{0.571}. La diferencia de \num{0.071} favorece a la congelaci\'on y su
+intervalo, {[\num{0.023};\,\num{0.124}]}, excluye el cero, si bien los valores ajustados
+discrepan: \num{0.024} con la prueba de permutaci\'on y \num{0.098} con Wilcoxon. Adem\'as,
+y como se razona en el \cref{sec:prueba-final}, ese contraste no aisla la estrategia de
 adaptaci\'on, porque las dos configuraciones no parten del mismo archivo de pesos. La
-lectura sostenible es que el ajuste fino no mejor\'o a la congelaci\'on en este
-experimento, sin que ello establezca nada sobre la estrategia en general.
+lectura sostenible es que el ajuste fino no mejor\'o a la congelaci\'on en este experimento,
+sin que ello establezca nada sobre la estrategia en general.
 
 La expectativa E3 anticipaba un coste de inferencia superior en los transformadores y
 dejaba abierto el orden interno entre las cuatro configuraciones preentrenadas. Sobre el
-rendimiento, V3 y V4 quedan por debajo de V0 y el orden entre las preentrenadas solo se
-resuelve en parte: V4 se sit\'ua por debajo de las otras tres, mientras que V1, V2 y V3 no
-se distinguen entre s\'i con ninguno de los dos contrastes. Los datos no muestran, por
-tanto, una ventaja de rendimiento propia de la arquitectura ViT.
+rendimiento, V3 y V4 quedan por debajo de V0 y el orden entre las preentrenadas se resuelve
+solo en parte: V4 se sit\'ua por debajo de las otras tres, V1 se sit\'ua por encima de V2 y
+de V3 \'unicamente seg\'un la prueba de permutaci\'on, y V2 y V3 no se distinguen entre
+s\'i con ninguno de los dos contrastes. Los datos no muestran, por tanto, una ventaja de
+rendimiento propia de la arquitectura ViT.
 
 Su segunda parte, la relativa al coste, se cumple en el codificador y no en la pol\'itica.
 La \cref{tab:latencia} sit\'ua el codificador de V3 y V4 entre tres y seis veces por encima
@@ -709,28 +755,32 @@ contaminada. El procedimiento acota el sesgo de selecci\'on y elimina el sesgo d
 m\'aximo, pero no garantiza que el punto de control congelado sea el mejor que la variante
 podr\'ia haber ofrecido.
 
-La cuarta ata\~ne a la estocasticidad de la inferencia. Una \textit{Diffusion Policy} parte
-de ruido y a\~nade ruido en cada uno de sus \num{100} pasos, de modo que su resultado
-depende tanto de la condici\'on inicial como de la realizaci\'on concreta de ese ruido. El
-protocolo resuelve cada condici\'on con una \'unica trayectoria de difusi\'on, comun a las
-cinco variantes. Esa sincronizaci\'on es deliberada y beneficiosa para el contraste
-pareado, porque elimina de la diferencia una fuente de variaci\'on ajena a lo que se
-compara, pero tiene una contrapartida que debe declararse: el estimando queda condicionado
-a esa realizaci\'on del ruido, y los intervalos de la \cref{tab:prueba-final} no cubren la
-variabilidad que aparecer\'ia al repetir la inferencia con otras semillas. Las
-comparaciones de diferencia peque\~na, en particular las que enfrentan a V1, V2 y V3, son
-las m\'as sensibles a esta limitaci\'on.
+La cuarta ata\~ne a la estocasticidad de la inferencia, y se ha reducido sin desaparecer.
+Una \textit{Diffusion Policy} parte de ruido y a\~nade ruido en cada uno de sus \num{100}
+pasos, de modo que su resultado depende tanto de la condici\'on inicial como de la
+realizaci\'on concreta de ese ruido. El protocolo original resolv\'ia cada condici\'on con
+una \'unica trayectoria, lo que dejaba el estimando condicionado a esa realizaci\'on. Las
+cifras de este cap\'itulo promedian dos, de manera que el ruido queda integrado en el
+estimando y no fuera de \'el. Ahora bien, la media de dos valores conserva la mitad de la
+varianza del ruido, cuya magnitud es considerable: entre \num{0.061} y \num{0.081} de
+varianza intracondici\'on en las variantes preentrenadas. Dos realizaciones acotan el
+problema; no lo resuelven. El \cref{sec:trabajo-futuro} propone el dise\~no que lo har\'ia.
 
-El contraste del \cref{sec:resultado-paper} permite acotar su magnitud, puesto que repite la
-medida con una segunda realizaci\'on del ruido. Cambiar solo esa semilla desplaz\'o la
-puntuaci\'on media de V0 en \num{0.030} puntos, y la varianza intracondici\'on entre
-realizaciones result\'o de \num{0.027}. La cifra es del orden de las diferencias que separan
-a V1, V2 y V3 entre s\'i, lo que refuerza la lectura prudente adoptada para ese grupo. Una
-correcci\'on completa exigir\'ia repetir la inferencia de las cinco variantes con varias
-semillas y definir el estimando sobre condici\'on y ruido de forma conjunta, tal como se
-propone en el \cref{sec:trabajo-futuro}.
+La quinta se refiere al estatuto de esa correcci\'on. Duplicar las realizaciones modifica el
+estimando fijado en el protocolo preregistrado, que hab\'ia declarado una sola trayectoria
+por condici\'on, y la decisi\'on se tom\'o despu\'es de observar el bloque de prueba. Tres
+circunstancias limitan el riesgo de que esa modificaci\'on favorezca una conclusi\'on
+concreta: el estimando que integra condici\'on y ruido estaba registrado con antelaci\'on en
+el protocolo del \cref{sec:comparacion-paper}, la ampliaci\'on se aplic\'o de forma uniforme
+a las cinco variantes y a las diez comparaciones, y la motiv\'o una magnitud medida y no una
+preferencia. Ninguna de las tres convierte el cambio en preregistrado. El efecto sobre las
+conclusiones se declara de manera expresa: la ventaja de V0 se ampl\'ia, el orden entre V2 y
+V3 se invierte sin alcanzar significaci\'on en ning\'un sentido, y tres comparaciones entre
+variantes preentrenadas pasan a superar el umbral con la prueba de permutaci\'on y no con
+Wilcoxon. Las cifras de la primera realizaci\'on permanecen disponibles en los datos
+publicados del trabajo.
 
-La quinta afecta al diagn\'ostico de sobreajuste. La p\'erdida de validaci\'on se estima
+La sexta afecta al diagn\'ostico de sobreajuste. La p\'erdida de validaci\'on se estima
 sobre cuatro episodios, es decir \num{404} ventanas que no son independientes entre s\'i,
 puesto que las de un mismo episodio comparten trayectoria. Ese tama\~no basta para vigilar
 la marcha del ajuste, pero no para sostener una afirmaci\'on cuantitativa sobre

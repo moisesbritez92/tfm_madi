@@ -432,16 +432,98 @@ checkpoints, en WSL. Esta carpeta contiene solo el documento.
       la prueba final salen identicos byte a byte. La familia de diez no se toca.
     - Coste: 32,8 + 31,5 min las dos de V0 (la A reutilizada, no reejecutada), 37,0 + 34,2
       min las dos de V_Paper, mas 16,9 min del porton de cordura.
-    - **Trampa: las tablas se han renumerado.** Las dos nuevas de metodologia son la 9 y la
-      10, y la de resultados la 19, de modo que todo lo que venia detras se desplaza. Los
-      numeros de tabla escritos en prosa en ESTE fichero y en
-      `../evaluacion_tfm_reevaluacion.md` han quedado obsoletos. Los `.tex` no se ven
-      afectados porque todos citan con `\cref`; se comprobo que no hay ni un solo «Tabla N»
-      escrito a mano. La numeracion vigente se lee de `main.lot`, no de memoria. Ahora:
-      11 plataforma, 12 pila de software, 13 pesos de partida, 14 coste temporal,
-      17 prueba final, 18 contrastes, 20 latencia, 21 memoria grafica, 22 alcance.
-    - Compila limpio: **73 paginas** (antes 71), 1 aviso (el parche `footnote` de microtype,
-      inocuo), cero referencias sin resolver.
+    - **Las tablas se renumeraron.** Ver el indice de `## Tablas de la memoria` mas abajo.
+      Los `.tex` no se ven afectados porque todos citan con `\cref`; se comprobo que no hay
+      ni un solo «Tabla N» escrito a mano en ninguna seccion.
+
+21. **31 de agosto de 2026, mismo dia: dos realizaciones de ruido para las cinco variantes.**
+    Decision del usuario tras ver la sensibilidad medida en la entrada 20. Se reevaluaron V1
+    a V4 con la semilla base 20260831 (`diffuser/scripts/evaluar_segunda_realizacion.sh`,
+    ~2 h 10 min); V0 ya la tenia de la entrada 20. El analisis nuevo es
+    `scripts/analisis_prueba_final_v3.py`, que promedia las dos realizaciones **dentro de
+    cada condicion** antes de agregar.
+    - **Esto cambia el estimando que fijo `preregistro_prueba_final.md`**, que declaraba una
+      sola trayectoria. Es una **modificacion posterior al registro** y la memoria la declara
+      como tal en `sec:seleccion-prueba`, al abrir `sec:prueba-final` y como quinta
+      limitacion. Se planteo la alternativa de conservar ambas lecturas; el usuario opto por
+      sustituir. Queda dicho aqui para que nadie lo reconstruya al reves mas adelante.
+    - **Lo que si sostiene el cambio, y es el argumento a usar ante el tribunal:** el
+      estimando que integra condicion y ruido estaba ya registrado en
+      `preregistro_comparacion_paper.md`, cerrado antes de ver dato alguno del brazo nuevo;
+      la ampliacion se aplico de forma uniforme a las cinco variantes y a los diez
+      contrastes; y la motivo una magnitud medida, no una preferencia.
+    - **Cifras nuevas** (`datos/prueba_final_resumen_v3.csv`), media de las dos
+      realizaciones: **V0 0,887 · V1 0,642 · V3 0,580 · V2 0,571 · V4 0,490**. Error estandar
+      0,014-0,026, antes 0,018-0,029. Exito (probabilidad integrando ruido): 0,502 / 0,190 /
+      0,160 / 0,142 / 0,102.
+    - **V2 y V3 se invierten.** Antes 0,586 > 0,578; ahora 0,571 < 0,580. Su contraste vale
+      -0,009 con p = 0,75, o sea que el vuelco es ruido puro. Es el mejor ejemplo del propio
+      problema y asi se usa en el texto. **No escribir que V3 supera a V2.**
+    - **Cuatro contrastes cambian de lado del 0,05** (`datos/prueba_final_contrastes_v3.csv`):
+      V1-V2 pasa de 0,093 a **0,024**, V1-V3 de 0,093 a **0,044**, V2-V4 de 0,040 a 0,029 y
+      V3-V4 de 0,040 a **0,009**, este ultimo ya significativo tambien por Wilcoxon (0,022).
+      Los tres primeros siguen sin serlo por Wilcoxon (0,098), asi que la memoria dice que V1
+      se situa por encima de V2 y V3 **solo segun la permutacion**, sin darlo por asentado.
+    - **Hallazgo que no estaba buscado: la varianza de ruido no es igual entre variantes.**
+      0,027 en V0 frente a 0,061-0,081 en las cuatro preentrenadas, dos o tres veces mas. La
+      linea base no solo puntua mas alto, lo hace de forma mas estable. Tiene su propio
+      `\divisionmenor` en resultados y un parrafo en conclusiones.
+    - **La comparacion con V_Paper no se recalcula**: su preregistro ya declaraba dos
+      realizaciones y sus cifras (V0 0,887 y V_Paper 0,846) son las mismas. Encajan sin
+      tocar nada porque el V0 de `tab:prueba-final` ya es ese 0,887.
+    - Sitios tocados: `sec:seleccion-prueba` (estimando y ruido), `tab:prueba-final`,
+      `tab:contrastes`, la prosa de `sec:prueba-final`, `sec:contraste-hipotesis` (E1, E2,
+      E3), `sec:limitaciones` (la cuarta se reescribe, la quinta es nueva, las demas corren
+      un numero), `sec:resultado-paper`, conclusiones, `tab:alcance`, trabajo futuro punto
+      sexto, resumen y abstract.
+    - Compila limpio: **75 paginas** (71 antes de todo esto), 1 aviso (el parche `footnote`
+      de microtype, inocuo), cero referencias y cero citas sin resolver.
+    - **Trampa operativa:** si Acrobat tiene abierto `main.pdf`, `compilar.sh` falla con
+      «I can't write on file main.pdf» y **no imprime nada**, porque el error sale por un
+      canal que el script redirige. Cerrar el visor. Para validar sin cerrarlo:
+      `pdflatex -jobname=verif "\input{main.tex}"` + `bibtex verif` + dos pasadas mas, y
+      borrar los `verif.*` despues.
+
+## Tablas de la memoria
+
+Los `.tex` citan siempre con `\cref{tab:...}`, de modo que **la etiqueta es lo estable y el
+numero no**. Cualquier numero escrito en prosa en este fichero envejece en cuanto se inserta
+una tabla. Esta es la correspondencia vigente al 31 de agosto de 2026; para regenerarla,
+leer `main.lot` o los `\label{tab:...}` en orden de aparicion.
+
+| # | Etiqueta | Capitulo |
+|---|---|---|
+| 1 | `tab:ablation-visual-dp` | Estado del arte |
+| 2 | `tab:evolucion-dp` | Estado del arte |
+| 3 | `tab:particion` | Metodologia |
+| 4 | `tab:integridad` | Metodologia |
+| 5 | `tab:variantes` | Metodologia |
+| 6 | `tab:preprocesado` | Metodologia |
+| 7 | `tab:hiperparametros` | Metodologia |
+| 8 | `tab:config-efectiva` | Metodologia |
+| 9 | `tab:comparacion-factores` | Metodologia, comparacion con la referencia |
+| 10 | `tab:regla-decision` | Metodologia, comparacion con la referencia |
+| 11 | `tab:entorno` | Metodologia |
+| 12 | `tab:componentes` | Metodologia |
+| 13 | `tab:identificadores` | Metodologia |
+| 14 | `tab:coste` | Metodologia |
+| 15 | `tab:resultados` | Resultados, conjunto de seleccion |
+| 16 | `tab:seleccion-sesgo` | Resultados |
+| 17 | `tab:prueba-final` | **Resultado principal** |
+| 18 | `tab:contrastes` | **Los diez contrastes** |
+| 19 | `tab:comparacion-paper` | Resultados, V0 frente a V_Paper |
+| 20 | `tab:latencia` | Resultados |
+| 21 | `tab:memoria-gpu` | Resultados |
+| 22 | `tab:alcance` | Conclusiones |
+| 23-27 | `tab:fungible`, `tab:equipos`, `tab:horas`, `tab:mano-de-obra`, `tab:resumen-presupuesto` | Presupuesto |
+
+Las secciones nuevas de esta tanda son `sec:comparacion-paper` (metodologia 3.9) y
+`sec:resultado-paper` (resultados 4.4).
+
+Los CSV que alimentan cada tabla estan en `datos/`. Ojo con las tres generaciones del
+analisis de la prueba final, que conviven a proposito: `prueba_final_*.csv` son las cifras
+**preregistradas** (una realizacion, Wilcoxon), `*_v2.csv` anade la permutacion post hoc, y
+`*_v3.csv` son las de **dos realizaciones**, que son las que la memoria reporta ahora.
 
 ## Origen de la bibliografia
 

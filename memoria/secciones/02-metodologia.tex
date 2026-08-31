@@ -739,10 +739,11 @@ demostraci\'on hasta la tabla de resultados finales.
 \divisionmenor{Estimando y unidades experimentales}
 
 El estimando primario es la puntuaci\'on media de cobertura de un punto de control fijo
-sobre el generador de condiciones iniciales de Push-T. Se estima con las \num{200}
-condiciones del bloque de prueba, muestreadas de ese generador mediante semillas
-consecutivas. La variable de resultado secundaria es la tasa de \'exito, es decir, la
-fracci\'on de condiciones cuya puntuaci\'on alcanza el umbral.
+sobre el generador de condiciones iniciales de Push-T \textbf{y sobre la realizaci\'on del
+ruido de difusi\'on}. Se estima con las \num{200} condiciones del bloque de prueba,
+muestreadas de ese generador mediante semillas consecutivas, cada una resuelta con dos
+realizaciones del ruido. La variable de resultado secundaria es la probabilidad de \'exito,
+estimada como la fracci\'on media de realizaciones cuya puntuaci\'on alcanza el umbral.
 
 El estudio maneja tres unidades distintas y solo replica una de ellas. El episodio de
 demostraci\'on construye las ventanas de entrenamiento; la condici\'on inicial eval\'ua un
@@ -785,9 +786,33 @@ del ciclo de control, con una semilla base com\'un a las cinco variantes.
 El esquema produce ruido id\'entico entre variantes porque todas comparten la forma del
 tensor de ruido, el n\'umero de tandas y el n\'umero de llamadas por tanda. En modo
 evaluaci\'on, adem\'as, el recorte aleatorio de V0 pasa a ser un recorte central, de modo
-que el codificador no consume n\'umeros aleatorios. Cada condici\'on se resuelve con una
-sola trayectoria de difusi\'on, compartida por las cinco variantes, y el estimando queda
-definido en consecuencia.
+que el codificador no consume n\'umeros aleatorios.
+
+Cada condici\'on se resuelve con \textbf{dos} realizaciones del ruido de difusi\'on,
+obtenidas a partir de dos semillas base. Los n\'umeros aleatorios comunes se mantienen
+dentro de cada realizaci\'on, de manera que las cinco variantes siguen siendo comparables
+par a par. Las dos realizaciones se promedian dentro de cada condici\'on antes de agregar y
+de contrastar, de modo que la unidad de observaci\'on sigue siendo la condici\'on inicial y
+el an\'alisis opera sobre \num{200} valores independientes, no sobre \num{400}
+observaciones anidadas.
+
+Esta duplicaci\'on constituye una \textbf{modificaci\'on posterior al preregistro} de la
+prueba final, que hab\'ia fijado una sola trayectoria por condici\'on, y como tal se
+declara. Tres razones la sostienen. En primer lugar, el estimando que integra condici\'on y
+ruido no se formula aqu\'i por primera vez: qued\'o registrado en el protocolo del
+\cref{sec:comparacion-paper}, cerrado antes de observar ning\'un dato de ese contraste. En
+segundo lugar, la ampliaci\'on se aplica de forma uniforme a las cinco variantes y a las
+diez comparaciones, con la misma semilla base adicional, sin seleccionar ninguna en
+funci\'on de su resultado. En tercer lugar, la motiva una medida y no una preferencia: la
+puntuaci\'on media de V0 se desplaz\'o \num{0.030} puntos al cambiar \'unicamente esa
+semilla, magnitud comparable a las diferencias que separan a las variantes preentrenadas
+entre s\'i. Las cifras correspondientes a una sola realizaci\'on permanecen accesibles en
+los datos publicados del trabajo, y el \cref{sec:limitaciones} recoge el alcance de este
+cambio.
+
+Dos realizaciones acotan esa fuente de variaci\'on, pero no la eliminan. La media de dos
+valores conserva la mitad de la varianza del ruido, de modo que el procedimiento reduce el
+problema sin resolverlo por completo.
 
 \divisionmenor{Especificaci\'on estad\'istica}
 
@@ -815,15 +840,22 @@ Ambos contrastes se reportan juntos en el \cref{sec:prueba-final} y ninguno sust
 otro; donde discrepan, la memoria adopta la lectura m\'as conservadora.
 
 La familia de hip\'otesis la forman las diez comparaciones por pares de la variable de
-resultado principal, y cada contraste se corrige sobre su propia familia de diez. La tasa
-de \'exito es una variable secundaria y descriptiva: se acompa\~na de intervalos de Wilson
-y no entra en ninguna familia corregida ni sostiene conclusi\'on alguna por s\'i sola. Sus valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el
-error familiar sin suponer independencia entre contrastes, y la significaci\'on se
-determina sobre los valores ajustados con un umbral de \num{0.05}. Los intervalos de
-confianza no incorporan ese ajuste y se presentan como descriptivos.
+resultado principal, y cada contraste se corrige sobre su propia familia de diez. Sus
+valores $p$ se ajustan mediante el procedimiento secuencial de Holm, que controla el error
+familiar sin suponer independencia entre contrastes, y la significaci\'on se determina sobre
+los valores ajustados con un umbral de \num{0.05}. Los intervalos de confianza no incorporan
+ese ajuste y se presentan como descriptivos.
 
-Estas medidas caracterizan la variabilidad debida a las condiciones iniciales y, gracias a
-la sincronizaci\'on del ruido, no la mezclan con la del muestreo de difusi\'on. No
+La probabilidad de \'exito es una variable secundaria y descriptiva: no entra en ninguna
+familia corregida ni sostiene conclusi\'on alguna por s\'i sola. Su intervalo procede del
+mismo \textit{bootstrap} BCa sobre las \num{200} condiciones, y no del intervalo de Wilson
+para una proporci\'on binomial, puesto que las \num{400} observaciones que la componen no
+son independientes: las dos de una misma condici\'on comparten la pose inicial. Tampoco se
+umbraliza la puntuaci\'on ya promediada, porque el promedio de dos indicadores binarios no
+constituye un indicador.
+
+Estas medidas caracterizan la variabilidad debida a las condiciones iniciales y a la
+realizaci\'on del ruido de difusi\'on, las dos fuentes que el estimando integra. No
 sustituyen, en cambio, a la variabilidad entre semillas de entrenamiento, que exigir\'ia
 repetir los ajustes y queda fuera del alcance fijado en el \cref{sec:alcance}.
 
