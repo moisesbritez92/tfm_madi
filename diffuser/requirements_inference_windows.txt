@@ -20,3 +20,11 @@ wandb==0.17.0
 zarr<3
 numcodecs==0.12.1
 
+
+# Solo para el checkpoint del articulo (models/V_Paper), que usa el encoder de
+# robomimic. Instalar robomimic con --no-deps: declara torch/torchvision/numpy
+# sin techo y arrastraria el entorno de los notebooks V0-V4.
+robomimic==0.2.0
+h5py==3.16.0
+termcolor==3.3.0
+tensorboardX==2.6.5

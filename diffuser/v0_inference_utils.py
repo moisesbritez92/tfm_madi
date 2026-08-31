@@ -91,7 +91,12 @@ def load_policy_bundle(
     )
     cfg = payload["cfg"]
 
-    rgb_model_cfg = getattr(cfg.policy.obs_encoder, "rgb_model", None)
+    # La politica hibrida del articulo (V_Paper) construye su encoder dentro de
+    # robomimic y no tiene la clave obs_encoder, asi que el acceso va con guarda.
+    obs_encoder_cfg = getattr(cfg.policy, "obs_encoder", None)
+    rgb_model_cfg = (
+        getattr(obs_encoder_cfg, "rgb_model", None) if obs_encoder_cfg is not None else None
+    )
     if rgb_model_cfg is not None:
         target = str(getattr(rgb_model_cfg, "_target_", ""))
         if "pretrained_encoders" in target:
