@@ -1,0 +1,13 @@
+brazo,condicion,realizacion,semilla_base,punto_control,n,media,desviacion,error_estandar,exitos,tasa_exito,segundos,varianza_ruido_intra,media_prueba_final
+V0,a,prueba,20260827,epoch=0350-test_mean_score=0.865.ckpt,50,0.880005,0.209819,0.029673,16,0.32,3876.9,,
+V0,a,ruido_b,20260831,epoch=0350-test_mean_score=0.865.ckpt,50,0.86221,0.25683,0.036321,24,0.48,3451.3,,
+V0,a,media de las dos,,epoch=0350-test_mean_score=0.865.ckpt,50,0.871108,0.209181,0.029583,,,,0.02218139,0.886024
+V0,b,prueba,20260827,epoch=0350-test_mean_score=0.865.ckpt,50,0.848847,0.263447,0.037257,18,0.36,4109.6,,
+V0,b,ruido_b,20260831,epoch=0350-test_mean_score=0.865.ckpt,50,0.866047,0.23046,0.032592,17,0.34,4285.3,,
+V0,b,media de las dos,,epoch=0350-test_mean_score=0.865.ckpt,50,0.857447,0.205736,0.029096,,,,0.03725194,0.886024
+V_PAPER,a,prueba,20260827,epoch=0500-test_mean_score=0.884.ckpt,50,0.844536,0.228411,0.032302,18,0.36,3595.5,,
+V_PAPER,a,ruido_b,20260831,epoch=0500-test_mean_score=0.884.ckpt,50,0.839077,0.247156,0.034953,21,0.42,3607.2,,
+V_PAPER,a,media de las dos,,epoch=0500-test_mean_score=0.884.ckpt,50,0.841806,0.214611,0.030351,,,,0.02073377,0.877437
+V_PAPER,b,prueba,20260827,epoch=0500-test_mean_score=0.884.ckpt,50,0.839045,0.21367,0.030217,14,0.28,4316.0,,
+V_PAPER,b,ruido_b,20260831,epoch=0500-test_mean_score=0.884.ckpt,50,0.836103,0.244494,0.034577,21,0.42,4033.8,,
+V_PAPER,b,media de las dos,,epoch=0500-test_mean_score=0.884.ckpt,50,0.837574,0.209443,0.02962,,,,0.01734919,0.877437

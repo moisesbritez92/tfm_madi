@@ -486,7 +486,47 @@ Cinco cosas que conviene no volver a descubrir:
   en el preregistro antes de mirar: **no poder declarar equivalencia aquí no es un
   resultado**, y no se arregla añadiendo semillas después de ver el dato.
 
-**Resultado: pendiente.** Los ocho JSON no existen todavía.
+### Resultado, ejecutado el 31 de agosto de 2026
+
+Los tres portones pasaron y las ocho celdas cerraron limpias: 400 episodios en 8,7 h, cero
+reintentos y cero pérdidas.
+
+| Brazo | pymunk | Godot A | Godot B |
+|---|---|---|---|
+| V0 | 0,8860 | 0,8711 | **0,8574** |
+| V_Paper | 0,8774 | 0,8418 | **0,8376** |
+
+**Contraste primario, V0 − V_Paper en condición B: +0,0199** (EE 0,0309), IC95 BCa
+`[−0,0395, +0,0814]`, permutación **p = 0,53**. La casilla es **«indeterminado, potencia
+insuficiente»**, que es exactamente la que el preregistro nombró como más probable a priori.
+**Esto no es un resultado nulo y no debe escribirse como tal**: con n = 50 el diseño no puede
+detectar nada menor que ~0,105 ni declarar equivalencia, y las dos cosas estaban escritas
+antes de mirar.
+
+Cinco cosas que sí quedan establecidas, y conviene no volver a discutirlas:
+
+- **La hipótesis del preregistro no se sostiene.** Se esperaba que el *spatial softmax* de
+  robomimic y el promediado global de V0 degradaran de forma distinta al cambiar de
+  renderizador. Degradan casi igual: la caída A→B es **+0,0137 en V0 y +0,0042 en V_Paper**,
+  ninguna distinguible de cero. **Añadir los píxeles de Godot casi no cuesta nada a ninguno
+  de los dos.**
+- **Las dos políticas transfieren bien.** Ningún contraste de deriva contra `prueba_final/`
+  es significativo: V0 pierde 0,0149 (A) y 0,0286 (B); V_Paper, 0,0356 y 0,0399. Cambiar de
+  motor de física y de renderizador cuesta unas tres centésimas, no un acantilado.
+- **23 condiciones a favor de V0 y 25 a favor de V_Paper.** La diferencia media de +0,0199
+  no viene de una superioridad consistente sino de la magnitud en unas pocas condiciones. Es
+  el dato que mejor explica por qué el contraste sale indeterminado.
+- **El `+0,0408` de pymunk no se reproduce aquí, y eso no lo contradice.** Este estudio no
+  puede detectar 0,04. No es evidencia en contra del contraste hermano.
+- **La varianza entre realizaciones es mayor dentro de Godot** (0,017 a 0,037) que en pymunk
+  (0,0272 y 0,0239), como cabía esperar de una simulación con contactos y convoluciones no
+  deterministas. Refuerza el hallazgo M5, no lo alivia.
+
+**El contraste entre V0 y V3 de `perturbaciones.md` sigue siendo la única separación grande
+observada dentro de Godot**, y aquella no está medida: sus semillas se eligieron
+condicionando en el éxito. No mezclar las dos cosas.
+
+Datos: `logs_entrenamiento/godot_paper/` (8 JSON) y `memoria/datos/godot_paper_*.csv`.
 
 ## Archivos clave del modelo
 
