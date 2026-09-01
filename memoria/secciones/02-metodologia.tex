@@ -161,10 +161,12 @@ pieza y orientaci\'on inicial de la pieza.
   \fuente{elaboraci\'on propia}
 \end{figure}
 
-El argumento que descarta un sesgo de selecci\'on es el procedimiento, no una prueba
+El argumento que acota un sesgo de selecci\'on es el procedimiento, no una prueba
 estad\'istica: el reparto responde a un sorteo aleatorio uniforme sobre los \'indices de
-episodio, sin ning\'un criterio de calidad, longitud ni dificultad. Un sorteo uniforme no
-puede introducir sesgo sistem\'atico por construcci\'on.
+episodio, sin ning\'un criterio de calidad, longitud ni dificultad. El procedimiento no
+introduce, por tanto, un criterio sistem\'atico de selecci\'on. Eso vale en expectativa y no
+por realizaci\'on: una extracci\'on concreta s\'i puede producir un desequilibrio muestral
+por azar, y de ah\'i que las comparaciones descriptivas que siguen conserven su utilidad.
 
 Las comparaciones entre los dos subconjuntos cumplen aqu\'i un papel distinto y m\'as
 modesto, el de comprobaci\'on descriptiva de que el sorteo se ejecut\'o como se describe.
@@ -564,10 +566,20 @@ difieren entre variantes; los comunes se enuncian bajo la tabla.
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Durante el entrenamiento se guarda un punto de control cada \num{50} \'epocas y se
-conservan los tres mejores seg\'un la puntuaci\'on de evaluaci\'on. El modelo evaluado en
-el \cref{cap:resultados} es el de mayor puntuaci\'on, criterio coherente con el empleado
-en la literatura de la tarea \cite{mandlekar2021robomimic}.
+Durante el entrenamiento se conservan los tres puntos de control de mayor puntuaci\'on de
+evaluaci\'on. El modelo evaluado en el \cref{cap:resultados} es el de mayor puntuaci\'on,
+criterio coherente con el empleado en la literatura de la tarea
+\cite{mandlekar2021robomimic}.
+
+Conviene separar dos frecuencias que la \cref{tab:config-efectiva} recoge por separado y que
+no significan lo mismo. La fila de guardado indica cada cu\'antas \'epocas se reescribe el
+estado t\'ecnico que permite reanudar la ejecuci\'on, \num{50} \'epocas en V0, V1 y V2 y
+\num{10} en V3 y V4. La selecci\'on, en cambio, se decide sobre la puntuaci\'on de
+evaluaci\'on, que el simulador solo produce cada \num{50} \'epocas en las cinco variantes. El
+guardado de los tres mejores est\'a condicionado a que esa puntuaci\'on exista en la \'epoca
+en curso, de modo que \textbf{solo las \'epocas m\'ultiplo de \num{50} generan candidatos a
+la selecci\'on}, tambi\'en en V3 y V4. Los puntos de control conservados de esas dos
+variantes lo confirman: corresponden a las \'epocas \num{50}, \num{100} y \num{150}.
 
 El criterio de parada anticipada se apoya en esos mismos puntos de control. Un
 entrenamiento se interrumpe cuando la puntuaci\'on de evaluaci\'on no supera su m\'aximo en
@@ -908,15 +920,15 @@ difieren.
     Implementaci\'on & Bifurcaci\'on propia & C\'odigo original de los autores \\
     \bottomrule
   \end{tabular}
-  \notatabla{Los cuatro factores de la mitad inferior var\'ian de forma conjunta, de modo que
-    el contraste no aisla ninguno de ellos por separado.}
+  \notatabla{Los factores de la mitad inferior var\'ian de forma conjunta, de modo que el
+    contraste no aisla ninguno de ellos por separado.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
-Cuatro factores var\'ian a la vez. El alcance del contraste es, en consecuencia, el de una
+Esos factores var\'ian a la vez. El alcance del contraste es, en consecuencia, el de una
 comparaci\'on entre dos artefactos completos: determina si el modelo obtenido en este
-trabajo iguala al publicado, no a qu\'e componente se debe la diferencia. La unidad sobre la
-que se infiere sigue siendo el artefacto entrenado.
+trabajo rinde o no por debajo del publicado, no a qu\'e componente se debe la diferencia. La
+unidad sobre la que se infiere sigue siendo el artefacto entrenado.
 
 \divisionmenor{Dise\~no pareado y realizaciones del ruido}
 
@@ -976,14 +988,18 @@ La combinaci\'on de ambas decisiones produce los cuatro desenlaces de la
     \midrule
     IC \SI{90}{\percent} dentro de $\pm\delta$ & Diferencia detectable, pr\'acticamente
       irrelevante & Equivalencia pr\'actica \\
-    IC \SI{90}{\percent} fuera de $\pm\delta$ & Diferencia relevante & Indeterminado, por
-      potencia insuficiente \\
+    IC \SI{90}{\percent} fuera de $\pm\delta$ & Diferencia detectable, relevancia
+      pr\'actica no establecida & Indeterminado, por potencia insuficiente \\
     \bottomrule
   \end{tabular}
   \notatabla{El valor $p$ procede de la prueba de permutaci\'on y el intervalo del
-    \textit{bootstrap} BCa de \num{10000} remuestreos. La casilla inferior derecha no
-    autoriza a concluir equivalencia, puesto que la ausencia de significaci\'on y la
-    imprecisi\'on del intervalo son compatibles con diferencias mayores que el margen.}
+    \textit{bootstrap} BCa de \num{10000} remuestreos. Las dos casillas de la fila inferior
+    est\'an acotadas en sentidos opuestos y ninguna de las dos debe leerse de m\'as. La
+    derecha no autoriza a concluir equivalencia, puesto que la ausencia de significaci\'on y
+    la imprecisi\'on del intervalo son compatibles con diferencias mayores que el margen. La
+    izquierda tampoco autoriza a concluir que la diferencia supere el margen: no haber
+    demostrado equivalencia no demuestra relevancia pr\'actica, que exigir\'ia un l\'imite
+    inferior del intervalo situado por encima de $+\delta$.}
   \fuente{elaboraci\'on propia}
 \end{table}
 
@@ -1234,9 +1250,13 @@ El c\'odigo de partida es la implementaci\'on p\'ublica de \textit{Diffusion Pol
 \cite{chi2025diffusion}, sobre la que se a\~naden los codificadores de V1 a V4 y sus
 configuraciones. Las modificaciones se concentran en el m\'odulo del codificador de
 observaciones, mientras que la red generativa, el bucle de entrenamiento y el evaluador
-permanecen sin cambios. Por tanto, cualquier diferencia entre variantes es atribuible al
-codificador y no a la infraestructura que lo rodea. El c\'odigo modificado, las
-configuraciones de las cinco variantes, los guiones de an\'alisis y el protocolo de la
+permanecen sin cambios. Las modificaciones arquitect\'onicas se concentran, por tanto, en el
+bloque visual y no en la infraestructura que lo rodea. Eso no convierte al codificador en el
+\'unico factor que var\'ia: las desviaciones experimentales que no se pudieron igualar, esto
+es, el presupuesto de \'epocas, el tama\~no f\'isico de lote, la acumulaci\'on de gradiente y
+la frecuencia de guardado, se detallan en la \cref{tab:config-efectiva}. El c\'odigo
+modificado, las configuraciones de las cinco variantes, los guiones de an\'alisis y el
+protocolo de la
 prueba final residen en el repositorio del trabajo \cite{britez2026repo}. El desarrollo
 matem\'atico detallado del m\'etodo se recoge en una monograf\'ia propia previa
 \cite{britez2026guia}.

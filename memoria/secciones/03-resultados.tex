@@ -309,14 +309,16 @@ V3, no se acerca al umbral con ninguno de los dos y su diferencia, \num{-0.009} 
 cambia incluso de signo respecto del conjunto de selecci\'on.
 
 De ah\'i se siguen dos lecturas de distinta firmeza, y conviene no mezclarlas. Queda
-establecido que V4 se sit\'ua por debajo de las otras tres variantes preentrenadas, puesto
-que dos de sus tres comparaciones superan el umbral con ambos contrastes. En cambio, la
-posici\'on de V1 por encima de V2 y de V3 descansa \'unicamente en la prueba de
-permutaci\'on: que los dos procedimientos discrepen a uno y otro lado de \num{0.05} en esos
-tres pares indica que las diferencias no son robustas a la elecci\'on del contraste, no que
-est\'en asentadas. La afirmaci\'on que este trabajo sostiene es, por tanto, la intermedia:
-V4 queda por debajo del resto, V1 tiende a situarse por encima de V2 y de V3 sin que la
-evidencia lo asegure, y entre V2 y V3 no hay diferencia apreciable en ning\'un sentido.
+establecido que V4 se sit\'ua por debajo de V1 y de V3, los dos \'unicos pares de esta
+familia que superan el umbral con ambos contrastes. En cambio, las tres comparaciones que
+solo lo alcanzan con la prueba de permutaci\'on, V2 frente a V4 y V1 frente a V2 y a V3,
+descansan \'unicamente en ese procedimiento: que los dos discrepen a uno y otro lado de
+\num{0.05} en esos tres pares indica que las diferencias no son robustas a la elecci\'on del
+contraste, no que est\'en asentadas. La afirmaci\'on que este trabajo sostiene es, por tanto,
+la intermedia: V4 queda por debajo de V1 y de V3, y tambi\'en por debajo de V2 seg\'un el
+contraste primario aunque no seg\'un Wilcoxon; V1 tiende a situarse por encima de V2 y de V3
+sin que la evidencia lo asegure; y entre V2 y V3 no hay diferencia apreciable en ning\'un
+sentido.
 Tampoco se afirma lo contrario: la ausencia de significaci\'on no demuestra equivalencia,
 puesto que el dise\~no no fij\'o ning\'un margen ni incluy\'o una prueba dirigida a ello para
 esta familia de contrastes. S\'i lo hace el contraste del \cref{sec:resultado-paper}, ajeno
@@ -408,15 +410,17 @@ est\'andar de \num{0.019} y un intervalo BCa al \SI{95}{\percent} de
 {[\num{0.005};\,\num{0.079}]}, que excluye el cero. La prueba de permutaci\'on devuelve
 $p = \num{0.036}$ y el intervalo al \SI{90}{\percent}, {[\num{0.011};\,\num{0.074}]}, no
 queda contenido en $\pm\num{0.05}$. Seg\'un la \cref{tab:regla-decision}, el desenlace es el
-de \emph{diferencia relevante}.
+de \emph{diferencia detectable, relevancia pr\'actica no establecida}.
 
-Esa etiqueta exige una lectura precisa, y conviene formularla en los dos sentidos. Por un
+Esa etiqueta nombra las dos mitades de la lectura y conviene recorrerlas por separado. Por un
 lado, el intervalo al \SI{90}{\percent} rebasa el margen y no autoriza a declarar
 equivalencia pr\'actica. Por otro, la estimaci\'on puntual, \num{0.041}, se sit\'ua por
-debajo de ese mismo margen, de manera que tampoco queda demostrado que la ventaja lo supere.
-La afirmaci\'on que los datos sostienen es m\'as modesta que la etiqueta y, a la vez,
-suficiente para el prop\'osito del apartado: \textbf{V0 no rinde por debajo del punto de
-control publicado} sobre las condiciones ensayadas.
+debajo de ese mismo margen y el l\'imite inferior del intervalo, \num{0.011}, tambi\'en, de
+manera que los datos resultan compatibles tanto con una ventaja menor que $\delta$ como con
+una mayor y no demuestran que la supere. La afirmaci\'on que sostienen es, por tanto, m\'as
+modesta que una ventaja relevante y, a la vez, suficiente para el prop\'osito del apartado:
+\textbf{V0 no rinde por debajo del punto de control publicado} sobre las condiciones
+ensayadas.
 
 Dos matices acotan esa lectura. En primer lugar, la prueba de permutaci\'on y la de Wilcoxon
 discrepan a uno y otro lado del umbral, con \num{0.036} y \num{0.092} respectivamente. Se
@@ -450,6 +454,12 @@ sensibilidad desigual que ese cambio revel\'o entre las cinco variantes.
 Las cifras anteriores describen el comportamiento de los artefactos sobre la distribuci\'on
 de im\'agenes con la que fueron entrenados. Este apartado los somete a un simulador
 diferente, siguiendo el protocolo del \cref{sec:transferencia-godot}.
+
+Conviene anticipar el desenlace, porque condiciona la lectura de todo lo que sigue: el
+contraste primario resulta \textbf{indeterminado por potencia insuficiente}. Con \num{50}
+condiciones el dise\~no no detecta efectos menores de unos \num{0.105} puntos ni puede
+declarar equivalencia, y as\'i qued\'o escrito antes de medir. Las cifras descriptivas de los
+apartados siguientes deben leerse dentro de ese l\'imite y no como un resultado nulo.
 
 \divisionmenor{Comprobaciones previas}
 
@@ -558,11 +568,12 @@ alcanza significaci\'on.
 \end{table}
 
 Dos lecturas se desprenden de esa tabla. La primera atiende a la hip\'otesis que motiv\'o el
-apartado, y no la sostiene: \textbf{los dos codificadores degradan de forma equivalente} al
-sustituir los p\'ixeles del entrenamiento por los del simulador alternativo, con ca\'idas de
-\num{0.014} y \num{0.004} que ning\'un contraste distingue de cero. La localizaci\'on
-mediante \textit{spatial softmax} no confiere aqu\'i ventaja ni desventaja frente al
-promediado global.
+apartado, y no la sostiene: al sustituir los p\'ixeles del entrenamiento por los del
+simulador alternativo, \textbf{las degradaciones estimadas son de \num{0.014} y \num{0.004}
+puntos y ning\'un contraste las distingue de cero ni entre s\'i}. Con \num{50} condiciones
+el dise\~no no permite establecer que sean equivalentes, seg\'un declar\'o de antemano el
+\cref{sec:transferencia-godot}. No se observ\'o, por tanto, que la localizaci\'on mediante
+\textit{spatial softmax} confiera aqu\'i ventaja ni desventaja frente al promediado global.
 
 La segunda atiende a la transferencia en s\'i. Cambiar de motor de f\'isica y de renderizador
 cuesta a los dos artefactos entre \num{0.015} y \num{0.040} puntos, sin que ninguna de las
@@ -608,7 +619,12 @@ del episodio.
     \num{96} p\'ixeles. La columna central corresponde al instante de cobertura m\'axima,
     que es el que puntua, ya que la m\'etrica toma el m\'aximo a lo largo del episodio; en
     la \cref{fig:godot-condicion-a} ese instante coincide con el final, porque el episodio
-    termina al superar el umbral, y la columna muestra el punto medio.}
+    termina al superar el umbral, y la columna muestra el punto medio. Las cifras de
+    cobertura y de puntuaci\'on aparecen redondeadas a tres decimales, mientras que la
+    condici\'on de \'exito se eval\'ua sobre el valor sin redondear: la cobertura m\'axima
+    que aqu\'i se lee como \num{0.950} vale \num{0.94983} en los dos episodios y no alcanza
+    el umbral, de ah\'i que la puntuaci\'on se muestre como \num{1.000} sin que ninguno de
+    los dos se registre como resuelto.}
   \fuente{elaboraci\'on propia}
 \end{figure}
 
@@ -627,8 +643,9 @@ desplazamiento de dominio peque\~no y medido, no ante uno arbitrario.}
 
 Las figuras revelan adem\'as un comportamiento que las medias ocultan. En la condici\'on A
 ambos episodios terminan al superar el umbral, tras \num{118} y \num{129} pasos. En la
-condici\'on B ninguno lo alcanza: los dos se detienen en \num{0.950}, agotan los \num{300}
-pasos y terminan en \num{0.860} y \num{0.768} respectivamente, por debajo de su propio
+condici\'on B ninguno lo alcanza: los dos se detienen en \num{0.94983}, a menos de dos
+diezmil\'esimas del umbral, agotan los \num{300} pasos y terminan en \num{0.860} y
+\num{0.768} respectivamente, por debajo de su propio
 m\'aximo. Las pol\'iticas alcanzan la pose objetivo pero no la mantienen, y el ajuste fino
 del \'ultimo tramo de cobertura resulta ser la parte cara de la tarea. La m\'etrica no lo
 penaliza, puesto que registra el m\'aximo del episodio.
@@ -682,9 +699,13 @@ de \num{0.0869} a \num{0.2247} y la puntuaci\'on de evaluaci\'on disminuye.
 V2 muestra la misma divergencia. Entre las \'epocas \num{150} y \num{250}, su p\'erdida de
 entrenamiento pasa de \num{0.0115} a \num{0.00587}, la de validaci\'on aumenta de
 \num{0.277} a \num{0.380} y la puntuaci\'on pierde \num{0.089} puntos. Ambos casos son
-compatibles con sobreajuste. V0 tambi\'en incrementa su p\'erdida de validaci\'on, pero su
-puntuaci\'on permanece estable; por tanto, la p\'erdida de predicci\'on del ruido no act\'ua
-como sustituto directo del rendimiento en bucle cerrado.
+compatibles con sobreajuste, si bien conviene precisar el peso de cada indicio. La p\'erdida
+de validaci\'on se estima sobre cuatro episodios y se emplea aqu\'i como diagn\'ostico
+exploratorio, de modo que el juicio descansa de forma principal en la ca\'ida de la
+puntuaci\'on en bucle cerrado, medida sobre \num{50} condiciones independientes; el
+\cref{sec:limitaciones} detalla esa restricci\'on. V0 tambi\'en incrementa su p\'erdida de
+validaci\'on, pero su puntuaci\'on permanece estable; por tanto, la p\'erdida de predicci\'on
+del ruido no act\'ua como sustituto directo del rendimiento en bucle cerrado.
 
 V3 y V4 reproducen esa divergencia. Entre las \'epocas \num{100} y \num{150}, la p\'erdida
 de entrenamiento de V3 baja de \num{0.0218} a \num{0.0155}, mientras la de validaci\'on
@@ -829,8 +850,10 @@ V2 es el caso extremo y el m\'as informativo. Su paso de optimizaci\'on reserva
 capacidad disponible. La ejecuci\'on no aborta porque el controlador respalda el exceso con
 memoria del sistema, pero cada acceso que cae fuera de la tarjeta se paga en tiempo. Ah\'i
 est\'a la explicaci\'on de sus \SI{14.7}{\minute} por \'epoca, casi el triple que V1, con la
-que comparte arquitectura, pesos iniciales, resoluci\'on y tama\~no de lote. Lo \'unico que
-las separa es la retropropagaci\'on a trav\'es del codificador.
+que comparte arquitectura, resoluci\'on y tama\~no de lote, aunque no el archivo de pesos de
+partida, seg\'un se documenta en el \cref{sec:variantes}. La diferencia estructural que
+explica el consumo adicional es que V2 mantiene el grafo de retropropagaci\'on y los estados
+del optimizador necesarios para actualizar el codificador.
 
 Congelar el codificador, en cambio, no reduce el pico por s\'i solo. V1 reserva
 \num{6.896} gibibytes, por encima de los \num{6.447} de V0, porque opera a \num{224}
@@ -920,9 +943,10 @@ sin que ello establezca nada sobre la estrategia en general.
 La expectativa E3 anticipaba un coste de inferencia superior en los transformadores y
 dejaba abierto el orden interno entre las cuatro configuraciones preentrenadas. Sobre el
 rendimiento, V3 y V4 quedan por debajo de V0 y el orden entre las preentrenadas se resuelve
-solo en parte: V4 se sit\'ua por debajo de las otras tres, V1 se sit\'ua por encima de V2 y
-de V3 \'unicamente seg\'un la prueba de permutaci\'on, y V2 y V3 no se distinguen entre
-s\'i con ninguno de los dos contrastes. Los datos no muestran, por tanto, una ventaja de
+solo en parte: V4 se sit\'ua por debajo de V1 y de V3 con ambos contrastes y por debajo de V2
+\'unicamente seg\'un el primario, V1 se sit\'ua por encima de V2 y de V3 tambi\'en solo
+seg\'un la prueba de permutaci\'on, y V2 y V3 no se distinguen entre s\'i con ninguno de los
+dos contrastes. Los datos no muestran, por tanto, una ventaja de
 rendimiento propia de la arquitectura ViT.
 
 Su segunda parte, la relativa al coste, se cumple en el codificador y no en la pol\'itica.

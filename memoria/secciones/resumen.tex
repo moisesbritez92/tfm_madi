@@ -12,23 +12,22 @@ una misma \textit{Diffusion Policy} en la tarea Push-T: una ResNet-18 entrenada 
 la misma red preentrenada sobre ImageNet en versiones congelada y con ajuste fino, y dos
 transformadores de visi\'on congelados, DINOv2 ViT-S/14 y CLIP ViT-B/16. Todos entregan un
 vector de \num{512} componentes y comparten red generativa, datos y protocolo de
-evaluaci\'on. El ajuste emplea \num{90} de las \num{206} demostraciones teleoperadas,
-seg\'un el criterio de la implementaci\'on de referencia, con presupuestos de \num{200} a
-\num{500} \'epocas y parada anticipada. Cincuenta episodios de semillas reservadas
-seleccionan el punto de control de cada variante, y el rendimiento se mide una sola vez
-sobre \num{200} episodios de un bloque disjunto, bajo protocolo preregistrado y con dos
-realizaciones del ruido por condici\'on. Cada bloque se entrena una \'unica vez, premisa
-adoptada para cubrir cinco configuraciones con el presupuesto disponible: la unidad de
-inferencia es el artefacto entrenado, no la estrategia.
+evaluaci\'on. El ajuste emplea \num{90} de las \num{206} demostraciones teleoperadas, con
+presupuestos de \num{200} a \num{500} \'epocas y parada anticipada. Cincuenta episodios de
+semillas reservadas seleccionan el punto de control de cada variante, y el rendimiento se
+mide una sola vez sobre \num{200} episodios de un bloque disjunto definido en el protocolo
+preregistrado, ampliado despu\'es de una a dos realizaciones del ruido por condici\'on;
+esa modificaci\'on se declara y se analiza por separado. Cada bloque se entrena una \'unica
+vez: la unidad de inferencia es el artefacto entrenado, no la estrategia.
 
 Sobre ese bloque independiente, la l\'inea base entrenada desde cero alcanza \num{0.887} y
 las cuatro variantes preentrenadas obtienen \num{0.642}, \num{0.580}, \num{0.571} y
 \num{0.490}. La primera supera a todas con significaci\'on tras corregir los diez contrastes
-por pares mediante el procedimiento de Holm, con independencia de qu\'e prueba se emplee.
-Entre las variantes preentrenadas, en cambio, solo la peor se separa del resto y las dos
-intermedias no se distinguen entre s\'i. Cada \'epoca de la l\'inea base ocupa
-\SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las
-dem\'as; las cinco ejecuciones suman \SI{237.1}{\hour}.
+por pares con el procedimiento de Holm, sea cual sea la prueba empleada. Entre las
+preentrenadas, la peor queda por debajo de otras dos con ambos contrastes y de la tercera
+solo con el primario; las dos intermedias no se distinguen entre s\'i. Cada \'epoca de la
+l\'inea base ocupa \SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a
+\SI{14.7}{\minute} en las dem\'as; las cinco ejecuciones suman \SI{237.1}{\hour}.
 
 Dos contrastes preregistrados por separado acotan ese resultado. El primero la sit\'ua
 frente al punto de control publicado por los autores de la implementaci\'on de referencia,

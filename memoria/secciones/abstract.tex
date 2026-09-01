@@ -15,23 +15,23 @@ This work compares five visual blocks integrated as the observation encoder of a
 network pretrained on ImageNet in frozen and fine-tuned versions, and two frozen vision
 transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a \num{512}-component
 vector and share the generative network, the data and the evaluation protocol. Training uses
-\num{90} of the \num{206} teleoperated demonstrations, following the reference
-implementation, with budgets from \num{200} to \num{500} epochs and early stopping. A set of
-\num{50} episodes generated with held-out seeds selects the checkpoint of each variant, and
-performance is then measured once on \num{200} episodes from a disjoint block, under a
-preregistered protocol, with two realisations of the diffusion noise per condition and
-alongside the compute time consumed. Each visual block is trained exactly once, a premise
-adopted in order to cover five configurations within the available budget: the unit of
-inference is therefore the trained artefact, not the training strategy.
+\num{90} of the \num{206} teleoperated demonstrations, with budgets from \num{200} to
+\num{500} epochs and early stopping. A set of \num{50} episodes generated with held-out seeds
+selects the checkpoint of each variant, and performance is then measured once, alongside the
+compute time consumed, on \num{200} episodes from a disjoint block defined in the
+preregistered protocol, later extended from one to two realisations of the diffusion noise
+per condition; that deviation is declared and analysed separately. Each visual block is
+trained exactly once: the unit of inference is therefore the trained artefact, not the
+training strategy.
 
 On that independent block the baseline trained from scratch reaches \num{0.887}, while the
 four pretrained variants score \num{0.642}, \num{0.580}, \num{0.571} and \num{0.490}. The
 former outperforms all of them after the ten pairwise contrasts are corrected with Holm's
 procedure, regardless of which test is used. Among the pretrained variants, by contrast,
-only the weakest separates from the rest and the two intermediate ones are indistinguishable
-from each other. Each baseline epoch takes \SI{1.6}{\minute}, against a range of
-\SI{2.3}{\minute} to \SI{14.7}{\minute} for the others; the five runs total
-\SI{237.1}{\hour}.
+the weakest falls below two of them under both tests and below the third only under the
+primary one, while the two intermediate variants are indistinguishable from each other. Each
+baseline epoch takes \SI{1.6}{\minute}, against a range of \SI{2.3}{\minute} to
+\SI{14.7}{\minute} for the others; the five runs total \SI{237.1}{\hour}.
 
 Two separately preregistered contrasts bound that result. The first places the baseline
 against the checkpoint released by the authors of the reference implementation, which scores
