@@ -395,25 +395,34 @@ func _modo_fotogramas() -> void:
 		_fallar("el JSON no trae la clave 'cuadros': " + ruta_salida)
 		return
 
-	_montar_vista()
+	# Sin HUD: rotula sus cifras como ilustrativas y estas figuras acompanan
+	# a un apartado de resultados medidos.
+	_montar_vista(false)
 	# Dos fotogramas de margen, por el mismo motivo que en el modo observacion:
 	# los nodos 3D no tienen transformada valida hasta que _process ha corrido.
 	await get_tree().process_frame
 	await get_tree().process_frame
+	# Cada cuadro elige que camara lo dibuja. `observacion` da los 96 x 96
+	# que ve la politica; `demo` da la vista en perspectiva del simulador.
 	for cuadro in datos["cuadros"]:
-		await vista.guardar_observacion(cuadro["estado"], str(cuadro["png"]))
+		if str(cuadro.get("vista", "observacion")) == "demo":
+			await vista.guardar_vista_demo(cuadro["estado"], str(cuadro["png"]))
+		else:
+			await vista.guardar_observacion(cuadro["estado"], str(cuadro["png"]))
 	print("volcados %d fotogramas" % datos["cuadros"].size())
 	_terminar()
 
 
 # --- vista ------------------------------------------------------------------
 
-func _montar_vista() -> void:
+func _montar_vista(con_hud: bool = true) -> void:
 	vista = load("res://scripts/vista3d.gd").new()
 	vista.name = "Vista3D"
 	vista.fisica = fisica
 	vista.perturbacion = Perturbacion.crear(nombre_perturbacion)
 	add_child(vista)
+	if not con_hud:
+		return
 	hud = load("res://scripts/hud.gd").new()
 	hud.name = "HUD"
 	add_child(hud)

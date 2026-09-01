@@ -532,12 +532,23 @@ Redactado en la memoria: **metodología 3.10, resultados 4.5** y un bloque en la
 conclusiones, más una décima línea de trabajo futuro. Las figuras 4 y 5 las genera
 `memoria/scripts/figuras_godot_paper.py` sobre la semilla **200008**, la única del bloque
 que ambos brazos resuelven en las cuatro celdas y que además arranca en cobertura cero.
-Esa figura necesitó un modo nuevo en `main.gd`, `modo=fotogramas`, porque la observación
-de la condición B solo la sabe producir la escena de Godot; el rasterizador de Python
-resuelve la condición A desde la traza. **El cuadro cero de las grabaciones lleva el agente
-en (0,0)**: el cuerpo animado no adopta su posición hasta el primer tic de física, así que
-la pose inicial hay que remuestrearla con `PushTEnv`. No afecta a ninguna puntuación, que
-solo depende de la pieza.
+Las figuras muestran **la vista en perspectiva del simulador**, no la observación de 96×96.
+Eso obligó a dos añadidos en Godot: `modo=fotogramas` en `main.gd`, que vuelca poses
+arbitrarias a PNG, y `vista_demo_base64` en `vista3d.gd`, que captura el **viewport raíz**
+en vez del `SubViewport` de la política. El modo acepta `vista={observacion,demo}` por
+cuadro, así que sigue sirviendo para volcar lo que ve la política, y monta la escena **sin
+HUD**: el HUD rotula sus cifras como ilustrativas y estas figuras acompañan a resultados
+medidos.
+
+Consecuencia que hay que repetir en cualquier texto: **la vista 3D es idéntica en las dos
+condiciones**, porque lo que cambia entre ellas no es la escena sino qué imagen recibe la
+política. En la condición A la dibuja el rasterizador de entrenamiento. Los pies de figura
+lo dicen, y el párrafo de resultados que antes hablaba de «la semejanza entre ambas
+figuras» tuvo que reescribirse por eso.
+
+**El cuadro cero de las grabaciones lleva el agente en (0,0)**: el cuerpo animado no adopta
+su posición hasta el primer tic de física, así que la pose inicial hay que remuestrearla con
+`PushTEnv`. No afecta a ninguna puntuación, que solo depende de la pieza.
 
 ## Archivos clave del modelo
 

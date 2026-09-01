@@ -581,40 +581,49 @@ del episodio.
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.92\textwidth]{img/godot_paper_condicion_a.pdf}
-  \caption{Condici\'on A: evoluci\'on de la observaci\'on en la condici\'on inicial
-    \num{200008}, con la f\'isica de Godot y la imagen del rasterizador de entrenamiento.}
+  \includegraphics[width=\textwidth]{img/godot_paper_condicion_a.pdf}
+  \caption{Condici\'on A: los dos artefactos resolviendo la condici\'on inicial
+    \num{200008} en el simulador alternativo.}
   \label{fig:godot-condicion-a}
-  \notatabla{Cada panel reproduce la observaci\'on de \num{96} por \num{96} p\'ixeles que
-    recibe la pol\'itica. La pieza en T aparece en gris, su pose objetivo en verde y el
-    agente circular en azul. El fotograma inicial se vuelve a muestrear con el entorno
-    original, puesto que el primer cuadro que registra el simulador alternativo sit\'ua el
-    agente en el origen hasta que transcurre el primer paso de integraci\'on.}
+  \notatabla{Vista en perspectiva del simulador, con su iluminaci\'on y sus sombras. La
+    pieza en T aparece en azul grisáceo, su pose objetivo en verde y el agente circular en
+    azul. \textbf{Esta vista no es la entrada de la pol\'itica en esta condici\'on}: aqu\'i
+    la imagen que recibe la dibuja el rasterizador del entrenamiento a partir del estado. El
+    fotograma inicial se vuelve a muestrear con el entorno original, puesto que el primer
+    cuadro que registra el simulador sit\'ua el agente en el origen hasta que transcurre el
+    primer paso de integraci\'on.}
   \fuente{elaboraci\'on propia}
 \end{figure}
 
 \begin{figure}[htbp]
   \centering
-  \includegraphics[width=0.92\textwidth]{img/godot_paper_condicion_b.pdf}
-  \caption{Condici\'on B: la misma condici\'on inicial con la imagen generada por el propio
-    simulador alternativo.}
+  \includegraphics[width=\textwidth]{img/godot_paper_condicion_b.pdf}
+  \caption{Condici\'on B: la misma condici\'on inicial, con la observaci\'on tomada del
+    propio simulador.}
   \label{fig:godot-condicion-b}
-  \notatabla{La columna central corresponde al instante de cobertura m\'axima, que es el que
-    puntua, ya que la m\'etrica de Push-T toma el m\'aximo a lo largo del episodio. En la
-    \cref{fig:godot-condicion-a} ese instante coincide con el final, puesto que el episodio
+  \notatabla{La escena y la c\'amara son las de la \cref{fig:godot-condicion-a}, puesto que
+    el simulador es el mismo; lo que distingue a las dos condiciones no es lo que se ve
+    aqu\'i, sino qu\'e imagen llega a la pol\'itica. En esta condici\'on procede de esta
+    misma escena, capturada por una c\'amara ortogonal cenital y reducida a \num{96} por
+    \num{96} p\'ixeles. La columna central corresponde al instante de cobertura m\'axima,
+    que es el que puntua, ya que la m\'etrica toma el m\'aximo a lo largo del episodio; en
+    la \cref{fig:godot-condicion-a} ese instante coincide con el final, porque el episodio
     termina al superar el umbral, y la columna muestra el punto medio.}
   \fuente{elaboraci\'on propia}
 \end{figure}
 
-La semejanza entre ambas figuras no es un defecto de reproducci\'on, sino el resultado
-principal que explica las cifras del apartado. Las observaciones del simulador alternativo
-difieren de las del rasterizador de entrenamiento en un \SIrange{2.4}{2.7}{\percent} de los
-p\'ixeles, con una diferencia media inferior a un nivel sobre \num{255}. Ese margen replica,
-sobre una condici\'on distinta, la verificaci\'on geom\'etrica del port. La entrada que
-recibe la pol\'itica en la condici\'on B es, en consecuencia, muy pr\'oxima a la del
-entrenamiento, y de ah\'i que la ca\'ida de A a B resulte inapreciable. \textbf{El contraste
-mide la robustez ante un desplazamiento de dominio peque\~no y medido, no ante uno
-arbitrario.}
+Las dos figuras muestran la misma escena, y conviene precisar por qu\'e. La vista en
+perspectiva es la del simulador, com\'un a las dos condiciones; lo que las distingue no es
+lo que ah\'i se ve, sino qu\'e imagen llega a la pol\'itica. Esa diferencia s\'i se ha
+medido: las observaciones que produce el simulador se apartan de las del rasterizador de
+entrenamiento en un \SIrange{2.4}{2.7}{\percent} de los p\'ixeles, con una discrepancia
+media inferior a un nivel sobre \num{255}, margen que replica sobre esta condici\'on la
+verificaci\'on geom\'etrica del port.
+
+De ah\'i se sigue la clave del apartado. La entrada que recibe la pol\'itica en la
+condici\'on B resulta muy pr\'oxima a la del entrenamiento, lo que explica que la ca\'ida de
+A a B sea inapreciable. \textbf{El contraste mide, en consecuencia, la robustez ante un
+desplazamiento de dominio peque\~no y medido, no ante uno arbitrario.}
 
 Las figuras revelan adem\'as un comportamiento que las medias ocultan. En la condici\'on A
 ambos episodios terminan al superar el umbral, tras \num{118} y \num{129} pasos. En la

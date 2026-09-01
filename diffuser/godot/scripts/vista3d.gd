@@ -358,6 +358,44 @@ func observacion_base64(estados: Array) -> Array:
 	return salida
 
 
+## Captura la vista de la demostracion en una pose dada, para las figuras.
+##
+## A diferencia de `observacion_base64`, que lee el SubViewport ortografico y
+## plano de la politica, esto lee el viewport raiz: perspectiva, luz y sombras,
+## es decir lo que ve el publico. No interviene en ningun bucle de control.
+func vista_demo_base64(estado: Array) -> String:
+	var pose_bloque := _nodo_bloque.position
+	var giro_bloque := _nodo_bloque.rotation.y
+	var pose_agente := _nodo_agente.position
+	_congelado = true
+
+	_nodo_bloque.position = Vector3(float(estado[2]), Y_BLOQUE, float(estado[3]))
+	_nodo_bloque.rotation.y = -float(estado[4])
+	_nodo_agente.position = Vector3(float(estado[0]), Y_AGENTE, float(estado[1]))
+	# Dos pasadas: la primera aplica las transformadas y la segunda las dibuja
+	# con el mapa de sombras ya recalculado para la pose nueva.
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	var imagen := get_viewport().get_texture().get_image()
+
+	_nodo_bloque.position = pose_bloque
+	_nodo_bloque.rotation.y = giro_bloque
+	_nodo_agente.position = pose_agente
+	_congelado = false
+	return Marshalls.raw_to_base64(imagen.save_png_to_buffer())
+
+
+func guardar_vista_demo(estado: Array, ruta: String) -> void:
+	var b64: String = await vista_demo_base64(estado)
+	var archivo := FileAccess.open(ruta, FileAccess.WRITE)
+	if archivo == null:
+		push_error("no se pudo escribir " + ruta)
+		return
+	archivo.store_buffer(Marshalls.base64_to_raw(b64))
+	archivo.close()
+	print("vista escrita en ", ProjectSettings.globalize_path(ruta))
+
+
 func _capturar() -> String:
 	_subviewport.render_target_update_mode = SubViewport.UPDATE_ONCE
 	await RenderingServer.frame_post_draw
