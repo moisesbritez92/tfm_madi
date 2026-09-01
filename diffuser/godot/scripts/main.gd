@@ -7,7 +7,7 @@ extends Node
 ## servidor y sin ventana, y son los que se ejecutan primero: fallan barato.
 ##
 ## Argumentos, despues de `--`:
-##   modo=vivo|grabar|reproducir|comparar|cobertura|observacion
+##   modo=vivo|grabar|reproducir|comparar|cobertura|observacion|fotogramas
 ##   seed=10000            condicion inicial
 ##   obs=estado|godot      solo informativo; quien decide es el servidor
 ##   perturbacion=ninguna|t_roja|sombras   cambia la escena, solo en obs=godot
@@ -82,6 +82,8 @@ func _ready() -> void:
 			_arrancar_reproduccion()
 		"observacion":
 			_modo_observacion()
+		"fotogramas":
+			_modo_fotogramas()
 		_:
 			_arrancar_vivo()
 
@@ -361,6 +363,46 @@ func _modo_observacion() -> void:
 	}, "  "))
 	archivo.close()
 	print("estado escrito en ", ProjectSettings.globalize_path(json_ruta))
+	_terminar()
+
+
+# --- modo fotogramas: figuras de la memoria ---------------------------------
+
+## Vuelca a PNG la observacion de una lista de poses ya elegidas.
+##
+## Existe para las figuras de la memoria. El rasterizador de Python sabe dibujar
+## cualquier estado de una traza, asi que la condicion A se resuelve alli; la
+## observacion de la condicion B solo la sabe producir esta escena, y hasta ahora
+## unicamente para el estado inicial, dentro del modo `observacion`.
+##
+## No simula nada ni habla con el servidor: las poses vienen de una grabacion ya
+## hecha. `salida=` apunta al JSON que las lista, con la forma
+## `{"cuadros": [{"estado": [ax, ay, bx, by, ang], "png": "res://..."}]}`.
+func _modo_fotogramas() -> void:
+	if _sin_ventana():
+		_fallar("el volcado de fotogramas necesita ventana: sin renderizador no hay SubViewport")
+		return
+	if ruta_salida == "":
+		_fallar("hace falta salida=<json con los cuadros>")
+		return
+	var archivo := FileAccess.open(ruta_salida, FileAccess.READ)
+	if archivo == null:
+		_fallar("no se puede leer " + ruta_salida)
+		return
+	var datos = JSON.parse_string(archivo.get_as_text())
+	archivo.close()
+	if typeof(datos) != TYPE_DICTIONARY or not datos.has("cuadros"):
+		_fallar("el JSON no trae la clave 'cuadros': " + ruta_salida)
+		return
+
+	_montar_vista()
+	# Dos fotogramas de margen, por el mismo motivo que en el modo observacion:
+	# los nodos 3D no tienen transformada valida hasta que _process ha corrido.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	for cuadro in datos["cuadros"]:
+		await vista.guardar_observacion(cuadro["estado"], str(cuadro["png"]))
+	print("volcados %d fotogramas" % datos["cuadros"].size())
 	_terminar()
 
 

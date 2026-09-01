@@ -153,6 +153,49 @@ forma m\'as estable ante el muestreo estoc\'astico de la propia pol\'itica, hall
 figuraba entre los objetivos y que refuerza la lectura prudente de las diferencias
 peque\~nas dentro del grupo preentrenado.
 
+\divisionmenor{Sobre la transferencia a un simulador distinto}
+
+Las conclusiones anteriores se apoyan en un \'unico simulador, el mismo que gener\'o las
+demostraciones. Para acotar hasta d\'onde dependen de \'el, la l\'inea base y el punto de
+control publicado se sometieron a una reimplementaci\'on de Push-T sobre un motor de f\'isica
+distinto, en dos condiciones: con la imagen del rasterizador de entrenamiento y con la imagen
+del propio motor.
+
+El contraste no resuelve la pregunta que planteaba, y el motivo estaba escrito de antemano.
+La diferencia entre los dos artefactos con los p\'ixeles del simulador alternativo asciende a
+\num{0.020} puntos, con $p = \num{0.53}$, de modo que el desenlace cae en la casilla
+\emph{indeterminado por potencia insuficiente} de la \cref{tab:regla-decision}. Puesto que el
+\cref{sec:transferencia-godot} declar\'o antes de medir que el dise\~no no detecta efectos
+inferiores a unos \num{0.105} puntos, esa casilla no autoriza a concluir equivalencia ni
+diferencia. Se se\~nala de forma expresa para que no se lea como un resultado nulo.
+
+Tres hallazgos secundarios s\'i resultan informativos. El primero contradice la hip\'otesis
+que motiv\'o el ensayo. Se esperaba que el \textit{spatial softmax} del artefacto publicado y
+el promediado global de la l\'inea base respondieran de manera distinta ante un cambio de
+renderizador, dado que el primero conserva la localizaci\'on de las activaciones. Ambos
+degradan por igual: \num{0.014} y \num{0.004} puntos al pasar de una condici\'on a otra,
+sin que ning\'un contraste los distinga de cero. La conjetura sobre la agregaci\'on espacial
+que recoge el \cref{sec:trabajo-futuro} no encuentra aqu\'i respaldo.
+
+El segundo se refiere a la transferencia en s\'i. Ambos artefactos conservan la mayor parte
+de su competencia fuera del simulador que los entren\'o, con p\'erdidas de entre \num{0.015}
+y \num{0.040} puntos que ning\'un contraste distingue de cero. Ese resultado admite, no
+obstante, una lectura restrictiva y es la que debe prevalecer: las observaciones del
+simulador alternativo difieren de las originales en apenas un
+\SIrange{2.4}{2.7}{\percent} de los p\'ixeles, de modo que lo demostrado es la robustez ante
+un desplazamiento de dominio peque\~no y medido, no ante uno arbitrario.
+
+El tercero es metodol\'ogico y afecta a la elecci\'on de m\'etrica. Al cambiar de simulador,
+la cobertura media de la l\'inea base apenas se desplaza, mientras que su n\'umero de
+condiciones resueltas desciende de \num{26} y \num{25} sobre \num{50} a \num{18} y \num{17}.
+Las trayectorias var\'ian lo justo para que episodios que superaban el umbral por escaso
+margen se detengan en su proximidad sin cruzarlo. M\'as revelador todav\'ia resulta que las
+dos realizaciones del ruido en una misma condici\'on de observaci\'on lleguen a separarse en
+ocho condiciones sobre cincuenta, tanto como el efecto del cambio de simulador. La tasa de
+\'exito acusa, por tanto, el ruido de inferencia en la misma medida que el cambio de entorno,
+lo que respalda la decisi\'on de conservarla como variable secundaria a lo largo de todo el
+trabajo.
+
 \divisionmenor{Sobre el coste computacional}
 
 La l\'inea base obtiene la mejor puntuaci\'on y el menor coste unitario. Cada \'epoca de V0
@@ -251,7 +294,7 @@ demuestra de lo que no, en los tres niveles pertinentes.
 \section{Trabajo futuro}
 \label{sec:trabajo-futuro}
 
-Del estudio se derivan nueve l\'ineas de continuaci\'on, ordenadas por su capacidad para
+Del estudio se derivan diez l\'ineas de continuaci\'on, ordenadas por su capacidad para
 afianzar o corregir las conclusiones anteriores. Las tres primeras atacan directamente los
 l\'imites inferenciales declarados en el \cref{sec:alcance}; las restantes refuerzan el
 protocolo.
@@ -336,6 +379,16 @@ l\'inea mide el efecto del tama\~no del conjunto y no el de su composici\'on. Es
 experimento resulta especialmente pertinente aqu\'i, puesto que la ventaja del
 preentrenamiento se atribuye habitualmente a la escasez de datos. Su coste por \'epoca
 crecer\'ia en proporci\'on al n\'umero de ventanas, algo m\'as del doble del actual.
+
+En noveno lugar, \textbf{convertir el ensayo de transferencia en una medida de pleno
+derecho}. El \cref{sec:resultado-godot} lo ejecuta con dos artefactos, \num{50} condiciones
+y un desplazamiento de dominio deliberadamente peque\~no, de modo que su potencia no alcanza
+para resolver nada por debajo de \num{0.105} puntos. El dise\~no adecuado abarca las cinco
+variantes sobre las \num{200} condiciones del bloque disjunto, con perturbaciones graduadas
+de la apariencia y con el desplazamiento de dominio medido en unidades de la propia imagen,
+de manera que la degradaci\'on pueda representarse frente a esa magnitud y no frente a una
+etiqueta. Ah\'i s\'i cabr\'ia esperar que el preentrenamiento visual manifieste la
+invariancia que se le supone, hip\'otesis que el presente trabajo deja sin contrastar.
 
 Por \'ultimo, extender el protocolo a otras tareas y a un robot f\'isico. Push-T aporta un
 banco de pruebas controlado, pero sus im\'agenes sint\'eticas son precisamente el escenario

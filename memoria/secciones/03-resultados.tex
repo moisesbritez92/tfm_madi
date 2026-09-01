@@ -444,6 +444,210 @@ diferencia, pero no protege a las medias individuales. Por ese motivo la
 \cref{tab:prueba-final} promedia dos realizaciones, y la \cref{tab:contrastes} recoge la
 sensibilidad desigual que ese cambio revel\'o entre las cinco variantes.
 
+\section{Transferencia a un simulador distinto}
+\label{sec:resultado-godot}
+
+Las cifras anteriores describen el comportamiento de los artefactos sobre la distribuci\'on
+de im\'agenes con la que fueron entrenados. Este apartado los somete a un simulador
+diferente, siguiendo el protocolo del \cref{sec:transferencia-godot}.
+
+\divisionmenor{Comprobaciones previas}
+
+Las tres comprobaciones se superaron. Los resumenes criptogr\'aficos de los dos puntos de
+control coincidieron con los registrados, y el bloque result\'o disjunto de las
+demostraciones y de los dos conjuntos de selecci\'on. En la comprobaci\'on de deriva, V0
+obtuvo \num{0.9122} frente a los \num{0.9242} ya registrados sobre esas ocho condiciones, y
+V\textsubscript{pub} obtuvo \num{0.8610} frente a \num{0.8421}; ambos desv\'ios, \num{0.012}
+y \num{0.019}, quedan muy por debajo de la tolerancia de \num{0.07}. Las poses de partida
+coincidieron adem\'as de forma exacta con las que muestrea el entorno original. Por
+\'ultimo, el artefacto de referencia cerr\'o el bucle en la condici\'on B sin incidencias.
+Las ocho celdas se completaron sin reintentos ni episodios perdidos.
+
+\divisionmenor{Puntuaciones}
+
+La \cref{tab:godot-puntuaciones} recoge las ocho medidas junto con la cifra que cada
+artefacto obtuvo sobre esas mismas condiciones en el simulador original.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Puntuaci\'on media de los dos artefactos en el simulador alternativo, por
+    condici\'on de observaci\'on y realizaci\'on del ruido.}
+  \label{tab:godot-puntuaciones}
+  \small
+  \scriptsize
+  \begin{tabular}{l c cc c c}
+    \toprule
+    Artefacto & Simulador original & \multicolumn{3}{c}{Condici\'on A} & Condici\'on B \\
+    \cmidrule(lr){3-5} \cmidrule(lr){6-6}
+    & & Real. A & Real. B & Media & Media \\
+    \midrule
+    V0                   & \num{0.886} & \num{0.880} & \num{0.862} & \textbf{\num{0.871}} &
+      \textbf{\num{0.857}} \\
+    V\textsubscript{pub} & \num{0.877} & \num{0.845} & \num{0.839} & \textbf{\num{0.842}} &
+      \textbf{\num{0.838}} \\
+    \midrule
+    Diferencia & \num{0.009} & & & \num{0.029} & \num{0.020} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Puntuaci\'on media de cobertura sobre las \num{50} condiciones
+    \numrange{200000}{200049}. Las columnas de media promedian las dos realizaciones del
+    ruido dentro de cada condici\'on antes de agregar. Las dos realizaciones de la
+    condici\'on B, \num{0.849} y \num{0.866} para V0 y \num{0.839} y \num{0.836} para
+    V\textsubscript{pub}, se omiten de la tabla por brevedad.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+\divisionmenor{Contraste primario}
+
+La diferencia media pareada en la condici\'on B asciende a \num{0.020} puntos a favor de V0,
+con un error est\'andar de \num{0.031} y un intervalo BCa al \SI{95}{\percent} de
+{[\num{-0.040};\,\num{0.081}]}, que contiene el cero. La prueba de permutaci\'on devuelve
+$p = \num{0.53}$ y la de Wilcoxon, $p = \num{0.85}$; ambas coinciden esta vez, a diferencia
+de lo ocurrido en el \cref{sec:resultado-paper}. Seg\'un la \cref{tab:regla-decision}, el
+desenlace es \emph{indeterminado por potencia insuficiente}.
+
+Esa etiqueta debe leerse con el rigor que el protocolo exige. \textbf{No se trata de un
+resultado nulo.} El \cref{sec:transferencia-godot} declar\'o de antemano que el dise\~no no
+detecta efectos inferiores a unos \num{0.105} puntos y que su intervalo al \SI{90}{\percent}
+no cabe dentro del margen de equivalencia. La casilla obtenida es, por tanto, la que el
+propio protocolo se\~nal\'o como m\'as probable, y no autoriza a concluir ni que los dos
+artefactos difieren ni que son equivalentes.
+
+Un dato descriptivo ilustra mejor esa indeterminaci\'on que cualquier intervalo. De las
+\num{50} condiciones, \num{23} favorecen a V0 y \num{25} favorecen a V\textsubscript{pub}.
+La diferencia media no procede, en consecuencia, de una superioridad consistente, sino de la
+magnitud alcanzada en unas pocas condiciones.
+
+\divisionmenor{Resultados secundarios}
+
+La \cref{tab:godot-secundarios} re\'une los contrastes secundarios, ninguno de los cuales
+alcanza significaci\'on.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Contrastes secundarios del apartado, sin correcci\'on de multiplicidad.}
+  \label{tab:godot-secundarios}
+  \small
+  \scriptsize
+  \begin{tabular}{l c c c}
+    \toprule
+    Contraste & Diferencia & IC \SI{95}{\percent} BCa & $p$ \\
+    \midrule
+    V0 menos V\textsubscript{pub}, condici\'on A & \num{0.029} &
+      {[\num{-0.025};\,\num{0.082}]} & \num{0.29} \\
+    \midrule
+    Ca\'ida de A a B en V0 & \num{0.014} & {[\num{-0.009};\,\num{0.041}]} & \num{0.30} \\
+    Ca\'ida de A a B en V\textsubscript{pub} & \num{0.004} &
+      {[\num{-0.041};\,\num{0.048}]} & \num{0.85} \\
+    \midrule
+    Deriva de V0, original menos A & \num{0.015} & {[\num{-0.027};\,\num{0.071}]} &
+      \num{0.56} \\
+    Deriva de V0, original menos B & \num{0.029} & {[\num{-0.016};\,\num{0.079}]} &
+      \num{0.25} \\
+    Deriva de V\textsubscript{pub}, original menos A & \num{0.036} &
+      {[\num{-0.044};\,\num{0.121}]} & \num{0.41} \\
+    Deriva de V\textsubscript{pub}, original menos B & \num{0.040} &
+      {[\num{-0.037};\,\num{0.118}]} & \num{0.33} \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{Todas las diferencias son medias pareadas por condici\'on inicial sobre las
+    \num{50} condiciones, con las dos realizaciones del ruido promediadas. Un valor positivo
+    indica ventaja del primer t\'ermino. Los valores $p$ proceden de la prueba de
+    permutaci\'on.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Dos lecturas se desprenden de esa tabla. La primera atiende a la hip\'otesis que motiv\'o el
+apartado, y no la sostiene: \textbf{los dos codificadores degradan de forma equivalente} al
+sustituir los p\'ixeles del entrenamiento por los del simulador alternativo, con ca\'idas de
+\num{0.014} y \num{0.004} que ning\'un contraste distingue de cero. La localizaci\'on
+mediante \textit{spatial softmax} no confiere aqu\'i ventaja ni desventaja frente al
+promediado global.
+
+La segunda atiende a la transferencia en s\'i. Cambiar de motor de f\'isica y de renderizador
+cuesta a los dos artefactos entre \num{0.015} y \num{0.040} puntos, sin que ninguna de las
+cuatro derivas resulte significativa. Ambas pol\'iticas conservan, por tanto, la mayor parte
+de su competencia fuera del simulador que las entren\'o. La tasa de \'exito no distingue a
+los artefactos en ninguna de las cuatro combinaciones de condici\'on y realizaci\'on, con
+valores de la prueba exacta de McNemar entre \num{0.52} y \num{0.80}.
+
+\divisionmenor{Comportamiento observado}
+
+Las \cref{fig:godot-condicion-a,fig:godot-condicion-b} muestran una misma condici\'on
+inicial resuelta por los dos artefactos en cada condici\'on de observaci\'on. Se eligi\'o la
+semilla \num{200008} por ser la \'unica del bloque que ambos resuelven en las cuatro celdas y
+que, adem\'as, parte de cobertura nula, de modo que la tarea se resuelve por completo dentro
+del episodio.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{img/godot_paper_condicion_a.pdf}
+  \caption{Condici\'on A: evoluci\'on de la observaci\'on en la condici\'on inicial
+    \num{200008}, con la f\'isica de Godot y la imagen del rasterizador de entrenamiento.}
+  \label{fig:godot-condicion-a}
+  \notatabla{Cada panel reproduce la observaci\'on de \num{96} por \num{96} p\'ixeles que
+    recibe la pol\'itica. La pieza en T aparece en gris, su pose objetivo en verde y el
+    agente circular en azul. El fotograma inicial se vuelve a muestrear con el entorno
+    original, puesto que el primer cuadro que registra el simulador alternativo sit\'ua el
+    agente en el origen hasta que transcurre el primer paso de integraci\'on.}
+  \fuente{elaboraci\'on propia}
+\end{figure}
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.92\textwidth]{img/godot_paper_condicion_b.pdf}
+  \caption{Condici\'on B: la misma condici\'on inicial con la imagen generada por el propio
+    simulador alternativo.}
+  \label{fig:godot-condicion-b}
+  \notatabla{La columna central corresponde al instante de cobertura m\'axima, que es el que
+    puntua, ya que la m\'etrica de Push-T toma el m\'aximo a lo largo del episodio. En la
+    \cref{fig:godot-condicion-a} ese instante coincide con el final, puesto que el episodio
+    termina al superar el umbral, y la columna muestra el punto medio.}
+  \fuente{elaboraci\'on propia}
+\end{figure}
+
+La semejanza entre ambas figuras no es un defecto de reproducci\'on, sino el resultado
+principal que explica las cifras del apartado. Las observaciones del simulador alternativo
+difieren de las del rasterizador de entrenamiento en un \SIrange{2.4}{2.7}{\percent} de los
+p\'ixeles, con una diferencia media inferior a un nivel sobre \num{255}. Ese margen replica,
+sobre una condici\'on distinta, la verificaci\'on geom\'etrica del port. La entrada que
+recibe la pol\'itica en la condici\'on B es, en consecuencia, muy pr\'oxima a la del
+entrenamiento, y de ah\'i que la ca\'ida de A a B resulte inapreciable. \textbf{El contraste
+mide la robustez ante un desplazamiento de dominio peque\~no y medido, no ante uno
+arbitrario.}
+
+Las figuras revelan adem\'as un comportamiento que las medias ocultan. En la condici\'on A
+ambos episodios terminan al superar el umbral, tras \num{118} y \num{129} pasos. En la
+condici\'on B ninguno lo alcanza: los dos se detienen en \num{0.950}, agotan los \num{300}
+pasos y terminan en \num{0.860} y \num{0.768} respectivamente, por debajo de su propio
+m\'aximo. Las pol\'iticas alcanzan la pose objetivo pero no la mantienen, y el ajuste fino
+del \'ultimo tramo de cobertura resulta ser la parte cara de la tarea. La m\'etrica no lo
+penaliza, puesto que registra el m\'aximo del episodio.
+
+Ese detalle explica tambi\'en el comportamiento de la tasa de \'exito, mucho m\'as
+vol\'atil que la cobertura media. V0 resuelve \num{26} y \num{25} condiciones de \num{50} en
+el simulador original, seg\'un la realizaci\'on del ruido; \num{16} y \num{24} en la
+condici\'on A; y \num{18} y \num{17} en la condici\'on B. Su cobertura media recorre en ese
+mismo trayecto un intervalo mucho m\'as estrecho, de \num{0.886} y \num{0.894} a \num{0.849}
+y \num{0.866}. El port de la f\'isica desplaza las trayectorias lo justo para que episodios
+que cerraban por escaso margen se detengan en el entorno de \num{0.95} sin cruzarlo.
+
+Conviene reparar en la magnitud de esa volatilidad. Las dos realizaciones de la condici\'on A
+se separan en ocho condiciones sobre cincuenta, tanto como el propio efecto de cambiar de
+simulador. El indicador binario acusa el ruido de inferencia en la misma medida en que acusa
+el cambio de entorno, de modo que su lectura aislada resulta enga\~nosa. Ese comportamiento
+respalda la decisi\'on, mantenida a lo largo del trabajo, de conservarlo como variable
+secundaria y de apoyar los contrastes en la cobertura media.
+
+\divisionmenor{Composici\'on del bloque}
+
+Conviene documentar una consecuencia de no condicionar las semillas al \'exito previo. De
+las \num{50} condiciones, cinco parten con m\'as de \num{0.30} de cobertura y una,
+la \num{200049}, arroja la misma puntuaci\'on en las ocho celdas, pr\'oxima a cero, porque
+ning\'un artefacto llega a desplazar la pieza. Esa \'unica condici\'on no aporta
+informaci\'on al contraste, si bien tampoco lo sesga. Las \num{49} restantes s\'i
+discriminan, de modo que renunciar al filtro no comprometi\'o el dise\~no.
+
 \section{Ajuste y generalizaci\'on}
 \label{sec:ajuste-resultados}
 

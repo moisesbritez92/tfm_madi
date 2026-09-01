@@ -528,6 +528,17 @@ condicionando en el éxito. No mezclar las dos cosas.
 
 Datos: `logs_entrenamiento/godot_paper/` (8 JSON) y `memoria/datos/godot_paper_*.csv`.
 
+Redactado en la memoria: **metodología 3.10, resultados 4.5** y un bloque en las
+conclusiones, más una décima línea de trabajo futuro. Las figuras 4 y 5 las genera
+`memoria/scripts/figuras_godot_paper.py` sobre la semilla **200008**, la única del bloque
+que ambos brazos resuelven en las cuatro celdas y que además arranca en cobertura cero.
+Esa figura necesitó un modo nuevo en `main.gd`, `modo=fotogramas`, porque la observación
+de la condición B solo la sabe producir la escena de Godot; el rasterizador de Python
+resuelve la condición A desde la traza. **El cuadro cero de las grabaciones lleva el agente
+en (0,0)**: el cuerpo animado no adopta su posición hasta el primer tic de física, así que
+la pose inicial hay que remuestrearla con `PushTEnv`. No afecta a ninguna puntuación, que
+solo depende de la pieza.
+
 ## Archivos clave del modelo
 
 ```

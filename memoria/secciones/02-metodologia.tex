@@ -1010,6 +1010,145 @@ documento fija por adelantado el artefacto de referencia completo, la segunda re
 de ambos artefactos y la totalidad del an\'alisis, pero no puede fijar lo ya observado. Esa
 asimetr\'ia se declara y no se subsana.
 
+\section{Transferencia a un simulador distinto}
+\label{sec:transferencia-godot}
+
+El \cref{sec:comparacion-paper} contrasta dos artefactos sobre una distribuci\'on de
+im\'agenes fija, la que produce el mismo renderizador que gener\'o las demostraciones.
+Ninguna de las medidas anteriores indica, en cambio, qu\'e ocurre cuando esa distribuci\'on
+cambia. El presente apartado fija el protocolo de un contraste que la modifica, registrado
+en el repositorio antes de ejecutar la medida.
+
+La pregunta admite una hip\'otesis concreta, y no se plantea como exploraci\'on abierta. El
+codificador de V\textsubscript{pub} localiza posiciones mediante un \textit{spatial softmax},
+mientras que el de V0 promedia la respuesta convolucional sobre toda la imagen. Dos
+mecanismos tan distintos no tienen por qu\'e degradarse igual cuando cambia el renderizador,
+de modo que el contraste puede separar artefactos que la evaluaci\'on original no separa.
+
+\divisionmenor{El simulador alternativo y sus dos condiciones}
+
+La tarea se reimplement\'o sobre el motor Godot 4.7.2 \cite{linietsky2014godot}, con f\'isica propia del motor y
+geometr\'ia portada desde el entorno original. La simulaci\'on se resuelve en dos
+dimensiones, pese a que la escena se representa en tres: con gravedad y rozamiento de mesa
+la pieza volcar\'ia y la tarea dejar\'ia de ser la que los artefactos aprendieron. El paso de
+control conserva los diez subpasos de integraci\'on del entorno original, as\'i como los
+horizontes de observaci\'on y ejecuci\'on y el l\'imite de \num{300} pasos.
+
+Sobre ese port se definen las dos condiciones de la \cref{tab:godot-condiciones}, que
+difieren \'unicamente en el origen de la imagen que recibe la pol\'itica.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Condiciones de observaci\'on del simulador alternativo.}
+  \label{tab:godot-condiciones}
+  \small
+  \scriptsize
+  \begin{tabular}{p{16mm} p{44mm} p{50mm}}
+    \toprule
+    Condici\'on & Origen de la imagen & Qu\'e cambia respecto del entrenamiento \\
+    \midrule
+    A & Rasterizador del entrenamiento, en Python, alimentado con el estado que
+      env\'ia Godot & Solo el motor de f\'isica \\
+    B & Vista ortogonal cenital del propio Godot & El motor de f\'isica y los p\'ixeles \\
+    \bottomrule
+  \end{tabular}
+  \notatabla{La condici\'on B es la primaria. La A act\'ua como control: sin ella, una
+    degradaci\'on observada en B no podr\'ia repartirse entre el cambio de din\'amica y el
+    cambio de apariencia.}
+  \fuente{elaboraci\'on propia}
+\end{table}
+
+Los puntos de control son los mismos dos del \cref{sec:comparacion-paper}, verificados por
+resumen criptogr\'afico antes de cada corrida. No se ajusta ni se selecciona nada.
+
+\divisionmenor{Dise\~no y bloque de evaluaci\'on}
+
+Los dos artefactos se eval\'uan sobre las \num{50} condiciones iniciales
+\numrange{200000}{200049}, prefijo del bloque final, de modo que cada condici\'on dispone de
+una cifra de referencia ya medida en el simulador original. Al cruzar dos artefactos, dos
+condiciones de observaci\'on y dos realizaciones del ruido de difusi\'on resultan ocho celdas
+y \num{400} episodios.
+
+Interesa subrayar una decisi\'on de muestreo. Las semillas \textbf{no se condicionan al
+\'exito previo} de ning\'un artefacto. Ese filtro, habitual cuando se busca observar una
+degradaci\'on, elevar\'ia las cifras absolutas y hurtar\'ia al contraste las condiciones que
+ning\'un artefacto resuelve. El bloque se toma, por tanto, completo y por orden.
+
+Las dos realizaciones del ruido emplean las semillas base ya declaradas en el
+\cref{sec:comparacion-paper} y se promedian dentro de cada condici\'on antes de contrastar,
+de manera que el an\'alisis opera sobre \num{50} diferencias independientes. El estimando
+primario es la diferencia entre las puntuaciones medias de los dos artefactos en la
+condici\'on B, integrada sobre el generador de condiciones iniciales y sobre la realizaci\'on
+del ruido.
+
+Conviene registrar aqu\'i una limitaci\'on propia de este simulador, medida con antelaci\'on.
+Los episodios no se repiten de forma id\'entica entre ejecuciones: una misma condici\'on
+resuelta dos veces con el mismo punto de control dio \num{0.9726} en \num{183} pasos y
+\num{0.9545} en \num{242}. El ruido de difusi\'on s\'i queda sembrado, pero las convoluciones
+en la unidad gr\'afica no son deterministas y una simulaci\'on con contactos amplifica
+cualquier discrepancia diminuta. En consecuencia, la varianza que separa las dos
+realizaciones mezcla el cambio de semilla con ese indeterminismo y no puede atribuirse a uno
+de los dos. As\'i se reporta.
+
+\divisionmenor{Contraste, margen y potencia}
+
+El contraste primario, el margen de equivalencia y la regla de decisi\'on son los del
+\cref{sec:comparacion-paper}, sin cambios: prueba de permutaci\'on por inversi\'on de signo
+con \num{10000} permutaciones, intervalo BCa, margen $\delta = \num{0.05}$ y las cuatro
+casillas de la \cref{tab:regla-decision}. Existe un \'unico contraste primario, de modo que
+no hay familia de hip\'otesis que corregir. Los contrastes de la condici\'on A, la ca\'ida de
+A a B, la deriva respecto del simulador original, la tasa de \'exito y la componente de
+varianza del ruido se reportan como secundarios, sin correcci\'on y etiquetados como tales.
+
+La potencia del dise\~no se calcul\'o antes de observar dato alguno, y su resultado obliga a
+una advertencia expl\'icita. Con la desviaci\'on t\'ipica de las diferencias pareadas
+estimada en el simulador original, aproximadamente \num{0.267}, un tama\~no de \num{50}
+condiciones con dos realizaciones promediadas arroja un error est\'andar cercano a
+\num{0.038}. El efecto m\'inimo detectable a dos colas y con potencia del \SI{80}{\percent}
+asciende, por tanto, a unos \num{0.105} puntos.
+
+De ah\'i se siguen dos consecuencias que se declaran de antemano. La primera es que el
+dise\~no no est\'a dimensionado para reproducir la diferencia de \num{0.041} medida en el
+simulador original, de manera que no detectarla no constituir\'ia evidencia de su ausencia.
+La segunda es que el intervalo al \SI{90}{\percent} mide alrededor de \num{0.125} puntos y no
+cabe dentro de $\pm\num{0.05}$: \textbf{este dise\~no no puede declarar equivalencia
+pr\'actica}, cualquiera que sea el dato. La casilla correspondiente de la
+\cref{tab:regla-decision} queda fuera de alcance, y no poder alcanzarla no ser\'a un
+resultado. El tama\~no lo impone el coste, ya que la condici\'on B exige renderizador y no
+admite paralelizaci\'on.
+
+\divisionmenor{Comprobaciones previas y entorno}
+
+Tres comprobaciones con criterio num\'erico fijado de antemano preceden a la medida. La
+primera verifica los resumenes criptogr\'aficos de los dos puntos de control y la disyunci\'on
+del bloque respecto de las demostraciones y de los dos conjuntos de selecci\'on. La segunda
+acota la deriva de entorno: cada artefacto se eval\'ua sobre las ocho primeras condiciones
+del bloque contra el simulador original, y se exige que la media se aleje menos de \num{0.07}
+de la cifra ya registrada. La tercera comprueba que el artefacto de referencia cierra el
+bucle en la condici\'on B sin que se dispare el aviso de historial de observaciones
+congelado, cuyo \'unico s\'intoma ser\'ia una puntuaci\'on algo peor.
+
+La segunda comprobaci\'on requiere una precisi\'on sobre su alcance. El servidor de
+inferencia siembra el ruido indexando por condici\'on inicial, mientras que el evaluador del
+\cref{sec:prueba-final} lo indexa por grupo, de modo que la corriente de ruido no coincide y
+una igualdad exacta resulta imposible por construcci\'on. Lo que la comprobaci\'on acota es,
+en consecuencia, el efecto conjunto de cambiar de entorno de ejecuci\'on y de corriente de
+ruido, con la f\'isica fijada en el simulador original. Basta para el prop\'osito que se le
+asigna, que es separar lo atribuible al simulador alternativo de todo lo dem\'as.
+
+A diferencia del \cref{sec:comparacion-paper}, la ejecuci\'on se realiza \'integramente en
+el entorno de inferencia de Windows, puesto que el motor Godot corre en esa plataforma y el
+servidor de pol\'itica debe comunicarse con \'el en la misma m\'aquina. La exigencia de fondo
+se respeta igualmente: \textbf{los dos artefactos comparten entorno}, de modo que el cambio
+de versi\'on de las bibliotecas es com\'un a ambos y no interviene en la diferencia pareada.
+
+\divisionmenor{Alcance}
+
+Los cuatro factores confundidos del \cref{sec:comparacion-paper} lo siguen estando. Este
+contraste no aisla ninguno: a\~nade un quinto eje, el dominio de evaluaci\'on, y lo que mide
+de forma limpia es la degradaci\'on de cada artefacto respecto de s\'i mismo. La unidad sobre
+la que se infiere contin\'ua siendo el artefacto entrenado.
+
 \section{Entorno de ejecuci\'on y reproducibilidad}
 \label{sec:entorno}
 
