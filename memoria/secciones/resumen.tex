@@ -1,58 +1,53 @@
 \preliminar{Resumen del proyecto}
 
 \textit{Diffusion Policy} genera acciones de manipulaci\'on rob\'otica mediante un proceso
-de difusi\'on condicionado por la observaci\'on. Su variante visuomotora encadena un
-codificador visual y una red generativa, de modo que la representaci\'on de la imagen
-delimita la informaci\'on disponible para el control. La investigaci\'on posterior ha
-modificado sobre todo el bloque generativo, mientras que la elecci\'on del codificador y de
-su estrategia de entrenamiento sigue sin resolverse cuando solo se dispone de un conjunto
-reducido de demostraciones.
+de difusi\'on condicionado por la observaci\'on. En su variante visuomotora un codificador
+visual precede a la red generativa y delimita la informaci\'on disponible para el control.
+La investigaci\'on posterior ha modificado sobre todo el bloque generativo, de modo que la
+elecci\'on del codificador y de su estrategia de entrenamiento sigue sin resolverse cuando
+solo se dispone de un conjunto reducido de demostraciones.
 
-Este trabajo compara cinco bloques visuales integrados como codificador de observaciones
-de una misma \textit{Diffusion Policy} en la tarea Push-T: una ResNet-18 entrenada desde
-cero, la misma red preentrenada sobre ImageNet en versiones congelada y con ajuste fino, y
-dos transformadores de visi\'on congelados, DINOv2 ViT-S/14 y CLIP ViT-B/16. Todos
-entregan un vector de \num{512} componentes y comparten red generativa, datos y protocolo
-de evaluaci\'on. El ajuste emplea \num{90} de las \num{206} demostraciones teleoperadas
-disponibles, seg\'un el criterio de la implementaci\'on de referencia, y presupuestos de
-\num{200} a \num{500} \'epocas, con parada anticipada. Un conjunto de \num{50} episodios
-generados con semillas reservadas selecciona el punto de control de cada variante. El
-rendimiento se mide despu\'es una sola vez sobre \num{200} episodios de un bloque de
-semillas disjunto, bajo un protocolo preregistrado, junto con el tiempo de c\'omputo
-consumido. Cada bloque visual se entrena una \'unica vez, premisa de dise\~no adoptada
-para cubrir cinco configuraciones con el presupuesto disponible; en consecuencia, la
-unidad sobre la que se infiere es el artefacto entrenado y no la estrategia de
-entrenamiento.
+Este trabajo compara cinco bloques visuales integrados como codificador de observaciones de
+una misma \textit{Diffusion Policy} en la tarea Push-T: una ResNet-18 entrenada desde cero,
+la misma red preentrenada sobre ImageNet en versiones congelada y con ajuste fino, y dos
+transformadores de visi\'on congelados, DINOv2 ViT-S/14 y CLIP ViT-B/16. Todos entregan un
+vector de \num{512} componentes y comparten red generativa, datos y protocolo de
+evaluaci\'on. El ajuste emplea \num{90} de las \num{206} demostraciones teleoperadas,
+seg\'un el criterio de la implementaci\'on de referencia, con presupuestos de \num{200} a
+\num{500} \'epocas y parada anticipada. Cincuenta episodios de semillas reservadas
+seleccionan el punto de control de cada variante, y el rendimiento se mide una sola vez
+sobre \num{200} episodios de un bloque disjunto, bajo protocolo preregistrado y con dos
+realizaciones del ruido por condici\'on. Cada bloque se entrena una \'unica vez, premisa
+adoptada para cubrir cinco configuraciones con el presupuesto disponible: la unidad de
+inferencia es el artefacto entrenado, no la estrategia.
 
-Cada condici\'on se resuelve con dos realizaciones del ruido de difusi\'on, de manera que el
-estimando integra la condici\'on inicial y el muestreo estoc\'astico de la pol\'itica. Sobre
-ese bloque independiente, la l\'inea base entrenada desde cero alcanza \num{0.887}. Las
-cuatro variantes preentrenadas obtienen \num{0.642}, \num{0.580}, \num{0.571} y \num{0.490}.
-V0 supera a todas con significaci\'on tras corregir los diez contrastes por pares mediante
-el procedimiento de Holm, y ese resultado no depende de qu\'e prueba se emplee. Entre las
-variantes preentrenadas, en cambio, solo la peor se separa del resto con ambos contrastes, y
-las dos intermedias no se distinguen entre s\'i en ning\'un sentido. Cada \'epoca de V0
-ocupa \SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en
-las dem\'as. Las cinco ejecuciones suman \SI{237.1}{\hour}.
+Sobre ese bloque independiente, la l\'inea base entrenada desde cero alcanza \num{0.887} y
+las cuatro variantes preentrenadas obtienen \num{0.642}, \num{0.580}, \num{0.571} y
+\num{0.490}. La primera supera a todas con significaci\'on tras corregir los diez contrastes
+por pares mediante el procedimiento de Holm, con independencia de qu\'e prueba se emplee.
+Entre las variantes preentrenadas, en cambio, solo la peor se separa del resto y las dos
+intermedias no se distinguen entre s\'i. Cada \'epoca de la l\'inea base ocupa
+\SI{1.6}{\minute}, frente a un intervalo de \SI{2.3}{\minute} a \SI{14.7}{\minute} en las
+dem\'as; las cinco ejecuciones suman \SI{237.1}{\hour}.
 
-Un contraste adicional, preregistrado por separado, compara esa l\'inea base con el punto de
-control que los autores de la implementaci\'on de referencia publicaron. El modelo publicado
-obtiene \num{0.846}, es decir \num{0.041} puntos menos. Con un margen de equivalencia de
-\num{0.05} fijado de antemano, los datos permiten afirmar que la reproducci\'on no rinde por
-debajo del artefacto de referencia, sin establecer que lo supere de forma pr\'acticamente
-relevante. Ese contraste revel\'o adem\'as que cambiar \'unicamente la semilla del ruido
-desplaza la puntuaci\'on media en \num{0.030} puntos, magnitud comparable a las diferencias
-que separan a las variantes preentrenadas entre s\'i, y esa medida es la que motiv\'o
-duplicar las realizaciones en toda la prueba final.
+Dos contrastes preregistrados por separado acotan ese resultado. El primero la sit\'ua
+frente al punto de control publicado por los autores de la implementaci\'on de referencia,
+que obtiene
+\num{0.846}: con un margen de equivalencia de \num{0.05} fijado de antemano, los datos
+sostienen que la reproducci\'on no rinde por debajo de ese artefacto, sin establecer que lo
+supere de forma relevante. De \'el se sigue adem\'as que cambiar solo la semilla del ruido
+desplaza la puntuaci\'on media en \num{0.030} puntos, tanto como las diferencias entre las
+variantes preentrenadas. El segundo somete ambos artefactos a la tarea reimplementada sobre
+otro motor de f\'isica y resulta indeterminado por potencia insuficiente.
 
 Se concluye que, entre los cinco artefactos evaluados y sobre las condiciones ensayadas,
 ninguno de los bloques preentrenados mejora el rendimiento ni el coste por \'epoca de la
 l\'inea base. La ventaja debe atribuirse al bloque visual completo (pesos iniciales,
 resoluci\'on, recorte y agregaci\'on espacial), que var\'ia de forma conjunta, y no al
 preentrenamiento aislado. Con una \'unica ejecuci\'on de entrenamiento por variante, el
-resultado no autoriza a extrapolar el comportamiento esperado de esas estrategias al
-volver a entrenarlas.
+resultado no autoriza a extrapolar el comportamiento esperado de esas estrategias al volver
+a entrenarlas.
 
-\vspace{1em}
+\vspace{0.6em}
 \noindent\textbf{Palabras clave:} aprendizaje por imitaci\'on, modelos de difusi\'on,
 codificador visual, transferencia de aprendizaje, manipulaci\'on rob\'otica.

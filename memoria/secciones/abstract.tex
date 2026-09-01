@@ -4,58 +4,53 @@
 % El entorno abre grupo: la marca decimal inglesa no escapa de este apartado.
 \sisetup{output-decimal-marker={.}}
 
-\textit{Diffusion Policy} generates robotic manipulation actions through a diffusion
-process conditioned on the observation. Its visuomotor variant chains a visual encoder and
-a generative network, so the image representation bounds the information available for
-control. Subsequent research has mostly modified the generative block, whereas the choice
-of encoder and of its training strategy remains unsettled when only a small set of
-demonstrations is available.
+\textit{Diffusion Policy} generates robotic manipulation actions through a diffusion process
+conditioned on the observation. In its visuomotor variant a visual encoder precedes the
+generative network and bounds the information available for control. Subsequent research has
+mostly modified the generative block, so the choice of encoder and of its training strategy
+remains unsettled when only a small set of demonstrations is available.
 
 This work compares five visual blocks integrated as the observation encoder of a single
 \textit{Diffusion Policy} on the Push-T task: a ResNet-18 trained from scratch, the same
 network pretrained on ImageNet in frozen and fine-tuned versions, and two frozen vision
-transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a
-\num{512}-component vector and share the generative network, the data, and the evaluation
-protocol.
-Training uses \num{90} of the \num{206} teleoperated demonstrations, following the
-reference implementation, and budgets ranging from \num{200} to
-\num{500} epochs, with early stopping. A set of \num{50} episodes generated with held-out
-seeds selects the checkpoint of each variant. Performance is then measured once on
-\num{200} episodes from a disjoint seed block, under a preregistered protocol, together
-with the compute time consumed. Each visual block is trained exactly once, a design
-premise adopted in order to cover five configurations within the available compute
-budget; the unit of inference is therefore the trained artefact, not the training
-strategy.
+transformers, DINOv2 ViT-S/14 and CLIP ViT-B/16. All of them output a \num{512}-component
+vector and share the generative network, the data and the evaluation protocol. Training uses
+\num{90} of the \num{206} teleoperated demonstrations, following the reference
+implementation, with budgets from \num{200} to \num{500} epochs and early stopping. A set of
+\num{50} episodes generated with held-out seeds selects the checkpoint of each variant, and
+performance is then measured once on \num{200} episodes from a disjoint block, under a
+preregistered protocol, with two realisations of the diffusion noise per condition and
+alongside the compute time consumed. Each visual block is trained exactly once, a premise
+adopted in order to cover five configurations within the available budget: the unit of
+inference is therefore the trained artefact, not the training strategy.
 
-Each condition is solved with two realisations of the diffusion noise, so that the estimand
-integrates both the initial condition and the stochastic sampling of the policy. On that
-independent block, the baseline trained from scratch reaches \num{0.887}. The four
-pretrained variants score \num{0.642}, \num{0.580}, \num{0.571}, and \num{0.490}. V0
-outperforms all of them after the ten pairwise tests are corrected with Holm's procedure,
-and this holds regardless of which test is used. Among the pretrained variants, by contrast,
-only the weakest separates from the rest under both tests, and the two intermediate ones are
-indistinguishable from each other. Each V0 epoch takes \SI{1.6}{\minute}, compared with
-\SI{2.3}{\minute} to \SI{14.7}{\minute} for the other variants. The five runs total
+On that independent block the baseline trained from scratch reaches \num{0.887}, while the
+four pretrained variants score \num{0.642}, \num{0.580}, \num{0.571} and \num{0.490}. The
+former outperforms all of them after the ten pairwise contrasts are corrected with Holm's
+procedure, regardless of which test is used. Among the pretrained variants, by contrast,
+only the weakest separates from the rest and the two intermediate ones are indistinguishable
+from each other. Each baseline epoch takes \SI{1.6}{\minute}, against a range of
+\SI{2.3}{\minute} to \SI{14.7}{\minute} for the others; the five runs total
 \SI{237.1}{\hour}.
 
-A separately preregistered contrast compares that baseline with the checkpoint released by
-the authors of the reference implementation. The released model scores \num{0.846}, that is
-\num{0.041} lower. With an equivalence margin of \num{0.05} fixed in advance, the data
-support the claim that the reproduction does not underperform the reference artefact,
-without establishing that it exceeds it by a practically relevant amount. That contrast also
-revealed that changing only the noise seed shifts the mean score by \num{0.030}, a magnitude
-comparable to the differences separating the pretrained variants from one another, and this
-measurement is what prompted duplicating the realisations throughout the final test.
+Two separately preregistered contrasts bound that result. The first places the baseline
+against the checkpoint released by the authors of the reference implementation, which scores
+\num{0.846}: with an equivalence margin of \num{0.05} fixed in advance, the data support the
+claim that the reproduction does not underperform the reference artefact, without
+establishing that it exceeds it by a practically relevant amount. It also follows from it
+that changing only the noise seed shifts the mean score by \num{0.030}, a magnitude
+comparable to the differences separating the pretrained variants from one another. The
+second submits both artefacts to the task reimplemented on a different physics engine and
+proves indeterminate for lack of power.
 
-The study concludes that, among the five artefacts evaluated and over the conditions
-tested, none of the pretrained visual blocks improves the baseline either in performance
-or in cost per epoch. The advantage must be ascribed to the complete visual block
-(initial weights, resolution, cropping, and spatial aggregation), which varies jointly,
-rather than to pretraining in isolation. With a single training run per variant, the
-result does not license extrapolation to the expected behaviour of those strategies upon
-retraining.
+The study concludes that, among the five artefacts evaluated and over the conditions tested,
+none of the pretrained visual blocks improves the baseline either in performance or in cost
+per epoch. The advantage must be ascribed to the complete visual block (initial weights,
+resolution, cropping and spatial aggregation), which varies jointly, rather than to
+pretraining in isolation. With a single training run per variant, the result does not license
+extrapolation to the expected behaviour of those strategies upon retraining.
 
-\vspace{1em}
+\vspace{0.8em}
 \noindent\textbf{Keywords:} imitation learning, diffusion models, visual encoder, transfer
 learning, robotic manipulation.
 \end{otherlanguage}
